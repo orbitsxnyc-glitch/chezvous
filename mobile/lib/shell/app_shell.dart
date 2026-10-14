@@ -4,10 +4,12 @@ import '../auth/auth_controller.dart';
 import '../auth/auth_screens.dart';
 import '../engagement/alerts_screen.dart';
 import '../engagement/favorites_screen.dart';
+import '../inquiries/inquiries_repository.dart';
+import '../inquiries/inquiries_screens.dart';
 import '../listings/listings_repository.dart';
 import '../listings/search_screen.dart';
 
-/// Navigation principale. La recherche est publique ; favoris, alertes et compte demandent une connexion.
+/// Navigation principale. La recherche est publique ; favoris, messages et compte demandent une connexion.
 class AppShell extends StatefulWidget {
   const AppShell({super.key, required this.auth});
 
@@ -19,7 +21,8 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   int _tab = 0;
-  late final ListingsRepository _repository = ListingsRepository(
+  late final ListingsRepository _listings = ListingsRepository(widget.auth.api);
+  late final InquiriesRepository _inquiries = InquiriesRepository(
     widget.auth.api,
   );
 
@@ -31,14 +34,29 @@ class _AppShellState extends State<AppShell> {
       // La clé suit l'identité : à la déconnexion, aucun écran ne garde de données d'un autre compte.
       final key = ValueKey('${widget.auth.user?.id}');
       final pages = <Widget>[
-        SearchScreen(key: key, repository: _repository, signedIn: signedIn),
+        SearchScreen(
+          key: key,
+          repository: _listings,
+          signedIn: signedIn,
+          inquiries: signedIn ? _inquiries : null,
+        ),
         signedIn
-            ? FavoritesScreen(key: key, repository: _repository)
-            : _SignInPrompt(auth: widget.auth, what: 'vos favoris'),
+            ? FavoritesScreen(
+                key: key,
+                repository: _listings,
+                inquiries: _inquiries,
+              )
+            : const _SignInPrompt(what: 'vos favoris'),
         signedIn
-            ? AlertsScreen(key: key, repository: _repository)
-            : _SignInPrompt(auth: widget.auth, what: 'vos alertes'),
-        signedIn ? _Account(auth: widget.auth) : LoginScreen(auth: widget.auth),
+            ? MessagesScreen(key: key, repository: _inquiries)
+            : const _SignInPrompt(what: 'vos messages'),
+        signedIn
+            ? _Account(
+                auth: widget.auth,
+                listings: _listings,
+                inquiries: _inquiries,
+              )
+            : LoginScreen(auth: widget.auth),
       ];
       return Scaffold(
         body: IndexedStack(index: _tab, children: pages),
@@ -52,8 +70,8 @@ class _AppShellState extends State<AppShell> {
               label: 'Favoris',
             ),
             NavigationDestination(
-              icon: Icon(Icons.notifications_none),
-              label: 'Alertes',
+              icon: Icon(Icons.chat_bubble_outline),
+              label: 'Messages',
             ),
             NavigationDestination(
               icon: Icon(Icons.person_outline),
@@ -67,9 +85,8 @@ class _AppShellState extends State<AppShell> {
 }
 
 class _SignInPrompt extends StatelessWidget {
-  const _SignInPrompt({required this.auth, required this.what});
+  const _SignInPrompt({required this.what});
 
-  final AuthController auth;
   final String what;
 
   @override
@@ -88,9 +105,15 @@ class _SignInPrompt extends StatelessWidget {
 }
 
 class _Account extends StatelessWidget {
-  const _Account({required this.auth});
+  const _Account({
+    required this.auth,
+    required this.listings,
+    required this.inquiries,
+  });
 
   final AuthController auth;
+  final ListingsRepository listings;
+  final InquiriesRepository inquiries;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -103,7 +126,26 @@ class _Account extends StatelessWidget {
           style: Theme.of(context).textTheme.titleLarge,
         ),
         Text(auth.user?.phone ?? ''),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
+        ListTile(
+          leading: const Icon(Icons.notifications_none),
+          title: const Text('Notifications'),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => NotificationsScreen(repository: inquiries),
+            ),
+          ),
+        ),
+        ListTile(
+          leading: const Icon(Icons.bookmark_border),
+          title: const Text('Mes alertes de recherche'),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => AlertsScreen(repository: listings),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
         OutlinedButton(
           onPressed: auth.logout,
           child: const Text('Se déconnecter'),

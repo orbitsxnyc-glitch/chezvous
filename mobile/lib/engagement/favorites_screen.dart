@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../inquiries/inquiries_repository.dart';
 import '../listings/listing_detail_screen.dart';
 import '../listings/listing_widgets.dart';
 import '../listings/listings_repository.dart';
@@ -7,9 +8,10 @@ import '../listings/models.dart';
 import '../ui/widgets.dart';
 
 class FavoritesScreen extends StatefulWidget {
-  const FavoritesScreen({super.key, required this.repository});
+  const FavoritesScreen({super.key, required this.repository, this.inquiries});
 
   final ListingsRepository repository;
+  final InquiriesRepository? inquiries;
 
   @override
   State<FavoritesScreen> createState() => _FavoritesScreenState();
@@ -61,6 +63,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       repository: widget.repository,
                       reference: l.reference,
                       signedIn: true,
+                      inquiries: widget.inquiries,
                     ),
                   ),
                 ),

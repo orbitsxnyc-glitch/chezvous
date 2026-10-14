@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../inquiries/inquiries_repository.dart';
 import '../ui/widgets.dart';
 import 'listing_detail_screen.dart';
 import 'listing_widgets.dart';
@@ -11,10 +12,12 @@ class SearchScreen extends StatefulWidget {
     super.key,
     required this.repository,
     required this.signedIn,
+    this.inquiries,
   });
 
   final ListingsRepository repository;
   final bool signedIn;
+  final InquiriesRepository? inquiries;
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -200,6 +203,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 repository: widget.repository,
                 reference: l.reference,
                 signedIn: widget.signedIn,
+                inquiries: widget.inquiries,
               ),
             ),
           ),

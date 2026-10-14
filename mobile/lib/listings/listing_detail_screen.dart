@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../core/api_client.dart';
 import '../core/format.dart';
 import '../ui/widgets.dart';
+import '../inquiries/inquiries_repository.dart';
+import '../inquiries/inquiries_screens.dart';
 import 'listing_widgets.dart';
 import 'listings_repository.dart';
 import 'models.dart';
@@ -13,11 +15,15 @@ class ListingDetailScreen extends StatefulWidget {
     required this.repository,
     required this.reference,
     this.signedIn = false,
+    this.inquiries,
   });
 
   final ListingsRepository repository;
   final String reference;
   final bool signedIn;
+
+  /// Absent hors connexion : le bouton de contact demande alors de se connecter.
+  final InquiriesRepository? inquiries;
 
   @override
   State<ListingDetailScreen> createState() => _ListingDetailScreenState();
@@ -28,6 +34,29 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
     widget.reference,
   );
   bool? _favorite;
+
+  Future<void> _contact(ListingDetail d) async {
+    final repo = widget.inquiries;
+    if (!widget.signedIn || repo == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Connectez-vous (onglet Compte) pour contacter l\'annonceur.',
+          ),
+        ),
+      );
+      return;
+    }
+    if (await showContactSheet(context, repo, d.summary.id) && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Message envoyé. Retrouvez la conversation dans Messages.',
+          ),
+        ),
+      );
+    }
+  }
 
   Future<void> _toggleFavorite(ListingDetail d) async {
     if (!widget.signedIn) {
@@ -137,6 +166,12 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                   _Passport(detail: d),
                   const SizedBox(height: 16),
                   Text('Annonceur : ${d.advertiserName}'),
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
+                    icon: const Icon(Icons.chat_bubble_outline),
+                    label: const Text("Contacter l'annonceur"),
+                    onPressed: () => _contact(d),
+                  ),
                 ],
               ),
             ),
