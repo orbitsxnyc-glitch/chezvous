@@ -46,6 +46,7 @@ return [
         'similar_price_tolerance' => 0.25,
         'similar_limit' => 6,
         'map_limit' => 300,
+        'sitemap_limit' => 5000,
     ],
 
     'counters' => [

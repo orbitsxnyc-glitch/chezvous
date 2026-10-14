@@ -45,6 +45,13 @@ Le porteur du projet a délégué à Claude les décisions recommandées. Elles 
 | Routes d'annonces | `/my/listings` (et non `/my/properties`) : la ressource gérée par l'annonceur est l'annonce ; le bien (`properties`) est le Passeport | Facile |
 | Photos | Fichier brut gardé en privé le temps du traitement, puis supprimé ; WebP en 3 tailles ; EXIF retiré par réencodage ; antivirus non disponible | À revoir avant la production |
 | Duplication | Copie la fiche en nouveau bien et nouveau brouillon, sans photos | Facile |
+| Biens à information ancienne | Rétrogradés en bas de liste (pas masqués) pendant le pilote ; `CHEZVOUS_HIDE_STALE=true` pour les masquer | Facile (config) |
+| Retrait d'un bien | « Loué » ferme l'annonce ; « Retiré » la met en pause (réversible) ; « Réservé » la laisse en ligne avec le badge | Facile |
+| Position approximative | Décalage fixe par bien (40 à 100 % de 300 m, configurable) ; la recherche par zone s'appuie sur la position publique uniquement | Facile (config) |
+| Coût d'entrée | Montants saisis affichés sans total calculé, avec avertissement ; calcul automatique après validation des règles légales | À décider |
+| Carte | API `/listings/map` prête ; interface cartographique non livrée (fournisseur de tuiles à valider, MapLibre/OpenStreetMap recommandé) | À décider |
+| Pages inexistantes | Statut HTTP 200 avec `noindex` automatique (contrainte du rendu en flux de Next.js), pas de 404 réel | À revoir |
+| URL publiques | `/annonces/{référence}`, `/a-louer/{type}/{quartier}`, `/a-vendre/{type}/{quartier}` | Facile |
 
 ## Questions ouvertes
 

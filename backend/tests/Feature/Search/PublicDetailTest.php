@@ -158,3 +158,12 @@ it('le signalement ne fonctionne que sur une annonce publique (non-régression P
     $this->postJson("/api/v1/listings/{$l->ulid}/reports", ['reason_code' => 'fraud'])->assertCreated();
     expect(ListingReport::count())->toBe(1);
 });
+
+it('fournit au sitemap uniquement les annonces publiques', function () {
+    $a = publicListing();
+    publicListing(['status' => 'draft']);
+
+    $res = $this->getJson('/api/v1/seo/sitemap')->assertOk();
+
+    expect(collect($res->json('data'))->pluck('reference')->all())->toBe([$a->reference]);
+});

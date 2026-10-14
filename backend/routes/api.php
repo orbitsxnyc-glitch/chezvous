@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\My\ListingImageController;
 use App\Http\Controllers\Api\V1\PassportController;
 use App\Http\Controllers\Api\V1\PublicListingController;
 use App\Http\Controllers\Api\V1\ReferenceController;
+use App\Http\Controllers\Api\V1\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 // Préfixe /api/v1 défini dans bootstrap/app.php.
@@ -45,6 +46,7 @@ Route::middleware('throttle:search')->group(function () {
     Route::get('listings/map', [PublicListingController::class, 'map']);
     Route::get('listings/{identifier}', [PublicListingController::class, 'show'])->where('identifier', '[A-Za-z0-9-]+');
     Route::get('listings/{identifier}/similar', [PublicListingController::class, 'similar'])->where('identifier', '[A-Za-z0-9-]+');
+    Route::get('seo/sitemap', SitemapController::class);
     Route::get('passports/{reference}', [PassportController::class, 'show'])->where('reference', '[A-Za-z0-9-]+');
 });
 

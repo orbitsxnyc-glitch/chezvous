@@ -42,6 +42,9 @@ cp .env.example .env && composer install && php artisan key:generate
 php artisan migrate
 php artisan serve          # API locale
 php artisan queue:work     # traitement des photos (obligatoire hors tests)
+php artisan schedule:work  # fraîcheur, expiration, compteurs
+php artisan demo:listings 200   # annonces FICTIVES, local uniquement (--purge pour les supprimer)
+php artisan search:benchmark    # mesure p50/p95 de la recherche (après demo:listings 10000)
 php artisan test           # Pest
 ./vendor/bin/pint --test && ./vendor/bin/phpstan analyse
 ```
