@@ -18,6 +18,29 @@
 | Nom du dossier backend | `backend/` (conforme à `specs-mvp.md`) |
 | Spécifications | `docs/specs-mvp.md` fait référence, corrigé par l'addendum Passeport |
 
+## Décisions déléguées au 2026-10-14
+
+Le porteur du projet a délégué à Claude les décisions recommandées. Elles sont réversibles. Ne sont **pas** couverts par cette délégation : la création de comptes externes, les services payants, les pushs vers le dépôt distant et la validation juridique.
+
+| Sujet | Décision retenue | Réversibilité |
+|---|---|---|
+| Base de la Phase 2 | Branche `phase-2-annonces` créée depuis `phase-1-comptes` ; rebase sur `main` après fusion de la pull request | Facile |
+| Types et transactions | Tous modélisés (spec ANN-02/03) ; seule la location résidentielle est testée et livrée au pilote | Facile |
+| Localités | Liste du lancement (Yoff, Ouakam, Mamelles, Almadies, Ngor, Mermoz, Sacré-Cœur, VDN, Keur Gorgui, Liberté) sans contours précis au départ | Facile (seeders) |
+| Stockage des photos | Disque local en développement, S3-compatible à choisir avant la recette | Facile (config) |
+| Écrans web de publication | Après la maquette Figma ; la Phase 2 livre l'API et la modération côté API | Facile |
+| Environnement local | Natif (PostgreSQL 17, Redis via Homebrew) ; `docker-compose` conservé pour la CI | Facile |
+| Hébergement (recommandation) | VPS Linux unique en recette (spec H12) ; fournisseur et région à choisir par le porteur | À confirmer |
+| OTP/SMS (recommandation) | Agrégateur SMS local avec contrat Sénégal ; e-mail en attendant ; choix du fournisseur par le porteur | À confirmer |
+| WhatsApp (recommandation) | API WhatsApp Business officielle, via un prestataire ; coût à valider | À confirmer |
+| Push | FCM ; comptes Google et Apple à créer par le porteur | À confirmer |
+| Langues | Français au lancement ; i18n prête pour l'anglais et le wolof | Facile |
+| Précision GPS publique | Position approximative par défaut (zone), exacte après contact | Facile (config) |
+| Vérification des agences | NINEA + RCCM (spec H8) | Facile |
+| Vérification des particuliers | Téléphone uniquement au MVP | Facile |
+| Branches Git | `main` protégée, une branche par phase, pull request avant fusion | Facile |
+| Fraîcheur | États Disponible / À reconfirmer / Information ancienne, seuils en configuration (valeurs initiales : 48 h et 7 jours) | Facile (config) |
+
 ## Questions ouvertes
 
 | # | Sujet | Recommandation | Impact |
