@@ -41,6 +41,7 @@ createdb chezvous_test && psql -d chezvous_test -c "CREATE EXTENSION postgis;"
 cp .env.example .env && composer install && php artisan key:generate
 php artisan migrate
 php artisan serve          # API locale
+php artisan queue:work     # traitement des photos (obligatoire hors tests)
 php artisan test           # Pest
 ./vendor/bin/pint --test && ./vendor/bin/phpstan analyse
 ```

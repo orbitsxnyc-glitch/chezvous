@@ -40,6 +40,11 @@ Le porteur du projet a délégué à Claude les décisions recommandées. Elles 
 | Vérification des particuliers | Téléphone uniquement au MVP | Facile |
 | Branches Git | `main` protégée, une branche par phase, pull request avant fusion | Facile |
 | Fraîcheur | États Disponible / À reconfirmer / Information ancienne, seuils en configuration (valeurs initiales : 48 h et 7 jours) | Facile (config) |
+| Compte « de confiance » (H7) | Téléphone vérifié et au moins 1 annonce approuvée par un modérateur (`trusted_after_approvals`) : ses annonces suivantes sont publiées sans modération, mais restent signalables | Facile (config) |
+| Quota particulier | 3 annonces actives simultanées (publiées + en modération), configurable ; remplacé par les droits des formules en Phase 6 | Facile (config) |
+| Routes d'annonces | `/my/listings` (et non `/my/properties`) : la ressource gérée par l'annonceur est l'annonce ; le bien (`properties`) est le Passeport | Facile |
+| Photos | Fichier brut gardé en privé le temps du traitement, puis supprimé ; WebP en 3 tailles ; EXIF retiré par réencodage ; antivirus non disponible | À revoir avant la production |
+| Duplication | Copie la fiche en nouveau bien et nouveau brouillon, sans photos | Facile |
 
 ## Questions ouvertes
 
