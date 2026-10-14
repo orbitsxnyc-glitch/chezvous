@@ -40,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute($limits['otp_per_minute'])->by($phoneKey($r)),
             Limit::perHour($limits['otp_per_hour_ip'])->by($r->ip()),
         ]);
+        RateLimiter::for('search', fn (Request $r) => Limit::perMinute($limits['search_per_minute'] ?? config('chezvous.search.per_minute'))->by($r->ip()));
         RateLimiter::for('uploads', fn (Request $r) => Limit::perHour($limits['uploads_per_hour'])->by((string) $r->user()?->id));
         RateLimiter::for('reports', fn (Request $r) => Limit::perHour($limits['reports_per_hour'])->by((string) $r->user()?->id));
         RateLimiter::for('otp-verify', fn (Request $r) => Limit::perMinute($limits['otp_verify_per_minute'])->by($phoneKey($r)));

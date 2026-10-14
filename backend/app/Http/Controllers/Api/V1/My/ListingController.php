@@ -29,7 +29,7 @@ class ListingController extends Controller
             ->when($request->query('status'), fn ($q, $s) => $q->where('status', $s))
             ->latest('id');
 
-        return ListingResource::collection($query->cursorPaginate(20));
+        return ListingResource::collection($query->cursorPaginate(20)->withQueryString());
     }
 
     public function store(StoreListingRequest $request): ListingResource

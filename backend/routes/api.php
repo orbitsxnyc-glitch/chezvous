@@ -8,8 +8,11 @@ use App\Http\Controllers\Api\V1\Auth\SessionController;
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\ListingReportController;
 use App\Http\Controllers\Api\V1\MeController;
+use App\Http\Controllers\Api\V1\My\ListingAvailabilityController;
 use App\Http\Controllers\Api\V1\My\ListingController;
 use App\Http\Controllers\Api\V1\My\ListingImageController;
+use App\Http\Controllers\Api\V1\PassportController;
+use App\Http\Controllers\Api\V1\PublicListingController;
 use App\Http\Controllers\Api\V1\ReferenceController;
 use Illuminate\Support\Facades\Route;
 
@@ -36,6 +39,15 @@ Route::get('localities', [ReferenceController::class, 'localities']);
 Route::get('property-types', [ReferenceController::class, 'propertyTypes']);
 Route::get('amenities', [ReferenceController::class, 'amenities']);
 
+// Recherche et consultation publiques (RCH-01 à RCH-05). `listings/map` doit précéder `listings/{identifier}`.
+Route::middleware('throttle:search')->group(function () {
+    Route::get('listings', [PublicListingController::class, 'index']);
+    Route::get('listings/map', [PublicListingController::class, 'map']);
+    Route::get('listings/{identifier}', [PublicListingController::class, 'show'])->where('identifier', '[A-Za-z0-9-]+');
+    Route::get('listings/{identifier}/similar', [PublicListingController::class, 'similar'])->where('identifier', '[A-Za-z0-9-]+');
+    Route::get('passports/{reference}', [PassportController::class, 'show'])->where('reference', '[A-Za-z0-9-]+');
+});
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('listings/{listing}/reports', [ListingReportController::class, 'store'])->middleware('throttle:reports');
 
@@ -49,6 +61,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('{listing}/submit', [ListingController::class, 'submit']);
         Route::post('{listing}/pause', [ListingController::class, 'pause']);
         Route::post('{listing}/resume', [ListingController::class, 'resume']);
+        Route::post('{listing}/availability', [ListingAvailabilityController::class, 'store']);
         Route::post('{listing}/close', [ListingController::class, 'close']);
         Route::post('{listing}/duplicate', [ListingController::class, 'duplicate']);
         Route::post('{listing}/images', [ListingImageController::class, 'store'])->middleware('throttle:uploads');

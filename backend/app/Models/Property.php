@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -25,7 +26,7 @@ class Property extends Model
 
     protected $guarded = [];
 
-    protected $hidden = ['location'];
+    protected $hidden = ['location', 'public_location'];
 
     /** @return list<string> */
     public function uniqueIds(): array
@@ -75,6 +76,12 @@ class Property extends Model
     public function images(): HasMany
     {
         return $this->hasMany(PropertyImage::class)->orderBy('position');
+    }
+
+    /** @return HasOne<PropertyImage, $this> */
+    public function coverImage(): HasOne
+    {
+        return $this->hasOne(PropertyImage::class)->where('is_cover', true)->where('status', 'ready');
     }
 
     /** @return BelongsToMany<Amenity, $this> */

@@ -5,10 +5,12 @@ namespace App\Models;
 use App\Enums\AvailabilityChannel;
 use App\Enums\AvailabilityResponse;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property AvailabilityResponse $response
  * @property AvailabilityChannel $channel
+ * @property Carbon $confirmed_at
  */
 class AvailabilityConfirmation extends Model
 {

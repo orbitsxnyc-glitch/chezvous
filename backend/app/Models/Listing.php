@@ -19,6 +19,9 @@ use Illuminate\Support\Carbon;
  * @property TransactionType $transaction
  * @property Carbon|null $published_at
  * @property Carbon|null $expires_at
+ * @property Carbon|null $last_confirmed_at
+ * @property float|string|null $pub_lat Position publique, colonne calculée par ListingSearch::withPublicCoordinates
+ * @property float|string|null $pub_lon
  */
 class Listing extends Model
 {
@@ -50,6 +53,7 @@ class Listing extends Model
             'expires_at' => 'datetime',
             'expiry_reminded_at' => 'datetime',
             'closed_at' => 'datetime',
+            'last_confirmed_at' => 'datetime',
         ];
     }
 
