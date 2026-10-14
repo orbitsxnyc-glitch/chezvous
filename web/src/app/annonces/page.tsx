@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ResultsList } from "@/components/listings/ResultsList";
+import { SaveSearchButton } from "@/components/listings/SaveSearchButton";
 import { SearchForm } from "@/components/listings/SearchForm";
 import { getNeighborhoods, searchListings } from "@/lib/listings";
 import { cleanParams } from "@/lib/params";
@@ -17,6 +18,7 @@ async function Search({ searchParams }: { searchParams: PageProps<"/annonces">["
   return (
     <>
       <SearchForm values={params} neighborhoods={neighborhoods} />
+      <SaveSearchButton params={params} />
       {result ? (
         <ResultsList result={result} params={params} basePath="/annonces" />
       ) : (
