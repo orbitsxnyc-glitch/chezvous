@@ -2,31 +2,62 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Concerns\Auditable;
+use App\Enums\AccountType;
+use App\Enums\UserStatus;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
+use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'password'])]
+/**
+ * @property AccountType $account_type
+ * @property UserStatus $status
+ * @property Carbon|null $phone_verified_at
+ * @property array<string, mixed>|null $notification_preferences
+ */
+#[Fillable(['name', 'phone', 'email', 'whatsapp', 'password', 'account_type', 'locale', 'city', 'notification_preferences'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use Auditable, HasApiTokens, HasFactory, HasRoles, HasUlids, Notifiable, SoftDeletes;
 
     /**
-     * Get the attributes that should be cast.
+     * Seule la colonne `ulid` est un identifiant ULID ; la clé primaire reste un bigint.
      *
-     * @return array<string, string>
+     * @return list<string>
      */
+    public function uniqueIds(): array
+    {
+        return ['ulid'];
+    }
+
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
+            'phone_verified_at' => 'datetime',
             'password' => 'hashed',
+            'account_type' => AccountType::class,
+            'status' => UserStatus::class,
+            'notification_preferences' => 'array',
         ];
+    }
+
+    public function hasVerifiedPhone(): bool
+    {
+        return $this->phone_verified_at !== null;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status === UserStatus::Active;
     }
 }

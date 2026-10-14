@@ -16,7 +16,7 @@ dev:
 
 lint:
 	cd backend && ./vendor/bin/pint --test && ./vendor/bin/phpstan analyse --no-progress --memory-limit=1G
-	cd web && npm run lint && npm run typecheck
+	cd web && npm run lint && npm run typecheck && npm test
 	cd mobile && dart format --set-exit-if-changed lib test && flutter analyze
 
 test:
