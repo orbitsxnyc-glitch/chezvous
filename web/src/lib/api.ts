@@ -42,7 +42,9 @@ export async function apiFetch<T>(
     const token = readCookie("XSRF-TOKEN");
     if (token) headers["X-XSRF-TOKEN"] = token;
   }
-  if (options.body !== undefined) headers["Content-Type"] = "application/json";
+  // FormData (envoi de justificatif) : le navigateur fixe lui-même le Content-Type multipart.
+  const isForm = typeof FormData !== "undefined" && options.body instanceof FormData;
+  if (options.body !== undefined && !isForm) headers["Content-Type"] = "application/json";
 
   let response: Response;
   try {
@@ -50,7 +52,7 @@ export async function apiFetch<T>(
       method,
       headers,
       credentials: "include",
-      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      body: options.body === undefined ? undefined : isForm ? (options.body as FormData) : JSON.stringify(options.body),
     });
   } catch {
     throw new ApiError(0, "network_error", "Connexion impossible. Vérifiez votre réseau et réessayez.");

@@ -66,6 +66,17 @@ Le porteur du projet a délégué à Claude les décisions recommandées. Elles 
 | Notifications | Dans l'application seulement (table `user_notifications`) ; aucun envoi push, e-mail, WhatsApp ni SMS avant la Phase 7 | Phase 7 |
 | Alertes | Quotidienne (8 h) ou immédiate, 20 par jour au plus, regroupées par recherche, aucune alerte pour les annonces déjà en ligne à la création | Facile (config) |
 | Taux de réponse | Part des demandes (sur 90 jours) ayant reçu une première réponse sous 48 h ; `null` sans donnée | Facile (config) |
+| Formules payantes et options | Créées inactives, avec prix et quotas « à fixer » : rien n'est proposé ni activable tant qu'un super administrateur ne les a pas renseignés (prix > 0, quatre quotas) | Facile (en base) |
+| Formules gratuites | Reprennent les quotas actuels (3 annonces pour un particulier, 50 pour une agence, 5 agents) ; la ligne en base prévaut sur la configuration | Facile (en base) |
+| Règlement | Hors ligne uniquement. Statuts : non réglé, déclaré (par l'annonceur, n'ouvre aucun droit), confirmé (par un administrateur seul) ; jamais « payé en ligne » | Définitif au MVP |
+| Activation | Exige un encaissement confirmé couvrant le prix figé à la demande ; remplace la souscription active ; durée selon la période de la formule | Facile |
+| Expiration | Droits au niveau gratuit ; délai de grâce de 7 jours pour choisir les annonces à garder ; ensuite mise en pause des plus anciennes ; jamais de suppression | Facile (config) |
+| Suspension | Avantages retirés immédiatement et excédent mis en pause sans délai ; réintégration sans prolongation de la date de fin | Facile |
+| Remontée | Place l'annonce en tête du tri par pertinence uniquement (pas des autres tris) ; n'améliore ni le Passeport ni la fraîcheur | Facile |
+| À la une | Jusqu'à 6 annonces affichées, rotation déterministe toutes les 6 heures ; marquées « mises en avant par leurs annonceurs » | Facile (config) |
+| Option et annonce | Si l'annonce quitte l'état publié, l'option est suspendue définitivement ; le temps restant n'est pas rendu | À confirmer |
+| Crédits inclus | Une formule peut inclure des mises en avant : la première option est alors active sans règlement, comptées par période de souscription | Facile |
+| Fonctionnalités de formule | `advanced_stats`, `badge`, `enriched_agency_page` sont enregistrées et exposées mais **pas encore appliquées** | À faire |
 
 ## Questions ouvertes
 

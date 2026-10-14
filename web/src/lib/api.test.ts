@@ -61,3 +61,20 @@ describe("apiFetch", () => {
     await expect(apiFetch("/me", { method: "DELETE" })).resolves.toBeUndefined();
   });
 });
+
+describe("apiFetch (envoi de fichiers)", () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it("n'impose pas de Content-Type JSON à un FormData et ne le sérialise pas", async () => {
+    document.cookie = "XSRF-TOKEN=t";
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(json(201, { data: {} }));
+    const form = new FormData();
+    form.append("method", "wave");
+
+    await apiFetch("/my/subscription-requests/x/payments", { method: "POST", body: form });
+
+    const init = fetchMock.mock.calls[0][1] as RequestInit;
+    expect((init.headers as Record<string, string>)["Content-Type"]).toBeUndefined();
+    expect(init.body).toBe(form);
+  });
+});
