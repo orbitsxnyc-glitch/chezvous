@@ -61,7 +61,7 @@ flutter run
 
 Alternative Docker : `infra/docker-compose.yml` (non testé, voir les commentaires du fichier).
 
-Une commande unique de démarrage et la CI restent à créer (critères de recette de la Phase 0).
+**Commande unique :** `make setup` puis `make check` (lint, analyse, tests, build) ; `make dev` lance l'API et le web. La CI (`infra/ci/github-ci.yml` (à déplacer vers `.github/workflows/ci.yml` quand le jeton GitHub aura le droit `workflow`)) est écrite mais n'a jamais été exécutée.
 
 ## Règles du dépôt
 

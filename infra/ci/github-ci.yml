@@ -1,0 +1,79 @@
+# NON EXÉCUTÉ : ce workflow n'a jamais tourné (dépôt non poussé à sa rédaction).
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:17-3.5
+        env:
+          POSTGRES_DB: chezvous_test
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ci -d chezvous_test"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+      redis:
+        image: redis:8-alpine
+        ports: ["6379:6379"]
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: "5432"
+      DB_DATABASE: chezvous_test
+      DB_USERNAME: ci
+      DB_PASSWORD: ci
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: pdo_pgsql, intl, mbstring
+      - run: composer install --no-interaction --prefer-dist
+      - run: cp .env.example .env && php artisan key:generate
+      - run: ./vendor/bin/pint --test
+      - run: ./vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+      - run: psql "postgresql://ci:ci@127.0.0.1:5432/chezvous_test" -c "CREATE EXTENSION IF NOT EXISTS postgis"
+      - run: php artisan test
+      - run: composer audit
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+
+  mobile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - run: dart format --set-exit-if-changed lib test
+      - run: flutter analyze
+      - run: flutter test
