@@ -4,7 +4,7 @@ Plateforme immobilière de confiance pour le marché sénégalais, avec un lance
 
 > Principe directeur : mieux vaut 500 biens réellement disponibles et fiables que 20 000 annonces obsolètes.
 
-**État actuel : Phase 7 terminée en local** (notifications, administration, durcissement). Rapports par phase dans `docs/`. Phase 8 (mobile) non commencée.
+**État actuel : Phase 8 terminée en local** (application mobile, périmètre réduit : voir `docs/phase-8-report.md`). Rapports par phase dans `docs/`.
 
 ## Structure du monorepo
 
@@ -62,7 +62,7 @@ npm run lint && npm run typecheck && npm run build
 ```bash
 flutter pub get
 flutter analyze && flutter test
-flutter run
+flutter run --dart-define=API_URL=http://localhost:8000   # 10.0.2.2 depuis un émulateur Android
 ```
 
 Alternative Docker : `infra/docker-compose.yml` (non testé, voir les commentaires du fichier).

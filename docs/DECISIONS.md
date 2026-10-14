@@ -89,6 +89,16 @@ Le porteur du projet a délégué à Claude les décisions recommandées. Elles 
 | Rôle avant liaison | Le contrôle du rôle administrateur précède la liaison des modèles (403, jamais 404) | Définitif |
 | Tests de bout en bout | Playwright **non installé** (décision du porteur, 2026-10-14) | À reprendre quand souhaité |
 
+## Décisions de la Phase 8 (mobile)
+
+| Sujet | Décision | Réversibilité |
+|---|---|---|
+| Plateformes | iOS vérifié en compilation (simulateur) ; Android reporté (licences non acceptées) | Facile |
+| Jeton | Jeton d'appareil Sanctum dans le trousseau sécurisé, jamais en préférences ni en journaux | Définitif |
+| Carte | Aucune au départ (question 9) ; filtres par quartier | Facile |
+| Push | Non branché tant qu'il n'y a pas de compte Firebase (aucun compte externe sans accord) | Facile |
+| Périmètre annonceur | Suivi et état seulement ; création avec photos à faire (web et mobile) | À planifier |
+
 ## Questions ouvertes
 
 | # | Sujet | Recommandation | Impact |
