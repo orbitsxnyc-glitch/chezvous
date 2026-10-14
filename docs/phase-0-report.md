@@ -8,7 +8,7 @@ Date : 2026-10-14. Dépôt local, aucun push.
 - Services locaux natifs : PostgreSQL 17.11 + PostGIS 3.6, Redis 8.10 (via Homebrew). Bases `chezvous` et `chezvous_test`.
 - Backend : Sanctum 4.3, spatie/laravel-permission 8.3, Pest 4.7, Larastan 3.13 (niveau 6), Pint, predis.
 - Documentation : README, CLAUDE.md, ARCHITECTURE, DECISIONS, SECURITY-CHECKLIST, QUALITY, specs MVP et addendum Passeport.
-- `Makefile` (`setup`, `dev`, `lint`, `test`, `check`), `infra/docker-compose.yml`, `infra/ci/github-ci.yml` (workflow non activé).
+- `Makefile` (`setup`, `dev`, `lint`, `test`, `check`), `infra/docker-compose.yml`, `.github/workflows/ci.yml`.
 
 ## Vérifié par exécution
 
