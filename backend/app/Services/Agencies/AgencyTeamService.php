@@ -10,6 +10,7 @@ use App\Exceptions\AgencyRuleException;
 use App\Models\Agency;
 use App\Models\AgencyInvitation;
 use App\Models\AgencyMember;
+use App\Models\Inquiry;
 use App\Models\Listing;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
@@ -109,7 +110,9 @@ class AgencyTeamService
             $member->forceFill(['status' => MemberStatus::Suspended, 'suspended_at' => now()])->save();
             $reassigned = Listing::where('agency_id', $member->agency_id)->where('assigned_to', $member->user_id)
                 ->update(['assigned_to' => $manager->id]);
-            $this->audit->record('agency.member_suspended', $member->agency, null, ['member' => $member->ulid, 'listings_reassigned' => $reassigned], $manager->id);
+            // Les demandes en cours restent à l'agence : elles passent aussi au gérant.
+            $inquiriesReassigned = Inquiry::where('agency_id', $member->agency_id)->where('assigned_to', $member->user_id)->update(['assigned_to' => $manager->id]);
+            $this->audit->record('agency.member_suspended', $member->agency, null, ['member' => $member->ulid, 'listings_reassigned' => $reassigned, 'inquiries_reassigned' => $inquiriesReassigned], $manager->id);
 
             return $member;
         });

@@ -16,6 +16,8 @@ return [
         'otp_per_hour_ip' => (int) env('CHEZVOUS_OTP_PER_HOUR_IP', 10),
         'uploads_per_hour' => (int) env('CHEZVOUS_UPLOADS_PER_HOUR', 200),
         'reports_per_hour' => (int) env('CHEZVOUS_REPORTS_PER_HOUR', 20),
+        'inquiries_per_hour' => (int) env('CHEZVOUS_INQUIRIES_PER_HOUR', 20),
+        'messages_per_hour' => (int) env('CHEZVOUS_MESSAGES_PER_HOUR', 120),
         'invitations_per_hour' => (int) env('CHEZVOUS_INVITATIONS_PER_HOUR', 30),
         'register_per_hour_ip' => (int) env('CHEZVOUS_REGISTER_PER_HOUR_IP', 10),
     ],
@@ -38,6 +40,23 @@ return [
         // Fraîcheur de la disponibilité (heures depuis la dernière confirmation).
         'freshness_reconfirm_hours' => (int) env('CHEZVOUS_FRESHNESS_RECONFIRM_HOURS', 48),
         'freshness_stale_hours' => (int) env('CHEZVOUS_FRESHNESS_STALE_HOURS', 168),
+    ],
+
+    'inquiries' => [
+        'message_max' => (int) env('CHEZVOUS_MESSAGE_MAX', 2000),
+        'unanswered_hours' => (int) env('CHEZVOUS_UNANSWERED_HOURS', 48),
+        'response_window_days' => (int) env('CHEZVOUS_RESPONSE_WINDOW_DAYS', 90), // fenêtre du taux de réponse
+        'visit' => [
+            'slots_max' => 3,
+            'min_lead_minutes' => (int) env('CHEZVOUS_VISIT_MIN_LEAD_MINUTES', 60),
+            'max_days_ahead' => (int) env('CHEZVOUS_VISIT_MAX_DAYS', 60),
+            'duration_minutes' => (int) env('CHEZVOUS_VISIT_DURATION_MINUTES', 45), // créneaux plus proches = conflit
+            'reminder_hours' => [24, 2],
+        ],
+        'favorites_max' => (int) env('CHEZVOUS_FAVORITES_MAX', 200),
+        'saved_searches_max' => (int) env('CHEZVOUS_SAVED_SEARCHES_MAX', 10),
+        'alerts_per_day' => (int) env('CHEZVOUS_ALERTS_PER_DAY', 20),
+        'daily_alert_hour' => (int) env('CHEZVOUS_DAILY_ALERT_HOUR', 8),
     ],
 
     'agencies' => [
