@@ -23,6 +23,20 @@ return [
         'national_pattern' => '/^[37]\d{8}$/',
     ],
 
+    'listings' => [
+        'quota_individual' => (int) env('CHEZVOUS_QUOTA_INDIVIDUAL', 3), // annonces actives simultanées d'un particulier (H6)
+        'expiry_days' => (int) env('CHEZVOUS_LISTING_EXPIRY_DAYS', 60),
+        'expiry_reminder_days' => (int) env('CHEZVOUS_LISTING_REMINDER_DAYS', 7),
+        'closed_visible_days' => (int) env('CHEZVOUS_CLOSED_VISIBLE_DAYS', 30),
+        // Nombre d'annonces déjà approuvées par un modérateur après lequel un compte est publié sans modération (H7).
+        'trusted_after_approvals' => (int) env('CHEZVOUS_TRUSTED_AFTER_APPROVALS', 1),
+        'max_images' => (int) env('CHEZVOUS_MAX_IMAGES', 20),
+        'max_image_kb' => (int) env('CHEZVOUS_MAX_IMAGE_KB', 10240),
+        // Fraîcheur de la disponibilité (heures depuis la dernière confirmation).
+        'freshness_reconfirm_hours' => (int) env('CHEZVOUS_FRESHNESS_RECONFIRM_HOURS', 48),
+        'freshness_stale_hours' => (int) env('CHEZVOUS_FRESHNESS_STALE_HOURS', 168),
+    ],
+
     'admin_seed' => [
         'phone' => env('CHEZVOUS_ADMIN_PHONE'),
         'email' => env('CHEZVOUS_ADMIN_EMAIL'),

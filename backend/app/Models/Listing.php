@@ -45,6 +45,7 @@ class Listing extends Model
             'transaction' => TransactionType::class,
             'negotiable' => 'boolean',
             'submitted_at' => 'datetime',
+            'approved_at' => 'datetime',
             'published_at' => 'datetime',
             'expires_at' => 'datetime',
             'expiry_reminded_at' => 'datetime',
