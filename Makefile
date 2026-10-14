@@ -3,7 +3,7 @@
 
 help:
 	@echo "make setup  : installe les dépendances des trois composants"
-	@echo "make dev    : lance l'API (8000) et le web (3000)"
+	@echo "make dev    : lance l'API (8000), le worker de files (photos) et le web (3000)"
 	@echo "make check  : lint, analyse statique, tests et build de tout le monorepo"
 
 setup:
@@ -12,7 +12,7 @@ setup:
 	cd mobile && flutter pub get
 
 dev:
-	cd backend && php artisan serve & cd web && npm run dev
+	cd backend && php artisan serve & cd backend && php artisan queue:work & cd web && npm run dev
 
 lint:
 	cd backend && ./vendor/bin/pint --test && ./vendor/bin/phpstan analyse --no-progress --memory-limit=1G
