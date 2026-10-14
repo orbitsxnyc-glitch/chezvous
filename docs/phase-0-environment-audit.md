@@ -32,5 +32,5 @@ Date : 2026-10-14. Audit en lecture seule, avant toute installation.
 
 ## Mouvements effectués à l'étape B
 
-- `git init` (branche `main`), création de `api/ web/ mobile/ docs/ infra/`.
+- `git init` (branche `main`), création de `backend/ web/ mobile/ docs/ infra/`.
 - Déplacement et renommage du .pptx vers `docs/ChezVous_Presentation_Concept_Immobilier_Senegal.pptx` (espaces remplacés par des underscores).

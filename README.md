@@ -10,7 +10,7 @@ Plateforme immobilière de confiance pour le marché sénégalais, avec un lance
 
 | Dossier | Contenu prévu |
 |---|---|
-| `api/` | API REST Laravel (monolithe modulaire) |
+| `backend/` | API REST Laravel (monolithe modulaire) |
 | `web/` | Next.js : site public, espace professionnel, back-office |
 | `mobile/` | Application Flutter (Android et iOS) |
 | `docs/` | Architecture, décisions, audit, sécurité, présentation source |
@@ -19,6 +19,7 @@ Plateforme immobilière de confiance pour le marché sénégalais, avec un lance
 ## Documentation
 
 - [Audit de l'environnement](docs/phase-0-environment-audit.md)
+- [Spécifications fonctionnelles MVP](docs/specs-mvp.md) et [addendum Passeport du Bien](docs/specs-addendum-passeport.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Décisions et questions ouvertes](docs/DECISIONS.md)
 - [Checklist de sécurité](docs/SECURITY-CHECKLIST.md)

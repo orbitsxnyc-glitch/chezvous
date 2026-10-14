@@ -12,7 +12,9 @@ Statut : cible documentée, rien n'est encore implémenté. Source produit : la 
 
 ## Composants
 
-### API (`api/`)
+Le modèle de données détaillé suit `docs/specs-mvp.md` section 6, corrigé par `docs/specs-addendum-passeport.md` (séparation `properties` / `listings`, ajout de `mandates`, `verification_checks`, `availability_confirmations`).
+
+### API (`backend/`)
 Laravel, API REST versionnée (`/api/v1`), modules par domaine, validation des entrées (Form Requests), authentification sécurisée, Policies, tests automatisés. Files d'attente pour les tâches de fraîcheur et les notifications.
 
 ### Web (`web/`)
