@@ -1,0 +1,226 @@
+Map<String, dynamic> _map(Object? v) =>
+    v is Map<String, dynamic> ? v : const {};
+
+DateTime? _date(Object? v) => v is String ? DateTime.tryParse(v) : null;
+
+class Availability {
+  const Availability(this.state, this.confirmedAt);
+
+  factory Availability.fromJson(Object? json) {
+    final m = _map(json);
+    return Availability('${m['state'] ?? 'stale'}', _date(m['confirmed_at']));
+  }
+
+  final String state;
+  final DateTime? confirmedAt;
+}
+
+class ListingSummary {
+  const ListingSummary({
+    required this.id,
+    required this.reference,
+    required this.transaction,
+    required this.negotiable,
+    required this.furnished,
+    required this.availability,
+    this.title,
+    this.priceXof,
+    this.propertyType,
+    this.locality,
+    this.surfaceM2,
+    this.bedrooms,
+    this.agencyName,
+    this.agencyVerified = false,
+    this.coverUrl,
+  });
+
+  factory ListingSummary.fromJson(Map<String, dynamic> j) {
+    final cover = _map(j['cover']);
+    final agency = j['agency'] is Map ? _map(j['agency']) : null;
+    return ListingSummary(
+      id: '${j['id']}',
+      reference: '${j['reference']}',
+      transaction: '${j['transaction'] ?? 'rent_long'}',
+      title: j['title'] as String?,
+      priceXof: (j['price_xof'] as num?)?.toInt(),
+      negotiable: j['negotiable'] == true,
+      propertyType: j['property_type'] as String?,
+      locality: _map(j['locality'])['name'] as String?,
+      surfaceM2: (j['surface_m2'] as num?)?.toInt(),
+      bedrooms: (j['bedrooms'] as num?)?.toInt(),
+      furnished: j['furnished'] == true,
+      agencyName: agency?['name'] as String?,
+      agencyVerified: agency?['verified'] == true,
+      coverUrl:
+          (cover['medium'] ?? cover['thumb'] ?? cover['large']) as String?,
+      availability: Availability.fromJson(j['availability']),
+    );
+  }
+
+  final String id;
+  final String reference;
+  final String transaction;
+  final String? title;
+  final int? priceXof;
+  final bool negotiable;
+  final String? propertyType;
+  final String? locality;
+  final int? surfaceM2;
+  final int? bedrooms;
+  final bool furnished;
+  final String? agencyName;
+  final bool agencyVerified;
+  final String? coverUrl;
+  final Availability availability;
+}
+
+class PassportCheck {
+  const PassportCheck(this.type, this.status, this.performedAt);
+
+  final String type;
+  final String status;
+  final DateTime? performedAt;
+}
+
+class ListingDetail {
+  const ListingDetail({
+    required this.summary,
+    required this.imageUrls,
+    required this.amenities,
+    required this.checks,
+    required this.passportNotice,
+    required this.costs,
+    required this.advertiserName,
+    this.description,
+    this.passportReference,
+    this.costsDisclaimer,
+  });
+
+  factory ListingDetail.fromJson(Map<String, dynamic> j) {
+    final property = _map(j['property']);
+    final passport = _map(j['passport']);
+    final costs = j['entry_costs'] is Map ? _map(j['entry_costs']) : null;
+    final images = (property['images'] as List? ?? const [])
+        .map(_map)
+        .map((i) {
+          final urls = _map(i['urls']);
+          return (urls['large'] ?? urls['medium'] ?? urls['thumb']) as String?;
+        })
+        .whereType<String>()
+        .toList();
+    // La fiche reprend le résumé pour le prix, la fraîcheur et le type.
+    final summary = ListingSummary(
+      id: '${j['id']}',
+      reference: '${j['reference']}',
+      transaction: '${j['transaction'] ?? 'rent_long'}',
+      title: j['title'] as String?,
+      priceXof: (j['price_xof'] as num?)?.toInt(),
+      negotiable: j['negotiable'] == true,
+      propertyType: _map(property['type'])['label'] as String?,
+      locality: _map(property['locality'])['name'] as String?,
+      surfaceM2: (property['surface_m2'] as num?)?.toInt(),
+      bedrooms: (property['bedrooms'] as num?)?.toInt(),
+      furnished: property['furnished'] == true,
+      agencyName: null,
+      availability: Availability.fromJson(_map(passport['availability'])),
+    );
+    return ListingDetail(
+      summary: summary,
+      description: j['description'] as String?,
+      imageUrls: images,
+      amenities: (property['amenities'] as List? ?? const [])
+          .map((a) => '${_map(a)['label']}')
+          .toList(),
+      passportReference: passport['reference'] as String?,
+      checks: (passport['checks'] as List? ?? const [])
+          .map(_map)
+          .map(
+            (c) => PassportCheck(
+              '${c['type']}',
+              '${c['status']}',
+              _date(c['performed_at']),
+            ),
+          )
+          .toList(),
+      passportNotice:
+          '${passport['notice'] ?? 'Un contrôle de document ne garantit pas la propriété juridique du bien.'}',
+      costs: costs == null
+          ? const {}
+          : {
+              'Loyer': (costs['rent_xof'] as num?)?.toInt(),
+              'Caution': (costs['deposit_xof'] as num?)?.toInt(),
+              'Avance': (costs['advance_xof'] as num?)?.toInt(),
+              "Frais d'agence": (costs['agency_fee_xof'] as num?)?.toInt(),
+              'Autres frais': (costs['other_fees_xof'] as num?)?.toInt(),
+            },
+      costsDisclaimer: costs?['disclaimer'] as String?,
+      advertiserName: '${_map(j['advertiser'])['name'] ?? ''}',
+    );
+  }
+
+  final ListingSummary summary;
+  final String? description;
+  final List<String> imageUrls;
+  final List<String> amenities;
+  final String? passportReference;
+  final List<PassportCheck> checks;
+  final String passportNotice;
+
+  /// Montants saisis par l'annonceur, sans total calculé (règles légales à valider).
+  final Map<String, int?> costs;
+  final String? costsDisclaimer;
+  final String advertiserName;
+}
+
+class Locality {
+  const Locality(this.slug, this.name);
+
+  final String slug;
+  final String name;
+}
+
+class SearchPage {
+  const SearchPage(this.items, this.nextCursor);
+
+  final List<ListingSummary> items;
+  final String? nextCursor;
+}
+
+class SearchFilters {
+  const SearchFilters({
+    this.transaction = 'rent_long',
+    this.locality,
+    this.bedroomsMin,
+    this.priceMax,
+    this.sort,
+  });
+
+  final String transaction;
+  final String? locality;
+  final int? bedroomsMin;
+  final int? priceMax;
+  final String? sort;
+
+  SearchFilters copyWith({
+    String? transaction,
+    String? Function()? locality,
+    int? Function()? bedroomsMin,
+    int? Function()? priceMax,
+    String? Function()? sort,
+  }) => SearchFilters(
+    transaction: transaction ?? this.transaction,
+    locality: locality != null ? locality() : this.locality,
+    bedroomsMin: bedroomsMin != null ? bedroomsMin() : this.bedroomsMin,
+    priceMax: priceMax != null ? priceMax() : this.priceMax,
+    sort: sort != null ? sort() : this.sort,
+  );
+
+  /// Paramètres d'API et critères d'une recherche enregistrée (mêmes clés).
+  Map<String, String> toParams() => {
+    'transaction': transaction,
+    'locality': ?locality,
+    if (bedroomsMin != null) 'bedrooms_min': '$bedroomsMin',
+    if (priceMax != null) 'price_max': '$priceMax',
+    'sort': ?sort,
+  };
+}

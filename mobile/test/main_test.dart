@@ -15,11 +15,20 @@ AuthController _auth(http.Client client, [TokenStore? tokens]) {
 }
 
 void main() {
-  testWidgets('sans jeton, affiche la connexion', (tester) async {
-    final auth = _auth(MockClient((_) async => http.Response('{}', 200)));
-    await auth.restore();
-    await tester.pumpWidget(MainApp(auth: auth));
-    expect(find.text('Se connecter'), findsOneWidget);
-    expect(find.text('Créer un compte'), findsOneWidget);
-  });
+  testWidgets(
+    "la recherche est publique : l'application s'ouvre dessus, la connexion est dans Compte",
+    (tester) async {
+      final auth = _auth(MockClient((_) async => http.Response('{}', 200)));
+      await auth.restore();
+      await tester.pumpWidget(MainApp(auth: auth));
+      await tester.pumpAndSettle();
+      expect(find.text('Recherche'), findsOneWidget);
+      expect(find.textContaining('Aucune annonce'), findsOneWidget);
+
+      await tester.tap(find.text('Compte'));
+      await tester.pumpAndSettle();
+      expect(find.text('Se connecter'), findsOneWidget);
+      expect(find.text('Créer un compte'), findsOneWidget);
+    },
+  );
 }

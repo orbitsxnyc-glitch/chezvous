@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'auth/auth_controller.dart';
-import 'auth/auth_screens.dart';
 import 'core/api_client.dart';
 import 'core/token_store.dart';
+import 'shell/app_shell.dart';
 
 void main() {
   final tokens = SecureTokenStore();
@@ -28,33 +28,12 @@ class MainApp extends StatelessWidget {
       colorSchemeSeed: const Color(0xFF1B5E20),
       useMaterial3: true,
     ),
+    // La recherche est publique : on n'attend que la restauration de la session, jamais une connexion.
     home: ListenableBuilder(
       listenable: auth,
-      builder: (context, _) => switch (auth.status) {
-        AuthStatus.unknown => const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        ),
-        AuthStatus.signedOut => LoginScreen(auth: auth),
-        AuthStatus.signedIn => HomeScreen(auth: auth),
-      },
+      builder: (context, _) => auth.status == AuthStatus.unknown
+          ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+          : AppShell(auth: auth),
     ),
-  );
-}
-
-/// Accueil provisoire : la recherche arrive au lot B.
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key, required this.auth});
-
-  final AuthController auth;
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('ChezVous'),
-      actions: [
-        TextButton(onPressed: auth.logout, child: const Text('Se déconnecter')),
-      ],
-    ),
-    body: Center(child: Text('Bonjour ${auth.user?.name ?? ''}')),
   );
 }
