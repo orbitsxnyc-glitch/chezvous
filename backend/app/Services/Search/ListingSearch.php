@@ -90,7 +90,8 @@ class ListingSearch
             'newest' => $q->orderByDesc('published_at')->orderByDesc('id'),
             'price_asc' => $q->orderBy('price_xof')->orderBy('id'),
             'price_desc' => $q->orderByDesc('price_xof')->orderByDesc('id'),
-            default => $q->orderBy('freshness_bucket')->orderByDesc('published_at')->orderByDesc('id'),
+            // Pertinence : « Remontée » actives d'abord, puis la fraîcheur, puis la date (COM, RCH-02).
+            default => $q->orderByDesc('is_boosted')->orderBy('freshness_bucket')->orderByDesc('published_at')->orderByDesc('id'),
         };
     }
 

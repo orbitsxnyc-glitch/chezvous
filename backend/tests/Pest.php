@@ -9,11 +9,15 @@ use App\Models\AgencyMember;
 use App\Models\Inquiry;
 use App\Models\Listing;
 use App\Models\Locality;
+use App\Models\Plan;
+use App\Models\PremiumProduct;
 use App\Models\Property;
 use App\Models\PropertyImage;
 use App\Models\PropertyType;
+use App\Models\Subscription;
 use App\Models\User;
 use App\Services\Agencies\AgencyService;
+use App\Services\Commercial\EntitlementService;
 use App\Services\Inquiries\InquiryService;
 use App\Services\Search\PublicLocationService;
 use Database\Seeders\ReferenceDataSeeder;
@@ -177,4 +181,39 @@ function openInquiry(Listing $listing, ?User $requester = null, string $message 
     $requester ??= User::factory()->create();
 
     return app(InquiryService::class)->open($listing->ulid, $requester, $message, null, PreferredChannel::Message)[0];
+}
+
+/**
+ * Formule payante entièrement configurée (visible et demandable).
+ *
+ * @param  array<string, mixed>  $over
+ */
+function paidPlan(array $over = []): Plan
+{
+    return Plan::create(array_merge([
+        'code' => 'pro_test', 'name' => 'Pro Test', 'audience' => 'both', 'price_xof' => 30000, 'period' => 'monthly',
+        'limits' => ['active_listings' => 10, 'agents' => 4, 'photos_per_listing' => 8, 'featured_credits' => 0],
+        'features' => ['advanced_stats' => true, 'badge' => true, 'enriched_agency_page' => false], 'is_free' => false, 'is_active' => true, 'sort' => 9,
+    ], $over));
+}
+
+function premiumProduct(string $kind = 'boost', int $days = 7, int $price = 5000, bool $active = true): PremiumProduct
+{
+    return PremiumProduct::updateOrCreate(['kind' => $kind, 'duration_days' => $days], ['code' => "{$kind}_{$days}d", 'price_xof' => $price, 'is_active' => $active]);
+}
+
+/** Souscription ACTIVE sans passer par le flux de règlement (préparation de scénario). */
+function activeSubscription(User|Agency $subscriber, ?Plan $plan = null, ?DateTimeInterface $endsAt = null): Subscription
+{
+    $plan ??= paidPlan(['code' => 'pro_'.uniqid()]);
+    $owner = $subscriber instanceof Agency ? $subscriber->members()->where('role', 'manager')->first()->user : $subscriber;
+    $sub = new Subscription([
+        'subscriber_type' => $subscriber instanceof Agency ? 'agency' : 'user', 'subscriber_id' => $subscriber->id, 'plan_id' => $plan->id,
+        'requested_by' => $owner->id, 'payment_reference' => 'PAY-TEST-'.uniqid(),
+        'plan_snapshot' => ['code' => $plan->code, 'name' => $plan->name, 'price_xof' => $plan->price_xof, 'period' => $plan->period->value, 'limits' => $plan->limits, 'features' => $plan->features],
+    ]);
+    $sub->forceFill(['status' => 'active', 'starts_at' => now(), 'ends_at' => $endsAt ?? now()->addMonth()])->save();
+    app(EntitlementService::class)->forget($subscriber);
+
+    return $sub;
 }

@@ -14,13 +14,14 @@ use App\Models\Inquiry;
 use App\Models\Listing;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
+use App\Services\Commercial\EntitlementService;
 use App\Support\PhoneNumber;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class AgencyTeamService
 {
-    public function __construct(private readonly InvitationSender $sender, private readonly AuditLogger $audit) {}
+    public function __construct(private readonly InvitationSender $sender, private readonly AuditLogger $audit, private readonly EntitlementService $entitlements) {}
 
     public function manager(Agency $agency): AgencyMember
     {
@@ -37,6 +38,8 @@ class AgencyTeamService
         if ($normalized !== null && User::where('phone', $normalized)->whereHas('agencyMembership')->exists()) {
             throw new AgencyRuleException('already_in_agency', 'Cette personne appartient déjà à une agence.');
         }
+
+        $this->assertAgentRoom($agency, true);
 
         $token = Str::random(48);
         $invitation = AgencyInvitation::create([
@@ -74,6 +77,8 @@ class AgencyTeamService
             if ($user->agencyMembership()->exists()) {
                 throw new AgencyRuleException('already_in_agency', 'Vous appartenez déjà à une agence.');
             }
+            // Le plafond d'agents de la formule s'applique aussi à l'acceptation (l'invitation elle-même ne compte pas deux fois).
+            $this->assertAgentRoom($invitation->agency, false);
 
             $member = AgencyMember::create([
                 'agency_id' => $invitation->agency_id, 'user_id' => $user->id, 'role' => MemberRole::Agent,
@@ -85,6 +90,21 @@ class AgencyTeamService
 
             return $member;
         });
+    }
+
+    /**
+     * Plafond d'agents de la formule. À l'invitation : agents actifs + invitations en attente + la nouvelle.
+     * À l'acceptation : agents actifs + celui qui arrive (son invitation est déjà comptée parmi les « en attente »).
+     */
+    private function assertAgentRoom(Agency $agency, bool $countPending): void
+    {
+        $limit = $this->entitlements->limit($agency, 'agents');
+        $agents = $agency->members()->where('role', MemberRole::Agent->value)->where('status', MemberStatus::Active->value)->count();
+        $pending = $countPending ? $agency->invitations()->whereNull('accepted_at')->whereNull('revoked_at')->where('expires_at', '>', now())->count() : 0;
+
+        if ($agents + $pending + 1 > $limit) {
+            throw new AgencyRuleException('agent_limit', "Votre formule permet {$limit} agent(s) au maximum. Passez à une formule supérieure pour en inviter davantage.");
+        }
     }
 
     public function revokeInvitation(AgencyInvitation $invitation, User $manager): void

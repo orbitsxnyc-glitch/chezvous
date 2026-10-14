@@ -88,9 +88,9 @@ class ListingStateService
         });
     }
 
-    public function pause(Listing $listing, User $actor): Listing
+    public function pause(Listing $listing, ?User $actor): Listing
     {
-        return $this->run($listing, $actor, fn (Listing $l) => $this->apply($l, S::Paused, $actor));
+        return $this->run($listing, $actor, fn (Listing $l) => $this->apply($l, S::Paused, $actor, $actor === null ? 'quota_enforced' : null));
     }
 
     public function resume(Listing $listing, User $actor): Listing

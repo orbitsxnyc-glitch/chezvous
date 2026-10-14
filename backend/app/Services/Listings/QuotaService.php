@@ -5,25 +5,28 @@ namespace App\Services\Listings;
 use App\Enums\ListingStatus;
 use App\Models\Listing;
 use App\Models\User;
+use App\Services\Commercial\EntitlementService;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
- * Quota d'annonces actives (publiées ou en modération). Valeurs de configuration pour l'instant :
- * les formules payantes (Phase 6) remplaceront `limitFor*` par un calcul à partir des souscriptions.
- * Une agence a un quota commun à toute son équipe ; un particulier, le sien (annonces hors agence).
+ * Quota d'annonces actives (publiées ou en modération). Le plafond vient des DROITS du souscripteur
+ * (formule active, sinon formule gratuite) : voir EntitlementService. Une agence a un quota commun à toute son équipe ;
+ * un particulier, le sien (annonces hors agence).
  */
 class QuotaService
 {
     private const ACTIVE = [ListingStatus::PendingModeration, ListingStatus::Published];
 
+    public function __construct(private readonly EntitlementService $entitlements) {}
+
     public function limitFor(User $user): int
     {
-        return config('chezvous.listings.quota_individual');
+        return $this->entitlements->limit($user, 'active_listings');
     }
 
     public function limitForListing(Listing $listing): int
     {
-        return $listing->agency_id !== null ? config('chezvous.agencies.quota_listings') : $this->limitFor($listing->advertiser);
+        return $this->entitlements->limit($this->entitlements->subscriberOf($listing), 'active_listings');
     }
 
     public function activeCount(User $user, ?Listing $except = null): int

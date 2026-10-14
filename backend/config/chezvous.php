@@ -16,6 +16,7 @@ return [
         'otp_per_hour_ip' => (int) env('CHEZVOUS_OTP_PER_HOUR_IP', 10),
         'uploads_per_hour' => (int) env('CHEZVOUS_UPLOADS_PER_HOUR', 200),
         'reports_per_hour' => (int) env('CHEZVOUS_REPORTS_PER_HOUR', 20),
+        'commercial_requests_per_hour' => (int) env('CHEZVOUS_COMMERCIAL_REQUESTS_PER_HOUR', 20),
         'inquiries_per_hour' => (int) env('CHEZVOUS_INQUIRIES_PER_HOUR', 20),
         'messages_per_hour' => (int) env('CHEZVOUS_MESSAGES_PER_HOUR', 120),
         'invitations_per_hour' => (int) env('CHEZVOUS_INVITATIONS_PER_HOUR', 30),
@@ -40,6 +41,20 @@ return [
         // Fraîcheur de la disponibilité (heures depuis la dernière confirmation).
         'freshness_reconfirm_hours' => (int) env('CHEZVOUS_FRESHNESS_RECONFIRM_HOURS', 48),
         'freshness_stale_hours' => (int) env('CHEZVOUS_FRESHNESS_STALE_HOURS', 168),
+    ],
+
+    'commercial' => [
+        // Droits de la formule gratuite si la ligne n'existe pas en base. Les prix et quotas se règlent en base (table plans).
+        // Les quotas d'annonces gratuits restent ceux de chezvous.listings.quota_individual et chezvous.agencies.quota_listings.
+        'free' => ['agency_agents' => (int) env('CHEZVOUS_FREE_AGENCY_AGENTS', 5), 'featured_credits' => 0],
+        'downgrade_grace_days' => (int) env('CHEZVOUS_DOWNGRADE_GRACE_DAYS', 7), // délai pour choisir les annonces à garder après une expiration
+        'expiry_reminder_days' => [7, 1],
+        'featured_display_cap' => (int) env('CHEZVOUS_FEATURED_DISPLAY_CAP', 6), // « À la une » affichées en même temps
+        'featured_rotation_hours' => (int) env('CHEZVOUS_FEATURED_ROTATION_HOURS', 6),
+        'proof_max_kb' => (int) env('CHEZVOUS_PROOF_MAX_KB', 5120),
+        'proof_allowed_mimes' => ['application/pdf', 'image/jpeg', 'image/png'],
+        'proof_link_minutes' => (int) env('CHEZVOUS_PROOF_LINK_MINUTES', 5),
+        'entitlements_cache_seconds' => (int) env('CHEZVOUS_ENTITLEMENTS_CACHE', 600),
     ],
 
     'inquiries' => [
