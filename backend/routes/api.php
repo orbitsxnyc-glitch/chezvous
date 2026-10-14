@@ -10,6 +10,11 @@ use App\Http\Controllers\Api\V1\Auth\PasswordResetController;
 use App\Http\Controllers\Api\V1\Auth\RegisterController;
 use App\Http\Controllers\Api\V1\Auth\SessionController;
 use App\Http\Controllers\Api\V1\DeviceController;
+use App\Http\Controllers\Api\V1\Engagement\FavoriteController;
+use App\Http\Controllers\Api\V1\Engagement\InquiryController;
+use App\Http\Controllers\Api\V1\Engagement\NotificationController;
+use App\Http\Controllers\Api\V1\Engagement\SavedSearchController;
+use App\Http\Controllers\Api\V1\Engagement\VisitController;
 use App\Http\Controllers\Api\V1\ListingReportController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\My\ListingAvailabilityController;
@@ -58,6 +63,29 @@ Route::middleware('throttle:search')->group(function () {
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('listings/{listing}/reports', [ListingReportController::class, 'store'])->middleware('throttle:reports');
+
+    // Demandes, messagerie, visites (DEM-01 à DEM-06). {inquiry} et {visit} se résolvent par ULID ; la Policy répond 404 aux tiers.
+    Route::post('listings/{listing}/inquiries', [InquiryController::class, 'store'])->middleware('throttle:inquiries')->where('listing', '[A-Za-z0-9-]+');
+    Route::get('my/inquiries', [InquiryController::class, 'sent']);
+    Route::get('inbox', [InquiryController::class, 'inbox']);
+    Route::get('inquiries/{inquiry}', [InquiryController::class, 'show']);
+    Route::patch('inquiries/{inquiry}', [InquiryController::class, 'update']);
+    Route::post('inquiries/{inquiry}/messages', [InquiryController::class, 'message'])->middleware('throttle:messages');
+    Route::post('inquiries/{inquiry}/notes', [InquiryController::class, 'note']);
+    Route::post('inquiries/{inquiry}/visits', [VisitController::class, 'store']);
+    Route::patch('visits/{visit}', [VisitController::class, 'update']);
+    Route::post('visits/{visit}/feedback', [VisitController::class, 'feedback']);
+
+    // Favoris, recherches enregistrées, notifications (FAV-01, FAV-02, NOT-01 in-app).
+    Route::get('my/favorites', [FavoriteController::class, 'index']);
+    Route::post('my/favorites', [FavoriteController::class, 'store']);
+    Route::delete('my/favorites/{listing}', [FavoriteController::class, 'destroy']);
+    Route::get('my/saved-searches', [SavedSearchController::class, 'index']);
+    Route::post('my/saved-searches', [SavedSearchController::class, 'store']);
+    Route::patch('my/saved-searches/{search}', [SavedSearchController::class, 'update']);
+    Route::delete('my/saved-searches/{search}', [SavedSearchController::class, 'destroy']);
+    Route::get('my/notifications', [NotificationController::class, 'index']);
+    Route::patch('my/notifications/read', [NotificationController::class, 'read']);
 
     // Annonces de l'annonceur connecté. `{listing}` se résout par ULID ; la Policy renvoie 404 pour l'annonce d'autrui.
     Route::prefix('my/listings')->group(function () {

@@ -3,8 +3,10 @@
 use App\Contracts\OtpSender;
 use App\Enums\ListingStatus;
 use App\Enums\OtpPurpose;
+use App\Enums\PreferredChannel;
 use App\Models\Agency;
 use App\Models\AgencyMember;
+use App\Models\Inquiry;
 use App\Models\Listing;
 use App\Models\Locality;
 use App\Models\Property;
@@ -12,6 +14,7 @@ use App\Models\PropertyImage;
 use App\Models\PropertyType;
 use App\Models\User;
 use App\Services\Agencies\AgencyService;
+use App\Services\Inquiries\InquiryService;
 use App\Services\Search\PublicLocationService;
 use Database\Seeders\ReferenceDataSeeder;
 use Database\Seeders\RolesSeeder;
@@ -158,4 +161,20 @@ function agencyListing(Agency $agency, ?User $assignedTo = null, array $over = [
     $by = $assignedTo ?? $manager;
 
     return readyListing($by, array_merge(['agency_id' => $agency->id, 'assigned_to' => $by->id], $over));
+}
+
+/** Créneau de visite à N heures d'ici, en ISO 8601 (UTC). */
+function slot(int $hoursAhead): string
+{
+    return now()->addHours($hoursAhead)->startOfMinute()->utc()->toIso8601String();
+}
+
+/**
+ * Demande ouverte par un chercheur sur une annonce publique.
+ */
+function openInquiry(Listing $listing, ?User $requester = null, string $message = 'Bonjour, le bien est-il disponible ?'): Inquiry
+{
+    $requester ??= User::factory()->create();
+
+    return app(InquiryService::class)->open($listing->ulid, $requester, $message, null, PreferredChannel::Message)[0];
 }

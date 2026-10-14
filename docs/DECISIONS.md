@@ -60,6 +60,12 @@ Le porteur du projet a délégué à Claude les décisions recommandées. Elles 
 | Justificatifs | NINEA et RCCM en stockage privé, lien signé de 5 minutes, administrateur connecté obligatoire ; aucune durée de conservation décidée (avis juridique) | À décider |
 | Annonceur public d'une annonce d'agence | L'agence est présentée, jamais l'agent (ni nom, ni téléphone, ni e-mail) | Facile |
 | Agence suspendue | Ses annonces disparaissent de la recherche et de la fiche publique ; sa page répond 404 ; aucun écran d'administration avant la Phase 7 | À revoir |
+| Contact avec l'annonceur | Passe uniquement par la plateforme (demande + messagerie) : le téléphone de l'annonceur n'est jamais exposé ; l'annonceur recontacte le demandeur selon son canal préféré | À confirmer (boutons Appeler/WhatsApp de la spec RCH-04) |
+| Demandes | Une seule demande ouverte par demandeur et par annonce (une nouvelle demande reprend le fil) ; messages de 2 000 caractères, sans pièce jointe | Facile (config) |
+| Visites | 1 à 3 créneaux, confirmation par l'autre partie, créneaux à 45 minutes d'écart minimum, heures stockées en UTC ; rappels 24 h et 2 h | Facile (config) |
+| Notifications | Dans l'application seulement (table `user_notifications`) ; aucun envoi push, e-mail, WhatsApp ni SMS avant la Phase 7 | Phase 7 |
+| Alertes | Quotidienne (8 h) ou immédiate, 20 par jour au plus, regroupées par recherche, aucune alerte pour les annonces déjà en ligne à la création | Facile (config) |
+| Taux de réponse | Part des demandes (sur 90 jours) ayant reçu une première réponse sous 48 h ; `null` sans donnée | Facile (config) |
 
 ## Questions ouvertes
 

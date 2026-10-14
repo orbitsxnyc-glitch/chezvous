@@ -41,12 +41,12 @@ it('ne montre à un agent que ses propres chiffres, sans quota ni collègues', f
         ->and($data['quota'])->toBeNull()->and($res->getContent())->not->toContain($this->agentB->name);
 });
 
-it('renvoie null pour les indicateurs qui dépendent des demandes (Phase 5), jamais un faux zéro', function () {
+it('renvoie 0 sans demande et null pour le taux de réponse (jamais un faux zéro)', function () {
     Sanctum::actingAs($this->manager);
 
     $totals = $this->getJson('/api/v1/agency/stats')->json('data.totals');
 
-    expect($totals['inquiries_received'])->toBeNull()->and($totals['planned_visits'])->toBeNull()->and($totals['response_rate'])->toBeNull();
+    expect($totals['inquiries_received'])->toBe(0)->and($totals['planned_visits'])->toBe(0)->and($totals['response_rate'])->toBeNull();
 });
 
 it('ne compte que les annonces de l\'agence demandée', function () {

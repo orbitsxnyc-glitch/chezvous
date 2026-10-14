@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { ContactPanel } from "@/components/listings/ContactPanel";
 import { EntryCosts } from "@/components/listings/EntryCosts";
 import { ListingCard } from "@/components/listings/ListingCard";
 import { PassportPanel } from "@/components/listings/PassportPanel";
@@ -123,8 +124,8 @@ async function Detail({ params }: { params: Props["params"] }) {
         ) : (
           <p>{l.advertiser.name} · Particulier · téléphone vérifié</p>
         )}
-        <p className="text-sm text-zinc-600">La prise de contact et la demande de visite arrivent prochainement.</p>
       </section>
+      <ContactPanel listingId={l.id} reference={l.reference} />
 
       {similar.length > 0 && (
         <section aria-labelledby="similaires" className="flex flex-col gap-2">

@@ -20,9 +20,14 @@ export default function Home() {
         <Link href={seoPath("rent_long", "appartements", "almadies")}>Appartements {SEO_ROUTES.rent_long.verb} aux Almadies</Link>
         <Link href={seoPath("rent_long", "maisons-villas", "ouakam")}>Maisons et villas {SEO_ROUTES.rent_long.verb} à Ouakam</Link>
       </nav>
-      <nav aria-label="Compte" className="flex gap-4 underline">
+      <nav aria-label="Compte" className="flex flex-wrap gap-4 underline">
         <Link href="/inscription">Créer un compte</Link>
         <Link href="/connexion">Se connecter</Link>
+        <Link href="/demandes">Mes demandes</Link>
+        <Link href="/boite">Demandes reçues</Link>
+        <Link href="/favoris">Favoris</Link>
+        <Link href="/alertes">Alertes</Link>
+        <Link href="/notifications">Notifications</Link>
       </nav>
     </main>
   );

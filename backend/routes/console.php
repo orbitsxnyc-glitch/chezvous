@@ -11,3 +11,7 @@ Artisan::command('inspire', function () {
 Schedule::command('listings:expire')->hourly();
 Schedule::command('listings:maintain --freshness')->hourly();
 Schedule::command('listings:maintain --counters')->everyFiveMinutes();
+Schedule::command('engagement:run --visits')->everyTenMinutes();
+Schedule::command('engagement:run --unanswered')->hourly();
+Schedule::command('engagement:run --favorites')->everyFifteenMinutes();
+Schedule::command('engagement:run --alerts')->everyFiveMinutes();
