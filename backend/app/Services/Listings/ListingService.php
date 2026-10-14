@@ -9,6 +9,7 @@ use App\Models\Listing;
 use App\Models\Property;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
+use App\Services\Search\PublicLocationService;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -30,6 +31,7 @@ class ListingService
         private readonly PropertyReferenceService $references,
         private readonly ListingStateService $states,
         private readonly AuditLogger $audit,
+        private readonly PublicLocationService $publicLocation,
     ) {}
 
     public function create(User $user, int $propertyTypeId, TransactionType $transaction): Listing
@@ -69,6 +71,9 @@ class ListingService
                 $changed[] = 'amenities';
             }
             $this->references->assignIfPossible($property);
+            if (array_intersect($changed, ['latitude', 'location_precision']) !== []) {
+                $this->publicLocation->refresh($property->refresh());
+            }
 
             if ($changed !== []) {
                 $this->audit->record('listing.updated', $listing, null, ['fields' => $changed], $actor->id);
@@ -91,6 +96,7 @@ class ListingService
             $property->save();
             $property->amenities()->sync($sourceProperty->amenities()->pluck('amenities.id'));
             DB::statement('UPDATE properties SET location = (SELECT location FROM properties WHERE id = ?) WHERE id = ?', [$sourceProperty->id, $property->id]);
+            $this->publicLocation->refresh($property->refresh());
             $this->references->assignIfPossible($property);
 
             $copy = $this->newListing($property, $actor, [

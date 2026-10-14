@@ -2,6 +2,8 @@
 
 namespace App\Services\Listings;
 
+use App\Enums\AvailabilityChannel;
+use App\Enums\AvailabilityResponse;
 use App\Enums\ImageStatus;
 use App\Enums\ListingStatus as S;
 use App\Events\ListingStatusChanged;
@@ -10,6 +12,7 @@ use App\Models\Listing;
 use App\Models\ModerationReason;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
+use App\Services\Passport\AvailabilityRecorder;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -32,7 +35,7 @@ class ListingStateService
         'archived' => [],
     ];
 
-    public function __construct(private readonly QuotaService $quota, private readonly AuditLogger $audit) {}
+    public function __construct(private readonly QuotaService $quota, private readonly AuditLogger $audit, private readonly AvailabilityRecorder $availability) {}
 
     public function canTransition(S $from, S $to): bool
     {
@@ -167,6 +170,11 @@ class ListingStateService
             default => null,
         };
         $l->save();
+
+        // Mettre une annonce en ligne vaut confirmation de disponibilité (première entrée du Passeport).
+        if ($to === S::Published) {
+            $this->availability->record($l, AvailabilityResponse::Available, AvailabilityChannel::App, $l->advertiser);
+        }
 
         $this->audit->record($approvedByModerator ? 'listing.approved' : 'listing.status_changed', $l,
             ['status' => $from->value], array_filter(['status' => $to->value, 'reason' => $reasonCode]), $actor?->id);

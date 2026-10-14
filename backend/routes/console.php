@@ -9,3 +9,5 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('listings:expire')->hourly();
+Schedule::command('listings:maintain --freshness')->hourly();
+Schedule::command('listings:maintain --counters')->everyFiveMinutes();

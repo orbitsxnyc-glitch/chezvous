@@ -14,6 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: "ChezVous",
   description: "La plateforme de confiance pour trouver, vérifier et visiter un logement au Sénégal.",
 };

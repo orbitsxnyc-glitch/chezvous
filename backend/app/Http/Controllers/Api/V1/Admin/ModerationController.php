@@ -26,7 +26,7 @@ class ModerationController extends Controller
         return ListingResource::collection(
             Listing::with(['property.images', 'property.amenities'])
                 ->where('status', ListingStatus::PendingModeration->value)
-                ->orderBy('submitted_at')->cursorPaginate(20)
+                ->orderBy('submitted_at')->cursorPaginate(20)->withQueryString()
         );
     }
 

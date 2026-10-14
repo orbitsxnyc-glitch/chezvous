@@ -39,6 +39,20 @@ return [
         'freshness_stale_hours' => (int) env('CHEZVOUS_FRESHNESS_STALE_HOURS', 168),
     ],
 
+    'search' => [
+        'per_page' => (int) env('CHEZVOUS_SEARCH_PER_PAGE', 20),
+        'per_minute' => (int) env('CHEZVOUS_SEARCH_PER_MINUTE', 120),
+        'hide_stale' => (bool) env('CHEZVOUS_HIDE_STALE', false), // false : les biens à information ancienne sont rétrogradés, pas masqués
+        'similar_price_tolerance' => 0.25,
+        'similar_limit' => 6,
+        'map_limit' => 300,
+        'sitemap_limit' => 5000,
+    ],
+
+    'counters' => [
+        'dedupe_ttl_hours' => 36,
+    ],
+
     'images' => [
         'disk' => env('CHEZVOUS_IMAGES_DISK', 'public'), // médias publics traités ; passer à un disque S3 plus tard
         'originals_disk' => 'local', // privé : le fichier brut n'y reste que le temps du traitement
@@ -50,6 +64,7 @@ return [
 
     'location' => [
         // Cadre englobant approximatif du Sénégal, pour détecter une coordonnée aberrante.
+        'approx_radius_m' => (int) env('CHEZVOUS_APPROX_RADIUS_M', 300), // décalage maximal de la position « approximative »
         'bounds' => ['lat_min' => 12.0, 'lat_max' => 16.8, 'lon_min' => -17.7, 'lon_max' => -11.3],
     ],
 
