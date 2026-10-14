@@ -1,5 +1,8 @@
 <?php
 
+use App\Logging\RedactionProcessor;
+use App\Logging\RequestContextProcessor;
+use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -51,6 +54,16 @@ return [
     */
 
     'channels' => [
+
+        // Journaux structurés (une ligne JSON par événement), sans donnée sensible : e-mails, téléphones et jetons sont masqués.
+        'json' => [
+            'driver' => 'monolog',
+            'level' => env('LOG_LEVEL', 'info'),
+            'handler' => StreamHandler::class,
+            'handler_with' => ['stream' => 'php://stderr'],
+            'formatter' => JsonFormatter::class,
+            'processors' => [RedactionProcessor::class, RequestContextProcessor::class],
+        ],
 
         'stack' => [
             'driver' => 'stack',

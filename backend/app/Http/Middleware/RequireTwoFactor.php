@@ -5,13 +5,13 @@ namespace App\Http\Middleware;
 use App\Services\Auth\TwoFactorService;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Laravel\Sanctum\PersonalAccessToken;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Aucune route d'administration n'est accessible tant que le second facteur n'est pas validé dans la session
- * (ou pour le jeton) courante. Les comptes qui ne sont pas administrateurs ne sont pas concernés ici :
- * la Gate « moderate » leur répond 403.
+ * (ou pour le jeton) courante. Les comptes qui ne sont pas administrateurs reçoivent 403.
  */
 class RequireTwoFactor
 {
@@ -27,7 +27,14 @@ class RequireTwoFactor
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
-        if ($user === null || ! $this->twoFactor->isRequiredFor($user)) {
+        if ($user === null) {
+            return $next($request);
+        }
+        // Le rôle est vérifié ici, avant la liaison des modèles : un non-administrateur reçoit 403 que l'identifiant existe ou non.
+        if (! Gate::forUser($user)->allows('moderate')) {
+            return response()->json(['code' => 'forbidden', 'message' => 'Action non autorisée.'], 403);
+        }
+        if (! $this->twoFactor->isRequiredFor($user)) {
             return $next($request);
         }
         if (! $user->hasTwoFactor()) {

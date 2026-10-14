@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Middleware\AssignRequestId;
 use App\Http\Middleware\EnsureAccountActive;
 use App\Http\Middleware\RequireTwoFactor;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -9,7 +11,9 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Validation\ValidationException;
+use Sentry\Laravel\Integration;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -23,11 +27,18 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
+        // Globaux : les en-têtes et l'identifiant de requête couvrent aussi les 404 et les erreurs avant routage.
+        $middleware->prepend(AssignRequestId::class);
+        $middleware->append(SecurityHeaders::class);
         $middleware->alias(['two-factor' => RequireTwoFactor::class]);
+        // Rôle et second facteur AVANT la liaison des modèles : un non-administrateur reçoit 403 que l'identifiant existe ou non.
+        $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: RequireTwoFactor::class);
         // Un compte suspendu perd l'accès immédiatement, même avec une session ou un jeton déjà ouverts.
         $middleware->appendToGroup('api', EnsureAccountActive::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        Integration::handles($exceptions); // inactif sans SENTRY_LARAVEL_DSN
+
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
