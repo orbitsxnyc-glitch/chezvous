@@ -51,3 +51,8 @@ export const CHECK_LABELS: Record<string, string> = {
   document: "Document contrôlé",
   field_visit: "Visite terrain effectuée",
 };
+
+/** Montant en francs CFA, entier : « 1 250 000 FCFA ». */
+export function formatXof(xof: number): string {
+  return `${new Intl.NumberFormat("fr-FR").format(xof).replace(/ | /g, " ")} FCFA`;
+}

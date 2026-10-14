@@ -4,7 +4,7 @@ Plateforme immobilière de confiance pour le marché sénégalais, avec un lance
 
 > Principe directeur : mieux vaut 500 biens réellement disponibles et fiables que 20 000 annonces obsolètes.
 
-**État actuel : Phase 0 (fondations).** Aucune fonctionnalité métier n'est développée. Les dossiers applicatifs sont vides en attendant la validation de la Phase 0.
+**État actuel : Phase 7 terminée en local** (notifications, administration, durcissement). Rapports par phase dans `docs/`. Phase 8 (mobile) non commencée.
 
 ## Structure du monorepo
 
@@ -46,6 +46,8 @@ php artisan schedule:work  # fraîcheur, expiration, compteurs
 php artisan demo:listings 200   # annonces FICTIVES, local uniquement (--purge pour les supprimer)
 php artisan search:benchmark    # mesure p50/p95 de la recherche (après demo:listings 10000)
 php artisan test           # Pest
+php artisan chezvous:preflight   # contrôle de configuration avant déploiement (échoue si dangereuse)
+BACKUP_PASSPHRASE=... infra/scripts/backup.sh   # sauvegarde chiffrée ; restore.sh pour restaurer
 ./vendor/bin/pint --test && ./vendor/bin/phpstan analyse
 ```
 

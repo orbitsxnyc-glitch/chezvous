@@ -1,7 +1,14 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\AgencyAdminController;
+use App\Http\Controllers\Api\V1\Admin\AuditLogController;
 use App\Http\Controllers\Api\V1\Admin\CommercialController;
+use App\Http\Controllers\Api\V1\Admin\DashboardController;
 use App\Http\Controllers\Api\V1\Admin\ModerationController;
+use App\Http\Controllers\Api\V1\Admin\NotificationAdminController;
+use App\Http\Controllers\Api\V1\Admin\ReferentialController;
+use App\Http\Controllers\Api\V1\Admin\ReportAdminController;
+use App\Http\Controllers\Api\V1\Admin\UserAdminController;
 use App\Http\Controllers\Api\V1\Admin\VerificationController;
 use App\Http\Controllers\Api\V1\AgencyController;
 use App\Http\Controllers\Api\V1\AgencyTeamController;
@@ -10,6 +17,7 @@ use App\Http\Controllers\Api\V1\Auth\OtpController;
 use App\Http\Controllers\Api\V1\Auth\PasswordResetController;
 use App\Http\Controllers\Api\V1\Auth\RegisterController;
 use App\Http\Controllers\Api\V1\Auth\SessionController;
+use App\Http\Controllers\Api\V1\Auth\TwoFactorController;
 use App\Http\Controllers\Api\V1\Commercial\CatalogController;
 use App\Http\Controllers\Api\V1\Commercial\PremiumController;
 use App\Http\Controllers\Api\V1\Commercial\SubscriptionController;
@@ -17,6 +25,8 @@ use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\Engagement\FavoriteController;
 use App\Http\Controllers\Api\V1\Engagement\InquiryController;
 use App\Http\Controllers\Api\V1\Engagement\NotificationController;
+use App\Http\Controllers\Api\V1\Engagement\NotificationPreferenceController;
+use App\Http\Controllers\Api\V1\Engagement\PushDeviceController;
 use App\Http\Controllers\Api\V1\Engagement\SavedSearchController;
 use App\Http\Controllers\Api\V1\Engagement\VisitController;
 use App\Http\Controllers\Api\V1\ListingReportController;
@@ -39,6 +49,12 @@ Route::prefix('auth')->group(function () {
     Route::post('password/reset', PasswordResetController::class)->middleware('throttle:otp-verify');
     Route::post('login', [SessionController::class, 'login'])->middleware('throttle:login');
     Route::post('logout', [SessionController::class, 'logout'])->middleware('auth:sanctum');
+    Route::middleware('auth:sanctum')->prefix('2fa')->group(function () {
+        Route::get('status', [TwoFactorController::class, 'status']);
+        Route::post('setup', [TwoFactorController::class, 'setup'])->middleware('throttle:two-factor');
+        Route::post('confirm', [TwoFactorController::class, 'confirm'])->middleware('throttle:two-factor');
+        Route::post('verify', [TwoFactorController::class, 'verify'])->middleware('throttle:two-factor');
+    });
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -93,6 +109,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('my/saved-searches/{search}', [SavedSearchController::class, 'destroy']);
     Route::get('my/notifications', [NotificationController::class, 'index']);
     Route::patch('my/notifications/read', [NotificationController::class, 'read']);
+    Route::get('my/notification-preferences', [NotificationPreferenceController::class, 'show']);
+    Route::patch('my/notification-preferences', [NotificationPreferenceController::class, 'update']);
+    Route::get('my/devices', [PushDeviceController::class, 'index']);
+    Route::post('my/devices', [PushDeviceController::class, 'store']);
+    Route::delete('my/devices/{device}', [PushDeviceController::class, 'destroy']);
 
     // Offre commerciale sans paiement en ligne (COM-03 à COM-07).
     Route::post('my/subscription-requests', [SubscriptionController::class, 'store'])->middleware('throttle:commercial');
@@ -144,16 +165,57 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Justificatifs de règlement : même principe (lien signé temporaire ET administrateur connecté).
-    Route::get('admin/payment-proofs/{payment}', [CommercialController::class, 'downloadProof'])->middleware('signed')->name('payment-proofs.download');
+    Route::get('admin/payment-proofs/{payment}', [CommercialController::class, 'downloadProof'])->middleware(['two-factor', 'signed'])->name('payment-proofs.download');
 
     // Justificatifs privés : lien signé temporaire ET administrateur connecté.
     Route::get('admin/verification-documents/{document}', [VerificationController::class, 'download'])
-        ->middleware('signed')->name('verification-documents.download');
+        ->middleware(['two-factor', 'signed'])->name('verification-documents.download');
 
     // Modération (ADM-01) : réservée aux rôles admin et super_admin.
-    Route::prefix('admin')->group(function () {
+    Route::prefix('admin')->middleware('two-factor')->group(function () {
         Route::get('moderation', [ModerationController::class, 'index']);
         Route::get('moderation/reasons', [ModerationController::class, 'reasons']);
+        Route::get('dashboard', DashboardController::class);
+        Route::get('audit-logs', [AuditLogController::class, 'index']);
+
+        Route::get('reports', [ReportAdminController::class, 'index']);
+        Route::post('reports/{report}/hide', [ReportAdminController::class, 'hide'])->whereNumber('report');
+        Route::post('reports/{report}/warn', [ReportAdminController::class, 'warn'])->whereNumber('report');
+        Route::post('reports/{report}/suspend-advertiser', [ReportAdminController::class, 'suspendAdvertiser'])->whereNumber('report');
+        Route::post('reports/{report}/dismiss', [ReportAdminController::class, 'dismiss'])->whereNumber('report');
+
+        Route::get('users', [UserAdminController::class, 'index']);
+        Route::get('users/{user}', [UserAdminController::class, 'show']);
+        Route::post('users/{user}/suspend', [UserAdminController::class, 'suspend']);
+        Route::post('users/{user}/reactivate', [UserAdminController::class, 'reactivate']);
+        Route::put('users/{user}/admin-role', [UserAdminController::class, 'adminRole']);
+        Route::post('users/{user}/two-factor/reset', [UserAdminController::class, 'resetTwoFactor']);
+        Route::get('agencies', [AgencyAdminController::class, 'index']);
+        Route::get('agencies/{agency}', [AgencyAdminController::class, 'show']);
+        Route::post('agencies/{agency}/suspend', [AgencyAdminController::class, 'suspend']);
+        Route::post('agencies/{agency}/reactivate', [AgencyAdminController::class, 'reactivate']);
+        Route::post('agencies/{agency}/revoke-verification', [AgencyAdminController::class, 'revokeVerification']);
+
+        Route::prefix('referentials')->group(function () {
+            Route::get('localities', [ReferentialController::class, 'localities']);
+            Route::post('localities', [ReferentialController::class, 'storeLocality']);
+            Route::patch('localities/{locality}', [ReferentialController::class, 'updateLocality'])->whereNumber('locality');
+            Route::get('property-types', [ReferentialController::class, 'types']);
+            Route::post('property-types', [ReferentialController::class, 'storeType']);
+            Route::patch('property-types/{type}', [ReferentialController::class, 'updateType'])->whereNumber('type');
+            Route::get('amenities', [ReferentialController::class, 'amenities']);
+            Route::post('amenities', [ReferentialController::class, 'storeAmenity']);
+            Route::patch('amenities/{amenity}', [ReferentialController::class, 'updateAmenity'])->whereNumber('amenity');
+            Route::get('moderation-reasons', [ReferentialController::class, 'reasons']);
+            Route::post('moderation-reasons', [ReferentialController::class, 'storeReason']);
+            Route::patch('moderation-reasons/{reason}', [ReferentialController::class, 'updateReason'])->whereNumber('reason');
+        });
+
+        Route::get('notification-templates', [NotificationAdminController::class, 'templates']);
+        Route::get('notification-templates/{type}/{channel}', [NotificationAdminController::class, 'versions']);
+        Route::put('notification-templates/{type}/{channel}', [NotificationAdminController::class, 'updateTemplate']);
+        Route::get('notification-deliveries', [NotificationAdminController::class, 'deliveries']);
+        Route::post('notification-deliveries/{delivery}/retry', [NotificationAdminController::class, 'retry'])->whereNumber('delivery');
         Route::get('subscriptions', [CommercialController::class, 'subscriptions']);
         Route::get('subscriptions/{subscription}', [CommercialController::class, 'showSubscription']);
         Route::post('subscriptions/{subscription}/payments', [CommercialController::class, 'recordSubscriptionPayment'])->middleware('throttle:uploads');

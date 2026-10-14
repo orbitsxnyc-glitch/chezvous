@@ -43,6 +43,14 @@ return [
         'freshness_stale_hours' => (int) env('CHEZVOUS_FRESHNESS_STALE_HOURS', 168),
     ],
 
+    'admin' => [
+        // Second facteur obligatoire pour les rôles admin et super_admin (ADM-08). Ne jamais désactiver en production.
+        'require_two_factor' => (bool) env('CHEZVOUS_ADMIN_REQUIRE_2FA', true),
+        'two_factor_session_hours' => (int) env('CHEZVOUS_2FA_SESSION_HOURS', 12),
+        'recovery_codes' => 8,
+        'issuer' => 'ChezVous',
+    ],
+
     'commercial' => [
         // Droits de la formule gratuite si la ligne n'existe pas en base. Les prix et quotas se règlent en base (table plans).
         // Les quotas d'annonces gratuits restent ceux de chezvous.listings.quota_individual et chezvous.agencies.quota_listings.

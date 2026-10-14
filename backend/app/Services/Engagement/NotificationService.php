@@ -4,19 +4,22 @@ namespace App\Services\Engagement;
 
 use App\Models\User;
 use App\Models\UserNotification;
+use App\Services\Notifications\NotificationDispatcher;
 
 /**
- * Notifications dans l'application. Les canaux push, e-mail, WhatsApp et SMS s'y brancheront en Phase 7.
- * Règle : `data` ne contient jamais de coordonnées personnelles (téléphone, e-mail), seulement des identifiants publics.
+ * Façade historique des notifications : tous les services métier l'utilisent déjà.
+ * Depuis la Phase 7, elle délègue au NotificationDispatcher (préférences, canaux, journal d'envoi).
  */
 class NotificationService
 {
+    public function __construct(private readonly NotificationDispatcher $dispatcher) {}
+
     /**
      * @param  array<string, mixed>  $data
      */
     public function notify(User|int $user, string $type, array $data = []): UserNotification
     {
-        return UserNotification::create(['user_id' => $user instanceof User ? $user->id : $user, 'type' => $type, 'data' => $data]);
+        return $this->dispatcher->dispatch($user, $type, $data);
     }
 
     /**
@@ -30,7 +33,7 @@ class NotificationService
             $id = $user instanceof User ? $user->id : $user;
             if (! isset($seen[$id])) {
                 $seen[$id] = true;
-                $this->notify($id, $type, $data);
+                $this->notify($user, $type, $data);
             }
         }
     }

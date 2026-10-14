@@ -24,9 +24,11 @@ use Spatie\Permission\Traits\HasRoles;
  * @property UserStatus $status
  * @property Carbon|null $phone_verified_at
  * @property array<string, mixed>|null $notification_preferences
+ * @property list<string>|null $two_factor_recovery_codes
+ * @property Carbon|null $two_factor_confirmed_at
  */
-#[Fillable(['name', 'phone', 'email', 'whatsapp', 'password', 'account_type', 'locale', 'city', 'notification_preferences'])]
-#[Hidden(['password', 'remember_token'])]
+#[Fillable(['name', 'phone', 'email', 'whatsapp', 'password', 'account_type', 'locale', 'city'])]
+#[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'two_factor_last_step'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -50,6 +52,9 @@ class User extends Authenticatable
             'account_type' => AccountType::class,
             'status' => UserStatus::class,
             'notification_preferences' => 'array',
+            'two_factor_secret' => 'encrypted',
+            'two_factor_confirmed_at' => 'datetime',
+            'two_factor_recovery_codes' => 'array',
         ];
     }
 
@@ -65,6 +70,16 @@ class User extends Authenticatable
         $member = $this->agencyMembership()->with('agency')->first();
 
         return $member !== null && $member->isActive() && $member->agency?->status === AgencyStatus::Active ? $member : null;
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'ulid';
+    }
+
+    public function hasTwoFactor(): bool
+    {
+        return $this->two_factor_confirmed_at !== null;
     }
 
     public function hasVerifiedPhone(): bool

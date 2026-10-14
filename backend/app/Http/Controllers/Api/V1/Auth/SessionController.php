@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\RequireTwoFactor;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Services\Auth\TwoFactorService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -52,6 +54,7 @@ class SessionController extends Controller
     public function logout(Request $request): JsonResponse
     {
         $user = $request->user();
+        app(TwoFactorService::class)->forgetVerification($user, RequireTwoFactor::contextKey($request));
         $token = $user->currentAccessToken();
 
         if ($token instanceof PersonalAccessToken) {
