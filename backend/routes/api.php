@@ -1,11 +1,16 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\ModerationController;
 use App\Http\Controllers\Api\V1\Auth\OtpController;
 use App\Http\Controllers\Api\V1\Auth\PasswordResetController;
 use App\Http\Controllers\Api\V1\Auth\RegisterController;
 use App\Http\Controllers\Api\V1\Auth\SessionController;
 use App\Http\Controllers\Api\V1\DeviceController;
+use App\Http\Controllers\Api\V1\ListingReportController;
 use App\Http\Controllers\Api\V1\MeController;
+use App\Http\Controllers\Api\V1\My\ListingController;
+use App\Http\Controllers\Api\V1\My\ListingImageController;
+use App\Http\Controllers\Api\V1\ReferenceController;
 use Illuminate\Support\Facades\Route;
 
 // Préfixe /api/v1 défini dans bootstrap/app.php.
@@ -24,4 +29,39 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('me', [MeController::class, 'destroy']);
     Route::get('me/devices', [DeviceController::class, 'index']);
     Route::delete('me/devices/{id}', [DeviceController::class, 'destroy'])->whereNumber('id');
+});
+
+// Référentiels publics (ANN-02, RCH-01).
+Route::get('localities', [ReferenceController::class, 'localities']);
+Route::get('property-types', [ReferenceController::class, 'propertyTypes']);
+Route::get('amenities', [ReferenceController::class, 'amenities']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('listings/{listing}/reports', [ListingReportController::class, 'store'])->middleware('throttle:reports');
+
+    // Annonces de l'annonceur connecté. `{listing}` se résout par ULID ; la Policy renvoie 404 pour l'annonce d'autrui.
+    Route::prefix('my/listings')->group(function () {
+        Route::get('/', [ListingController::class, 'index']);
+        Route::post('/', [ListingController::class, 'store']);
+        Route::get('{listing}', [ListingController::class, 'show']);
+        Route::patch('{listing}', [ListingController::class, 'update']);
+        Route::delete('{listing}', [ListingController::class, 'destroy']);
+        Route::post('{listing}/submit', [ListingController::class, 'submit']);
+        Route::post('{listing}/pause', [ListingController::class, 'pause']);
+        Route::post('{listing}/resume', [ListingController::class, 'resume']);
+        Route::post('{listing}/close', [ListingController::class, 'close']);
+        Route::post('{listing}/duplicate', [ListingController::class, 'duplicate']);
+        Route::post('{listing}/images', [ListingImageController::class, 'store'])->middleware('throttle:uploads');
+        Route::patch('{listing}/images/order', [ListingImageController::class, 'order']);
+        Route::patch('{listing}/images/{image}/cover', [ListingImageController::class, 'cover']);
+        Route::delete('{listing}/images/{image}', [ListingImageController::class, 'destroy']);
+    });
+
+    // Modération (ADM-01) : réservée aux rôles admin et super_admin.
+    Route::prefix('admin')->group(function () {
+        Route::get('moderation', [ModerationController::class, 'index']);
+        Route::get('moderation/reasons', [ModerationController::class, 'reasons']);
+        Route::post('listings/{listing}/approve', [ModerationController::class, 'approve']);
+        Route::post('listings/{listing}/reject', [ModerationController::class, 'reject']);
+    });
 });

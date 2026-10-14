@@ -14,6 +14,8 @@ return [
         'otp_per_minute' => (int) env('CHEZVOUS_OTP_PER_MINUTE', 3),
         'otp_verify_per_minute' => (int) env('CHEZVOUS_OTP_VERIFY_PER_MINUTE', 10),
         'otp_per_hour_ip' => (int) env('CHEZVOUS_OTP_PER_HOUR_IP', 10),
+        'uploads_per_hour' => (int) env('CHEZVOUS_UPLOADS_PER_HOUR', 200),
+        'reports_per_hour' => (int) env('CHEZVOUS_REPORTS_PER_HOUR', 20),
         'register_per_hour_ip' => (int) env('CHEZVOUS_REGISTER_PER_HOUR_IP', 10),
     ],
 
@@ -35,6 +37,20 @@ return [
         // Fraîcheur de la disponibilité (heures depuis la dernière confirmation).
         'freshness_reconfirm_hours' => (int) env('CHEZVOUS_FRESHNESS_RECONFIRM_HOURS', 48),
         'freshness_stale_hours' => (int) env('CHEZVOUS_FRESHNESS_STALE_HOURS', 168),
+    ],
+
+    'images' => [
+        'disk' => env('CHEZVOUS_IMAGES_DISK', 'public'), // médias publics traités ; passer à un disque S3 plus tard
+        'originals_disk' => 'local', // privé : le fichier brut n'y reste que le temps du traitement
+        'sizes' => ['thumb' => 320, 'medium' => 800, 'large' => 1600], // plus grand côté, en pixels
+        'quality' => 82,
+        'max_pixels' => 40_000_000, // protection contre les images « bombes de décompression »
+        'allowed_mimes' => ['image/jpeg', 'image/png', 'image/webp'],
+    ],
+
+    'location' => [
+        // Cadre englobant approximatif du Sénégal, pour détecter une coordonnée aberrante.
+        'bounds' => ['lat_min' => 12.0, 'lat_max' => 16.8, 'lon_min' => -17.7, 'lon_max' => -11.3],
     ],
 
     'admin_seed' => [

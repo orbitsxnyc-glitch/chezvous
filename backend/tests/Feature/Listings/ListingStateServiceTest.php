@@ -164,7 +164,7 @@ it('rejette toutes les transitions absentes de la table', function () {
     $user = User::factory()->create();
     $allowed = [
         'draft' => ['pending_moderation', 'published', 'archived'], 'pending_moderation' => ['published', 'rejected', 'archived'],
-        'rejected' => ['pending_moderation', 'archived'], 'published' => ['paused', 'closed', 'expired', 'hidden', 'archived'],
+        'rejected' => ['pending_moderation', 'archived'], 'published' => ['paused', 'closed', 'expired', 'hidden', 'pending_moderation', 'archived'],
         'paused' => ['published', 'archived'], 'closed' => ['archived'], 'expired' => ['pending_moderation', 'published', 'archived'],
         'hidden' => ['archived'], 'archived' => [],
     ];

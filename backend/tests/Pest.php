@@ -61,3 +61,19 @@ function readyListing(?User $user = null, array $over = []): Listing
 
     return Listing::factory()->create(array_merge(['property_id' => $property->id, 'advertiser_user_id' => $user->id], $over));
 }
+
+function particulier(array $over = []): User
+{
+    $user = User::factory()->create($over);
+    $user->assignRole(['client', 'particulier']);
+
+    return $user;
+}
+
+function moderator(string $role = 'admin'): User
+{
+    $user = User::factory()->create();
+    $user->assignRole($role);
+
+    return $user;
+}

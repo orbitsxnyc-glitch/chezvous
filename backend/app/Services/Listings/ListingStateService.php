@@ -24,7 +24,7 @@ class ListingStateService
         'draft' => [S::PendingModeration, S::Published, S::Archived],
         'pending_moderation' => [S::Published, S::Rejected, S::Archived],
         'rejected' => [S::PendingModeration, S::Archived],
-        'published' => [S::Paused, S::Closed, S::Expired, S::Hidden, S::Archived],
+        'published' => [S::Paused, S::Closed, S::Expired, S::Hidden, S::PendingModeration, S::Archived],
         'paused' => [S::Published, S::Archived],
         'closed' => [S::Archived],
         'expired' => [S::PendingModeration, S::Published, S::Archived],
@@ -43,6 +43,7 @@ class ListingStateService
     public function submit(Listing $listing, User $actor): Listing
     {
         return $this->run($listing, $actor, function (Listing $l) use ($actor) {
+            $this->assertFrom($l, [S::Draft, S::Rejected, S::Expired]);
             $this->assertComplete($l);
             $this->assertQuota($l);
             $target = $this->isTrusted($l->advertiser) ? S::Published : S::PendingModeration;
@@ -56,7 +57,11 @@ class ListingStateService
 
     public function approve(Listing $listing, User $moderator): Listing
     {
-        return $this->run($listing, $moderator, fn (Listing $l) => $this->apply($l, S::Published, $moderator, approvedByModerator: true));
+        return $this->run($listing, $moderator, function (Listing $l) use ($moderator) {
+            $this->assertFrom($l, [S::PendingModeration]);
+
+            return $this->apply($l, S::Published, $moderator, approvedByModerator: true);
+        });
     }
 
     public function reject(Listing $listing, User $moderator, string $reasonCode, ?string $comment = null): Listing
@@ -67,6 +72,16 @@ class ListingStateService
             }
 
             return $this->apply($l, S::Rejected, $moderator, $reasonCode, $comment);
+        });
+    }
+
+    /** Une modification sensible d'une annonce publiée la renvoie en modération (ANN, section 5). */
+    public function returnToModeration(Listing $listing, User $actor): Listing
+    {
+        return $this->run($listing, $actor, function (Listing $l) use ($actor) {
+            $this->assertFrom($l, [S::Published]);
+
+            return $this->apply($l, S::PendingModeration, $actor, 'sensitive_edit');
         });
     }
 
@@ -177,6 +192,16 @@ class ListingStateService
         }
     }
 
+    /**
+     * @param  list<S>  $allowed
+     */
+    private function assertFrom(Listing $l, array $allowed): void
+    {
+        if (! in_array($l->status, $allowed, true)) {
+            throw new ListingRuleException('invalid_transition', "Action impossible depuis l'état {$l->status->value}.", ['from' => $l->status->value]);
+        }
+    }
+
     private function assertQuota(Listing $l): void
     {
         $user = $l->advertiser;
@@ -187,11 +212,16 @@ class ListingStateService
         }
     }
 
-    /** Champs obligatoires pour soumettre (ANN-01, ANN-04, ANN-07). */
-    private function assertComplete(Listing $l): void
+    /**
+     * Champs obligatoires manquants pour soumettre (ANN-01, ANN-04, ANN-07). Vide = prête à soumettre.
+     *
+     * @return list<string>
+     */
+    public function missingFields(Listing $l): array
     {
         $p = $l->property;
-        $missing = array_keys(array_filter([
+
+        return array_keys(array_filter([
             'title' => blank($l->title),
             'description' => blank($l->description),
             'price_xof' => ($l->price_xof ?? 0) <= 0,
@@ -199,6 +229,11 @@ class ListingStateService
             'surface_m2' => ($p->surface_m2 ?? 0) <= 0,
             'cover_image' => ! $p->images()->where('is_cover', true)->where('status', ImageStatus::Ready->value)->exists(),
         ]));
+    }
+
+    private function assertComplete(Listing $l): void
+    {
+        $missing = $this->missingFields($l);
 
         if ($missing !== []) {
             throw new ListingRuleException('incomplete_listing', 'Annonce incomplète : renseignez les champs obligatoires et une photo de couverture.', ['missing' => $missing]);
