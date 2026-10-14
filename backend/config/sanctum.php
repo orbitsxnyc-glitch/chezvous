@@ -50,7 +50,8 @@ return [
     |
     */
 
-    'expiration' => null,
+    // Durée de vie des jetons mobiles en minutes (défaut : 90 jours). Un jeton expiré oblige à se reconnecter.
+    'expiration' => (int) env('SANCTUM_TOKEN_EXPIRATION', 129600),
 
     /*
     |--------------------------------------------------------------------------

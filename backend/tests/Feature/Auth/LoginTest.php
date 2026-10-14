@@ -100,3 +100,13 @@ it('n\'envoie aucun OTP pour un numéro inconnu mais répond pareil', function (
 
     expect($otp->codes)->toBe([]);
 });
+
+it('un jeton mobile expiré est refusé', function () {
+    $user = User::factory()->create();
+    $token = $this->postJson('/api/v1/auth/login', loginPayload($user))->json('data.token');
+
+    $this->travel(config('sanctum.expiration') + 1)->minutes();
+    app('auth')->forgetGuards();
+
+    $this->withToken($token)->getJson('/api/v1/me')->assertStatus(401);
+});
