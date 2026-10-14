@@ -70,6 +70,8 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('inquiries', fn (Request $r) => Limit::perHour((int) config('chezvous.rate_limits.inquiries_per_hour'))->by((string) $r->user()?->id));
         RateLimiter::for('messages', fn (Request $r) => Limit::perHour((int) config('chezvous.rate_limits.messages_per_hour'))->by((string) $r->user()?->id));
         RateLimiter::for('commercial', fn (Request $r) => Limit::perHour((int) config('chezvous.rate_limits.commercial_requests_per_hour'))->by((string) $r->user()?->id));
+        // Essais de code TOTP : 5 par minute et par compte (un code de 6 chiffres ne doit pas pouvoir être deviné).
+        RateLimiter::for('two-factor', fn (Request $r) => Limit::perMinute(5)->by((string) $r->user()?->id));
         RateLimiter::for('uploads', fn (Request $r) => Limit::perHour($limits['uploads_per_hour'])->by((string) $r->user()?->id));
         RateLimiter::for('reports', fn (Request $r) => Limit::perHour($limits['reports_per_hour'])->by((string) $r->user()?->id));
         RateLimiter::for('otp-verify', fn (Request $r) => Limit::perMinute($limits['otp_verify_per_minute'])->by($phoneKey($r)));

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureAccountActive;
+use App\Http\Middleware\RequireTwoFactor;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -22,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
+        $middleware->alias(['two-factor' => RequireTwoFactor::class]);
         // Un compte suspendu perd l'accès immédiatement, même avec une session ou un jeton déjà ouverts.
         $middleware->appendToGroup('api', EnsureAccountActive::class);
     })

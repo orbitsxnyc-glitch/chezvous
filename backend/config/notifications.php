@@ -34,6 +34,7 @@ return [
         // Sécurité : non désactivables.
         'security.otp' => ['category' => 'security', 'label' => 'Code de vérification', 'vars' => [], 'defaults' => $mail, 'mandatory' => true, 'audience' => 'all'],
         'security.password_changed' => ['category' => 'security', 'label' => 'Mot de passe modifié', 'vars' => [], 'defaults' => $mail, 'mandatory' => true, 'audience' => 'all'],
+        'security.two_factor_changed' => ['category' => 'security', 'label' => 'Double authentification modifiée', 'vars' => [], 'defaults' => $mail, 'mandatory' => true, 'audience' => 'admin'],
         'security.account_suspended' => ['category' => 'security', 'label' => 'Compte suspendu', 'vars' => [], 'defaults' => $mail, 'mandatory' => true, 'audience' => 'all'],
 
         'moderation.warning' => ['category' => 'listing', 'label' => 'Avertissement de la modération', 'vars' => ['listing', 'reason'], 'defaults' => $on, 'mandatory' => false, 'audience' => 'all'],

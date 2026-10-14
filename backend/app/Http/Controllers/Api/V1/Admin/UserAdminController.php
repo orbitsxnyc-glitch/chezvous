@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Enums\UserStatus;
+use App\Exceptions\AdminRuleException;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Inquiry;
 use App\Models\Listing;
 use App\Models\User;
 use App\Services\Admin\UserAdminService;
+use App\Services\Auth\TwoFactorService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -79,6 +81,18 @@ class UserAdminController extends Controller
         $data = $request->validate(['admin' => ['required', 'boolean']]);
 
         return response()->json(['data' => $this->present($this->users->setAdminRole($user, $request->user(), (bool) $data['admin'])->load('roles'))]);
+    }
+
+    /** Appareil perdu : réinitialise le second facteur d'un administrateur (super administrateur uniquement, jamais le sien). */
+    public function resetTwoFactor(Request $request, User $user, TwoFactorService $twoFactor): JsonResponse
+    {
+        Gate::authorize('manage-catalog');
+        if ($request->user()->id === $user->id) {
+            throw new AdminRuleException('cannot_target_self', 'Un autre super administrateur doit réinitialiser votre double authentification.', 403);
+        }
+        $twoFactor->reset($user, $request->user());
+
+        return response()->json(['data' => ['id' => $user->ulid, 'two_factor' => false]]);
     }
 
     /** @return array<string, mixed> */

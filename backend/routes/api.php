@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\V1\Auth\OtpController;
 use App\Http\Controllers\Api\V1\Auth\PasswordResetController;
 use App\Http\Controllers\Api\V1\Auth\RegisterController;
 use App\Http\Controllers\Api\V1\Auth\SessionController;
+use App\Http\Controllers\Api\V1\Auth\TwoFactorController;
 use App\Http\Controllers\Api\V1\Commercial\CatalogController;
 use App\Http\Controllers\Api\V1\Commercial\PremiumController;
 use App\Http\Controllers\Api\V1\Commercial\SubscriptionController;
@@ -48,6 +49,12 @@ Route::prefix('auth')->group(function () {
     Route::post('password/reset', PasswordResetController::class)->middleware('throttle:otp-verify');
     Route::post('login', [SessionController::class, 'login'])->middleware('throttle:login');
     Route::post('logout', [SessionController::class, 'logout'])->middleware('auth:sanctum');
+    Route::middleware('auth:sanctum')->prefix('2fa')->group(function () {
+        Route::get('status', [TwoFactorController::class, 'status']);
+        Route::post('setup', [TwoFactorController::class, 'setup'])->middleware('throttle:two-factor');
+        Route::post('confirm', [TwoFactorController::class, 'confirm'])->middleware('throttle:two-factor');
+        Route::post('verify', [TwoFactorController::class, 'verify'])->middleware('throttle:two-factor');
+    });
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -158,14 +165,14 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Justificatifs de règlement : même principe (lien signé temporaire ET administrateur connecté).
-    Route::get('admin/payment-proofs/{payment}', [CommercialController::class, 'downloadProof'])->middleware('signed')->name('payment-proofs.download');
+    Route::get('admin/payment-proofs/{payment}', [CommercialController::class, 'downloadProof'])->middleware(['two-factor', 'signed'])->name('payment-proofs.download');
 
     // Justificatifs privés : lien signé temporaire ET administrateur connecté.
     Route::get('admin/verification-documents/{document}', [VerificationController::class, 'download'])
-        ->middleware('signed')->name('verification-documents.download');
+        ->middleware(['two-factor', 'signed'])->name('verification-documents.download');
 
     // Modération (ADM-01) : réservée aux rôles admin et super_admin.
-    Route::prefix('admin')->group(function () {
+    Route::prefix('admin')->middleware('two-factor')->group(function () {
         Route::get('moderation', [ModerationController::class, 'index']);
         Route::get('moderation/reasons', [ModerationController::class, 'reasons']);
         Route::get('dashboard', DashboardController::class);
@@ -182,6 +189,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('users/{user}/suspend', [UserAdminController::class, 'suspend']);
         Route::post('users/{user}/reactivate', [UserAdminController::class, 'reactivate']);
         Route::put('users/{user}/admin-role', [UserAdminController::class, 'adminRole']);
+        Route::post('users/{user}/two-factor/reset', [UserAdminController::class, 'resetTwoFactor']);
         Route::get('agencies', [AgencyAdminController::class, 'index']);
         Route::get('agencies/{agency}', [AgencyAdminController::class, 'show']);
         Route::post('agencies/{agency}/suspend', [AgencyAdminController::class, 'suspend']);
