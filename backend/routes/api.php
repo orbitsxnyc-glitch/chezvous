@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\Admin\CommercialController;
 use App\Http\Controllers\Api\V1\Admin\ModerationController;
+use App\Http\Controllers\Api\V1\Admin\NotificationAdminController;
 use App\Http\Controllers\Api\V1\Admin\VerificationController;
 use App\Http\Controllers\Api\V1\AgencyController;
 use App\Http\Controllers\Api\V1\AgencyTeamController;
@@ -17,6 +18,8 @@ use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\Engagement\FavoriteController;
 use App\Http\Controllers\Api\V1\Engagement\InquiryController;
 use App\Http\Controllers\Api\V1\Engagement\NotificationController;
+use App\Http\Controllers\Api\V1\Engagement\NotificationPreferenceController;
+use App\Http\Controllers\Api\V1\Engagement\PushDeviceController;
 use App\Http\Controllers\Api\V1\Engagement\SavedSearchController;
 use App\Http\Controllers\Api\V1\Engagement\VisitController;
 use App\Http\Controllers\Api\V1\ListingReportController;
@@ -93,6 +96,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('my/saved-searches/{search}', [SavedSearchController::class, 'destroy']);
     Route::get('my/notifications', [NotificationController::class, 'index']);
     Route::patch('my/notifications/read', [NotificationController::class, 'read']);
+    Route::get('my/notification-preferences', [NotificationPreferenceController::class, 'show']);
+    Route::patch('my/notification-preferences', [NotificationPreferenceController::class, 'update']);
+    Route::get('my/devices', [PushDeviceController::class, 'index']);
+    Route::post('my/devices', [PushDeviceController::class, 'store']);
+    Route::delete('my/devices/{device}', [PushDeviceController::class, 'destroy']);
 
     // Offre commerciale sans paiement en ligne (COM-03 à COM-07).
     Route::post('my/subscription-requests', [SubscriptionController::class, 'store'])->middleware('throttle:commercial');
@@ -154,6 +162,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('admin')->group(function () {
         Route::get('moderation', [ModerationController::class, 'index']);
         Route::get('moderation/reasons', [ModerationController::class, 'reasons']);
+        Route::get('notification-templates', [NotificationAdminController::class, 'templates']);
+        Route::get('notification-templates/{type}/{channel}', [NotificationAdminController::class, 'versions']);
+        Route::put('notification-templates/{type}/{channel}', [NotificationAdminController::class, 'updateTemplate']);
+        Route::get('notification-deliveries', [NotificationAdminController::class, 'deliveries']);
+        Route::post('notification-deliveries/{delivery}/retry', [NotificationAdminController::class, 'retry'])->whereNumber('delivery');
         Route::get('subscriptions', [CommercialController::class, 'subscriptions']);
         Route::get('subscriptions/{subscription}', [CommercialController::class, 'showSubscription']);
         Route::post('subscriptions/{subscription}/payments', [CommercialController::class, 'recordSubscriptionPayment'])->middleware('throttle:uploads');

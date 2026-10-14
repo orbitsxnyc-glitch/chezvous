@@ -9,6 +9,7 @@ use App\Models\AgencyMember;
 use App\Models\Inquiry;
 use App\Models\Listing;
 use App\Models\Locality;
+use App\Models\NotificationDelivery;
 use App\Models\Plan;
 use App\Models\PremiumProduct;
 use App\Models\Property;
@@ -18,6 +19,7 @@ use App\Models\Subscription;
 use App\Models\User;
 use App\Services\Agencies\AgencyService;
 use App\Services\Commercial\EntitlementService;
+use App\Services\Engagement\NotificationService;
 use App\Services\Inquiries\InquiryService;
 use App\Services\Search\PublicLocationService;
 use Database\Seeders\ReferenceDataSeeder;
@@ -216,4 +218,14 @@ function activeSubscription(User|Agency $subscriber, ?Plan $plan = null, ?DateTi
     app(EntitlementService::class)->forget($subscriber);
 
     return $sub;
+}
+
+function notify(User $u, string $type, array $data = [])
+{
+    return app(NotificationService::class)->notify($u, $type, $data);
+}
+
+function deliveries(?string $channel = null)
+{
+    return NotificationDelivery::query()->when($channel, fn ($q) => $q->where('channel', $channel))->get();
 }

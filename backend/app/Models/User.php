@@ -25,7 +25,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon|null $phone_verified_at
  * @property array<string, mixed>|null $notification_preferences
  */
-#[Fillable(['name', 'phone', 'email', 'whatsapp', 'password', 'account_type', 'locale', 'city', 'notification_preferences'])]
+#[Fillable(['name', 'phone', 'email', 'whatsapp', 'password', 'account_type', 'locale', 'city'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {

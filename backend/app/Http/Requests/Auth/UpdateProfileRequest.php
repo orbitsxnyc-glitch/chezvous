@@ -24,7 +24,6 @@ class UpdateProfileRequest extends FormRequest
             'whatsapp_same_as_phone' => ['sometimes', 'boolean'],
             'city' => ['sometimes', 'nullable', 'string', 'max:80'],
             'locale' => ['sometimes', Rule::in(['fr', 'en', 'wo'])],
-            'notification_preferences' => ['sometimes', 'nullable', 'array'],
         ];
     }
 }

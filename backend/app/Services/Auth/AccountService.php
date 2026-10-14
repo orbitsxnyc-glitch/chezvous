@@ -8,13 +8,14 @@ use App\Enums\PlatformRole;
 use App\Enums\UserStatus;
 use App\Models\User;
 use App\Services\Agencies\AgencyService;
+use App\Services\Engagement\NotificationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class AccountService
 {
-    public function __construct(private readonly OtpService $otp, private readonly AgencyService $agencies) {}
+    public function __construct(private readonly OtpService $otp, private readonly AgencyService $agencies, private readonly NotificationService $notifications) {}
 
     /**
      * Inscription. Réponse identique que le numéro soit nouveau ou déjà connu : aucune énumération de comptes.
@@ -98,6 +99,7 @@ class AccountService
         $user->forceFill(['password' => $password, 'phone_verified_at' => $user->phone_verified_at ?? now()])->save();
         $user->tokens()->delete();
         $user->recordAudit('user.password_reset', null, null, $user->id);
+        $this->notifications->notify($user, 'security.password_changed'); // message de sécurité : non désactivable
 
         return true;
     }

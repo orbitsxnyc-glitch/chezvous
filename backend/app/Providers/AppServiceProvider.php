@@ -4,7 +4,9 @@ namespace App\Providers;
 
 use App\Contracts\InvitationSender;
 use App\Contracts\OtpSender;
+use App\Events\ListingExpiringSoon;
 use App\Events\ListingStatusChanged;
+use App\Listeners\ListingNotifier;
 use App\Models\Inquiry;
 use App\Models\Listing;
 use App\Models\User;
@@ -40,6 +42,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // Une annonce qui quitte l'état publié suspend ses mises en avant (le temps restant n'est pas rendu).
         Event::listen(ListingStatusChanged::class, fn (ListingStatusChanged $e) => app(PremiumService::class)->onListingStatusChanged($e->listing, $e->from, $e->to));
+
+        Event::listen(ListingStatusChanged::class, [ListingNotifier::class, 'statusChanged']);
+        Event::listen(ListingExpiringSoon::class, [ListingNotifier::class, 'expiringSoon']);
 
         Gate::policy(Listing::class, ListingPolicy::class);
         Gate::policy(Inquiry::class, InquiryPolicy::class);
