@@ -1,4 +1,3 @@
-# NON EXÉCUTÉ : ce workflow n'a jamais tourné (dépôt non poussé à sa rédaction).
 name: CI
 on:
   pull_request:
