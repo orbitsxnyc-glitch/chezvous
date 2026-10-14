@@ -49,7 +49,7 @@ class ListingStateService
             $this->assertFrom($l, [S::Draft, S::Rejected, S::Expired]);
             $this->assertComplete($l);
             $this->assertQuota($l);
-            $target = $this->isTrusted($l->advertiser) ? S::Published : S::PendingModeration;
+            $target = $this->isTrustedListing($l) ? S::Published : S::PendingModeration;
             if ($l->status === S::Rejected) {
                 $target = S::PendingModeration; // une annonce refusée repasse toujours par la modération
             }
@@ -139,6 +139,25 @@ class ListingStateService
     }
 
     /**
+     * Confiance pour CETTE annonce : une agence vérifiée (ou ayant déjà des annonces approuvées) est de confiance ;
+     * sinon, la règle du compte s'applique. Le téléphone de l'annonceur doit toujours être vérifié.
+     */
+    public function isTrustedListing(Listing $listing): bool
+    {
+        $advertiser = $listing->advertiser;
+        if ($listing->agency_id === null) {
+            return $this->isTrusted($advertiser);
+        }
+        if (! $advertiser->hasVerifiedPhone()) {
+            return false;
+        }
+        $agency = $listing->agency;
+        $approvals = Listing::withTrashed()->where('agency_id', $agency->id)->whereNotNull('approved_at')->count();
+
+        return $agency->isVerified() || $approvals >= config('chezvous.listings.trusted_after_approvals');
+    }
+
+    /**
      * @param  callable(Listing): Listing  $callback
      */
     private function run(Listing $listing, ?User $actor, callable $callback): Listing
@@ -212,11 +231,10 @@ class ListingStateService
 
     private function assertQuota(Listing $l): void
     {
-        $user = $l->advertiser;
-        if (! $this->quota->hasRoom($user, $l)) {
+        if (! $this->quota->hasRoomFor($l)) {
             throw new ListingRuleException('quota_exceeded',
                 'Vous avez atteint le nombre maximal d\'annonces actives. Mettez une annonce en pause ou archivez-en une.',
-                ['limit' => $this->quota->limitFor($user)]);
+                ['limit' => $this->quota->limitForListing($l)]);
         }
     }
 

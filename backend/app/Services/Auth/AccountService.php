@@ -7,18 +7,19 @@ use App\Enums\OtpPurpose;
 use App\Enums\PlatformRole;
 use App\Enums\UserStatus;
 use App\Models\User;
+use App\Services\Agencies\AgencyService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class AccountService
 {
-    public function __construct(private readonly OtpService $otp) {}
+    public function __construct(private readonly OtpService $otp, private readonly AgencyService $agencies) {}
 
     /**
      * Inscription. Réponse identique que le numéro soit nouveau ou déjà connu : aucune énumération de comptes.
      *
-     * @param  array{name: string, phone: string, email?: ?string, password: string, account_type: string}  $data
+     * @param  array{name: string, phone: string, email?: ?string, password: string, account_type: string, agency_name?: ?string}  $data
      */
     public function register(array $data): void
     {
@@ -43,6 +44,9 @@ class AccountService
                 $user->assignRole(PlatformRole::Client->value);
                 if ($user->account_type === AccountType::Individual) {
                     $user->assignRole(PlatformRole::Particulier->value);
+                } else {
+                    // Un compte Agence crée l'organisation et en devient le gérant (AUTH-05).
+                    $this->agencies->createFor($user, (string) $data['agency_name']);
                 }
                 $user->recordAudit('user.registered', null, ['account_type' => $user->account_type->value], $user->id);
 

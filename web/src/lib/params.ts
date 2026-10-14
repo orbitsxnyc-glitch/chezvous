@@ -1,6 +1,6 @@
 export type SearchParams = Record<string, string>;
 
-const ALLOWED = ["transaction", "type", "locality", "q", "price_min", "price_max", "surface_min", "surface_max", "bedrooms_min", "furnished", "sort", "cursor"];
+const ALLOWED = ["transaction", "type", "locality", "agency", "q", "price_min", "price_max", "surface_min", "surface_max", "bedrooms_min", "furnished", "sort", "cursor"];
 
 /** Ne garde que les paramètres connus et non vides (aucune valeur du visiteur n'est transmise telle quelle à l'API sans filtre). */
 export function cleanParams(input: Record<string, string | string[] | undefined>): SearchParams {

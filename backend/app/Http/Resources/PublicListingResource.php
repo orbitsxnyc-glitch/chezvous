@@ -74,7 +74,12 @@ class PublicListingResource extends JsonResource
                 'checks' => app(PassportService::class)->checks($property, $this->resource),
                 'notice' => 'Un contrôle de document ne garantit pas la propriété juridique du bien.',
             ],
-            'advertiser' => [
+            'advertiser' => $this->agency ? [
+                // Pour une annonce d'agence, on présente l'agence (pas l'agent) : jamais de donnée personnelle d'un membre.
+                'name' => $this->agency->name,
+                'account_type' => 'agency',
+                'agency' => ['slug' => $this->agency->slug, 'verified' => $this->agency->isVerified()],
+            ] : [
                 'name' => $this->advertiserDisplayName(),
                 'account_type' => $this->advertiser->account_type->value,
             ],

@@ -14,6 +14,7 @@ export default function RegisterForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [general, setGeneral] = useState("");
   const [pending, setPending] = useState(false);
+  const [accountType, setAccountType] = useState<AccountType>("individual");
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -33,7 +34,8 @@ export default function RegisterForm() {
         phone,
         email: email || undefined,
         password: String(form.get("password")),
-        account_type: String(form.get("account_type")) as AccountType,
+        account_type: accountType,
+        agency_name: accountType === "agency" ? String(form.get("agency_name")).trim() : undefined,
       });
       router.push(`/verification?phone=${encodeURIComponent(phone)}`);
     } catch (e) {
@@ -63,13 +65,14 @@ export default function RegisterForm() {
         <fieldset className="flex flex-col gap-1">
           <legend className="text-sm font-medium">Type de compte</legend>
           <label className="flex items-center gap-2">
-            <input type="radio" name="account_type" value="individual" defaultChecked /> Particulier
+            <input type="radio" name="account_type" value="individual" checked={accountType === "individual"} onChange={() => setAccountType("individual")} /> Particulier
           </label>
           <label className="flex items-center gap-2">
-            <input type="radio" name="account_type" value="agency" /> Agence
+            <input type="radio" name="account_type" value="agency" checked={accountType === "agency"} onChange={() => setAccountType("agency")} /> Agence
           </label>
           {errors.account_type && <p role="alert" className="text-sm text-red-700">{errors.account_type}</p>}
         </fieldset>
+        {accountType === "agency" && <Field label="Nom de l'agence" name="agency_name" required error={errors.agency_name} />}
         {general && <FormMessage kind="error">{general}</FormMessage>}
         <SubmitButton pending={pending}>Recevoir mon code</SubmitButton>
       </form>

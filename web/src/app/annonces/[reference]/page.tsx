@@ -113,9 +113,16 @@ async function Detail({ params }: { params: Props["params"] }) {
         <h2 id="annonceur" className="text-lg font-semibold">
           Annonceur
         </h2>
-        <p>
-          {l.advertiser.name} · {l.advertiser.account_type === "agency" ? "Agence" : "Particulier"} · téléphone vérifié
-        </p>
+        {l.advertiser.agency ? (
+          <p>
+            <Link className="underline" href={`/agences/${l.advertiser.agency.slug}`}>
+              {l.advertiser.name}
+            </Link>{" "}
+            · Agence{l.advertiser.agency.verified ? " vérifiée" : ""}
+          </p>
+        ) : (
+          <p>{l.advertiser.name} · Particulier · téléphone vérifié</p>
+        )}
         <p className="text-sm text-zinc-600">La prise de contact et la demande de visite arrivent prochainement.</p>
       </section>
 

@@ -26,11 +26,18 @@ it('inscrit un particulier, le nomme client + particulier et envoie un OTP', fun
     $this->assertDatabaseHas('audit_logs', ['action' => 'user.registered', 'subject_id' => $user->ulid]);
 });
 
-it('un compte agence ne reçoit que le rôle client', function () {
+it('un compte agence ne reçoit que le rôle client, crée l\'agence et en devient le gérant', function () {
     captureOtp();
-    $this->postJson('/api/v1/auth/register', registerPayload(['account_type' => 'agency']))->assertStatus(202);
+    $this->postJson('/api/v1/auth/register', registerPayload(['account_type' => 'agency', 'agency_name' => 'Diallo Immobilier']))->assertStatus(202);
 
-    expect(User::first()->getRoleNames()->all())->toBe(['client']);
+    $user = User::first();
+    expect($user->getRoleNames()->all())->toBe(['client'])
+        ->and($user->agencyMembership->role->value)->toBe('manager')
+        ->and($user->agencyMembership->agency->name)->toBe('Diallo Immobilier');
+});
+
+it('exige le nom de l\'agence pour un compte agence', function () {
+    $this->postJson('/api/v1/auth/register', registerPayload(['account_type' => 'agency']))->assertStatus(422)->assertJsonValidationErrors('agency_name');
 });
 
 it('répond de la même façon pour un numéro déjà inscrit (aucune énumération)', function () {

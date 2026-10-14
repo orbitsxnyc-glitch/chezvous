@@ -79,7 +79,7 @@ class ListingService
                 $this->audit->record('listing.updated', $listing, null, ['fields' => $changed], $actor->id);
             }
 
-            if ($listing->status === ListingStatus::Published && array_intersect($changed, self::SENSITIVE) !== [] && ! $this->states->isTrusted($actor)) {
+            if ($listing->status === ListingStatus::Published && array_intersect($changed, self::SENSITIVE) !== [] && ! $this->states->isTrustedListing($listing)) {
                 $this->states->returnToModeration($listing, $actor);
             }
 
@@ -123,8 +123,13 @@ class ListingService
     {
         $next = DB::selectOne("select nextval('listing_reference_seq') as n")->n;
 
+        // Un membre d'agence publie toujours pour son agence, et l'annonce lui est attribuée.
+        $member = $user->activeMembership();
+
         $listing = new Listing($attributes);
         $listing->forceFill([
+            'agency_id' => $member?->agency_id,
+            'assigned_to' => $member !== null ? $user->id : null,
             'reference' => sprintf('CV-%d-%06d', now()->year, $next),
             'property_id' => $property->id,
             'advertiser_user_id' => $user->id,

@@ -120,7 +120,17 @@ class DemoListings extends Command
             DB::table('property_images')->whereIn('property_id', $props)->delete();
             DB::table('listings')->whereIn('property_id', $props)->delete();
             DB::table('properties')->whereIn('id', $props)->delete();
-            DB::table('users')->where('email', 'like', '%@'.self::DEMO_DOMAIN)->delete();
+            // Agences créées par des comptes fictifs (leurs annonces sont déjà supprimées ci-dessus).
+            $demoUsers = DB::table('users')->where('email', 'like', '%@'.self::DEMO_DOMAIN)->pluck('id');
+            $agencies = DB::table('agencies')->whereIn('created_by', $demoUsers)->pluck('id');
+            DB::table('listings')->whereIn('agency_id', $agencies)->delete();
+            DB::table('agency_invitations')->whereIn('agency_id', $agencies)->delete();
+            DB::table('verification_requests')->whereIn('agency_id', $agencies)->delete();
+            DB::table('agency_members')->whereIn('agency_id', $agencies)->delete();
+            DB::table('agency_localities')->whereIn('agency_id', $agencies)->delete();
+            DB::table('verification_checks')->where('subject_type', 'agency')->whereIn('subject_id', $agencies)->delete();
+            DB::table('agencies')->whereIn('id', $agencies)->delete();
+            DB::table('users')->whereIn('id', $demoUsers)->delete();
         });
         $this->info('Données de démonstration supprimées.');
 

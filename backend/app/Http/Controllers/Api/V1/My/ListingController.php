@@ -8,7 +8,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Listings\StoreListingRequest;
 use App\Http\Requests\Listings\UpdateListingRequest;
 use App\Http\Resources\ListingResource;
+use App\Models\AgencyMember;
 use App\Models\Listing;
+use App\Services\Agencies\AgencyTeamService;
 use App\Services\Listings\ListingService;
 use App\Services\Listings\ListingStateService;
 use Illuminate\Http\Request;
@@ -25,7 +27,7 @@ class ListingController extends Controller
         $request->validate(['status' => ['sometimes', Rule::enum(ListingStatus::class)]]);
 
         $query = Listing::with(['property.images', 'property.amenities'])
-            ->where('advertiser_user_id', $request->user()->id)
+            ->visibleTo($request->user())
             ->when($request->query('status'), fn ($q, $s) => $q->where('status', $s))
             ->latest('id');
 
@@ -43,7 +45,7 @@ class ListingController extends Controller
 
     public function show(Listing $listing): ListingResource
     {
-        Gate::authorize('manage', $listing);
+        Gate::authorize('view', $listing);
 
         return new ListingResource($this->loaded($listing));
     }
@@ -89,6 +91,16 @@ class ListingController extends Controller
         Gate::authorize('publish-listing');
 
         return new ListingResource($this->loaded($this->listings->duplicate($listing, $request->user())));
+    }
+
+    /** Attribution ou réattribution à un agent (gérant uniquement, AGC-04). */
+    public function assign(Request $request, Listing $listing, AgencyTeamService $team): ListingResource
+    {
+        Gate::authorize('assign', $listing);
+        $data = $request->validate(['member' => ['required', 'string']]);
+        $member = AgencyMember::where('ulid', $data['member'])->where('agency_id', $listing->agency_id)->firstOrFail();
+
+        return new ListingResource($this->loaded($team->assign($listing, $member, $request->user())));
     }
 
     /** Pas de suppression physique au MVP : DELETE archive l'annonce. */

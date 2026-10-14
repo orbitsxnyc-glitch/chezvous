@@ -52,6 +52,14 @@ Le porteur du projet a délégué à Claude les décisions recommandées. Elles 
 | Carte | API `/listings/map` prête ; interface cartographique non livrée (fournisseur de tuiles à valider, MapLibre/OpenStreetMap recommandé) | À décider |
 | Pages inexistantes | Statut HTTP 200 avec `noindex` automatique (contrainte du rendu en flux de Next.js), pas de 404 réel | À revoir |
 | URL publiques | `/annonces/{référence}`, `/a-louer/{type}/{quartier}`, `/a-vendre/{type}/{quartier}` | Facile |
+| Quota d'une agence | 50 annonces actives simultanées pour toute l'équipe (`CHEZVOUS_QUOTA_AGENCY`), indépendant du quota personnel ; remplacé par la formule en Phase 6 | Facile (config) |
+| Droit étendu d'un agent | Accordé et retiré par le gérant uniquement : permet de VOIR toute l'agence, jamais de modifier les annonces d'autrui | Facile |
+| Une agence par compte | Un compte n'appartient qu'à une seule agence (contrainte en base) ; un seul gérant par agence au MVP | À revoir |
+| Confiance d'une agence | Une agence vérifiée (ou ayant déjà une annonce approuvée) publie sans modération ; le téléphone de l'annonceur doit être vérifié | Facile (config) |
+| Invitation | Jeton aléatoire de 48 caractères, stocké haché, valable 7 jours, à usage unique ; invitation par téléphone liée au titulaire du numéro ; envoi réel (SMS) en attente du fournisseur, journal local en développement | À confirmer |
+| Justificatifs | NINEA et RCCM en stockage privé, lien signé de 5 minutes, administrateur connecté obligatoire ; aucune durée de conservation décidée (avis juridique) | À décider |
+| Annonceur public d'une annonce d'agence | L'agence est présentée, jamais l'agent (ni nom, ni téléphone, ni e-mail) | Facile |
+| Agence suspendue | Ses annonces disparaissent de la recherche et de la fiche publique ; sa page répond 404 ; aucun écran d'administration avant la Phase 7 | À revoir |
 
 ## Questions ouvertes
 

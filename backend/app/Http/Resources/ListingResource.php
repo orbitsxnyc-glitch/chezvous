@@ -37,6 +37,8 @@ class ListingResource extends JsonResource
             'agency_fee_xof' => $this->agency_fee_xof,
             'other_fees_xof' => $this->other_fees_xof,
             'draft_step' => $this->draft_step,
+            'agency' => $this->agency_id ? ['id' => $this->agency->ulid, 'name' => $this->agency->name, 'slug' => $this->agency->slug] : null,
+            'assigned_to' => $this->agency_id && $this->assignee ? ['name' => $this->assignee->name] : null,
             'rejection' => $this->rejection_reason_code ? ['reason' => $this->rejection_reason_code, 'comment' => $this->rejection_comment] : null,
             'published_at' => $this->published_at,
             'expires_at' => $this->expires_at,

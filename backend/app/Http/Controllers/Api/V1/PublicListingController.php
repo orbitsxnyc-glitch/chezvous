@@ -15,7 +15,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class PublicListingController extends Controller
 {
-    private const SUMMARY_RELATIONS = ['property.type', 'property.locality', 'property.coverImage'];
+    private const SUMMARY_RELATIONS = ['property.type', 'property.locality', 'property.coverImage', 'agency'];
 
     public function __construct(private readonly ListingSearch $search) {}
 
@@ -75,7 +75,7 @@ class PublicListingController extends Controller
         /** @var Listing $listing */
         $listing = $this->search->withPublicCoordinates($this->search->visible())
             ->where(fn ($q) => $q->where('listings.ulid', $identifier)->orWhere('listings.reference', strtoupper($identifier)))
-            ->with(['property.type', 'property.locality', 'property.amenities', 'property.images', 'advertiser'])
+            ->with(['property.type', 'property.locality', 'property.amenities', 'property.images', 'advertiser', 'agency'])
             ->firstOrFail();
 
         return $listing;

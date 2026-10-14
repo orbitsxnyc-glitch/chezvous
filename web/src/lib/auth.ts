@@ -25,6 +25,7 @@ export const registerAccount = (body: {
   email?: string;
   password: string;
   account_type: AccountType;
+  agency_name?: string;
 }) => apiFetch<Data<{ message: string }>>("/auth/register", { method: "POST", body });
 
 export const sendOtp = (phone: string, purpose: OtpPurpose) =>

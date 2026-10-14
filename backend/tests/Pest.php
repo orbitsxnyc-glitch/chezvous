@@ -3,12 +3,15 @@
 use App\Contracts\OtpSender;
 use App\Enums\ListingStatus;
 use App\Enums\OtpPurpose;
+use App\Models\Agency;
+use App\Models\AgencyMember;
 use App\Models\Listing;
 use App\Models\Locality;
 use App\Models\Property;
 use App\Models\PropertyImage;
 use App\Models\PropertyType;
 use App\Models\User;
+use App\Services\Agencies\AgencyService;
 use App\Services\Search\PublicLocationService;
 use Database\Seeders\ReferenceDataSeeder;
 use Database\Seeders\RolesSeeder;
@@ -115,4 +118,44 @@ function publicListing(array $listing = [], array $property = [], ?float $lat = 
         'last_confirmed_at' => now(),
         'freshness_bucket' => 0,
     ], $listing));
+}
+
+/**
+ * Agence avec son gérant (compte agence, membre « manager »).
+ *
+ * @return array{0: User, 1: Agency}
+ */
+function agencyWithManager(string $name = 'Diallo Immobilier', bool $verified = false): array
+{
+    $manager = User::factory()->create(['account_type' => 'agency']);
+    $manager->assignRole('client');
+    $agency = app(AgencyService::class)->createFor($manager, $name);
+    if ($verified) {
+        $agency->forceFill(['verified_at' => now()])->save();
+    }
+
+    return [$manager, $agency];
+}
+
+/** Agent actif d'une agence. */
+function agencyAgent(Agency $agency, bool $canSeeAll = false, array $userOver = []): User
+{
+    $agent = User::factory()->create(array_merge(['account_type' => 'agency'], $userOver));
+    $agent->assignRole('client');
+    AgencyMember::create(['agency_id' => $agency->id, 'user_id' => $agent->id, 'role' => 'agent', 'status' => 'active', 'can_see_all' => $canSeeAll, 'joined_at' => now()]);
+
+    return $agent;
+}
+
+/**
+ * Annonce d'agence prête à soumettre (ou dans l'état demandé), attribuée à un membre.
+ *
+ * @param  array<string, mixed>  $over
+ */
+function agencyListing(Agency $agency, ?User $assignedTo = null, array $over = []): Listing
+{
+    $manager = $agency->members()->where('role', 'manager')->first()->user;
+    $by = $assignedTo ?? $manager;
+
+    return readyListing($by, array_merge(['agency_id' => $agency->id, 'assigned_to' => $by->id], $over));
 }

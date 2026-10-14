@@ -33,6 +33,7 @@ class RegisterRequest extends FormRequest
             'email' => ['nullable', 'email:rfc', 'max:190'],
             'password' => ['required', 'string', Password::min(8)->max(128)],
             'account_type' => ['required', Rule::enum(AccountType::class)],
+            'agency_name' => ['required_if:account_type,agency', 'nullable', 'string', 'max:120'],
         ];
     }
 
