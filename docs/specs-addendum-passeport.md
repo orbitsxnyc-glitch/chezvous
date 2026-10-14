@@ -37,3 +37,10 @@ La détection automatique de doublons reste en V2, comme dans la présentation.
 ## Mention juridique
 
 Un contrôle « document contrôlé » ne garantit pas la propriété juridique. Cette mention doit apparaître dans l'interface et les CGU.
+
+## Mise en œuvre en Phase 2 (2026-10-15)
+
+- Migrations : `localities`, `property_types`, `amenities`, `moderation_reasons`, `properties`, `listings`, `property_images`, `listing_reports`, `mandates`, `verification_checks`, `availability_confirmations`.
+- Les tables `mandates`, `verification_checks` et `availability_confirmations` existent mais **aucun écran ni route ne les alimente encore** : leur usage (contrôles, fraîcheur, classement) est prévu en Phase 3 et dans le back-office.
+- La référence du bien (ex. DK-YOF-000123) est attribuée dès que la localité est connue, et ne change plus.
+- Les points de repère des quartiers dans `ReferenceDataSeeder` sont approximatifs et à valider.
