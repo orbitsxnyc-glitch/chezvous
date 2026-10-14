@@ -22,6 +22,12 @@ export function ListingCard({ listing }: { listing: ListingSummary }) {
               .filter(Boolean)
               .join(" · ")}
           </p>
+          {listing.agency && (
+            <p className="text-sm">
+              {listing.agency.name}
+              {listing.agency.verified ? " · Agence vérifiée" : ""}
+            </p>
+          )}
           <AvailabilityBadge state={listing.availability.state} confirmedAt={listing.availability.confirmed_at} />
           <p className="text-xs text-zinc-500">Réf. {listing.reference}</p>
         </div>

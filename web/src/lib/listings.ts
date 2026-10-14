@@ -17,6 +17,7 @@ export type ListingSummary = {
   surface_m2: number | null;
   bedrooms: number | null;
   furnished: boolean;
+  agency: { name: string; slug: string; verified: boolean } | null;
   cover: Images | null;
   availability: { state: FreshnessState; confirmed_at: string | null };
   published_at: string | null;
@@ -59,7 +60,7 @@ export type ListingDetail = {
     checks: { type: string; status: string; performed_at: string | null }[];
     notice: string;
   };
-  advertiser: { name: string; account_type: string };
+  advertiser: { name: string; account_type: string; agency?: { slug: string; verified: boolean } };
   published_at: string | null;
   expires_at: string | null;
 };

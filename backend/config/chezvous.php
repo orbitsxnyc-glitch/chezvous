@@ -16,6 +16,7 @@ return [
         'otp_per_hour_ip' => (int) env('CHEZVOUS_OTP_PER_HOUR_IP', 10),
         'uploads_per_hour' => (int) env('CHEZVOUS_UPLOADS_PER_HOUR', 200),
         'reports_per_hour' => (int) env('CHEZVOUS_REPORTS_PER_HOUR', 20),
+        'invitations_per_hour' => (int) env('CHEZVOUS_INVITATIONS_PER_HOUR', 30),
         'register_per_hour_ip' => (int) env('CHEZVOUS_REGISTER_PER_HOUR_IP', 10),
     ],
 
@@ -37,6 +38,16 @@ return [
         // Fraîcheur de la disponibilité (heures depuis la dernière confirmation).
         'freshness_reconfirm_hours' => (int) env('CHEZVOUS_FRESHNESS_RECONFIRM_HOURS', 48),
         'freshness_stale_hours' => (int) env('CHEZVOUS_FRESHNESS_STALE_HOURS', 168),
+    ],
+
+    'agencies' => [
+        'quota_listings' => (int) env('CHEZVOUS_QUOTA_AGENCY', 50), // annonces actives simultanées d'une agence (remplacé par la formule en Phase 6)
+        'invitation_ttl_days' => (int) env('CHEZVOUS_INVITATION_TTL_DAYS', 7),
+        'invitation_driver' => env('CHEZVOUS_INVITATION_DRIVER', 'log'), // log (développement) | mail
+        'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
+        'verification_max_kb' => (int) env('CHEZVOUS_VERIFICATION_MAX_KB', 5120),
+        'verification_allowed_mimes' => ['application/pdf', 'image/jpeg', 'image/png'],
+        'document_link_minutes' => (int) env('CHEZVOUS_DOCUMENT_LINK_MINUTES', 5), // durée de vie d'une URL signée de justificatif
     ],
 
     'search' => [

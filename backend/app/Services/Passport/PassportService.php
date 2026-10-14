@@ -26,7 +26,8 @@ class PassportService
             ->where(function ($q) use ($property, $listing) {
                 $q->where(fn ($w) => $w->where('subject_type', 'property')->where('subject_id', $property->id))
                     ->orWhere(fn ($w) => $w->where('subject_type', 'user')->where('subject_id', $listing->advertiser_user_id))
-                    ->orWhere(fn ($w) => $w->where('subject_type', 'mandate')->whereIn('subject_id', $property->mandates()->select('id')));
+                    ->orWhere(fn ($w) => $w->where('subject_type', 'mandate')->whereIn('subject_id', $property->mandates()->select('id')))
+                    ->when($listing->agency_id, fn ($q2) => $q2->orWhere(fn ($w) => $w->where('subject_type', 'agency')->where('subject_id', $listing->agency_id)));
             })
             ->orderByDesc('performed_at')->get(['check_type', 'status', 'performed_at']);
 

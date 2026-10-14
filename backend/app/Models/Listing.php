@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\ListingStatus;
 use App\Enums\TransactionType;
 use Database\Factories\ListingFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -55,6 +56,41 @@ class Listing extends Model
             'closed_at' => 'datetime',
             'last_confirmed_at' => 'datetime',
         ];
+    }
+
+    /** @return BelongsTo<Agency, $this> */
+    public function agency(): BelongsTo
+    {
+        return $this->belongsTo(Agency::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function assignee(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    /**
+     * Annonces qu'un utilisateur peut VOIR : les siennes (hors agence) et celles de son agence selon son rôle.
+     * Gérant et agent à droit étendu : toute l'agence ; agent : celles qui lui sont attribuées.
+     *
+     * @param  Builder<Listing>  $query
+     */
+    public function scopeVisibleTo(Builder $query, User $user): void
+    {
+        $member = $user->activeMembership();
+
+        $query->where(function (Builder $w) use ($user, $member) {
+            $w->where(fn (Builder $p) => $p->whereNull('agency_id')->where('advertiser_user_id', $user->id));
+            if ($member !== null) {
+                $w->orWhere(function (Builder $a) use ($member, $user) {
+                    $a->where('agency_id', $member->agency_id);
+                    if (! $member->isManager() && ! $member->can_see_all) {
+                        $a->where('assigned_to', $user->id);
+                    }
+                });
+            }
+        });
     }
 
     /** @return BelongsTo<Property, $this> */

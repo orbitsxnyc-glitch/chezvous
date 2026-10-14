@@ -26,6 +26,7 @@ class ListingSearch
             ->where('status', 'published')
             ->where('expires_at', '>', now())
             ->whereExists(fn ($e) => $e->select(DB::raw(1))->from('properties')->whereColumn('properties.id', 'listings.property_id')->whereNull('properties.deleted_at'))
+            ->where(fn ($q) => $q->whereNull('agency_id')->orWhereIn('agency_id', DB::table('agencies')->where('status', 'active')->whereNull('deleted_at')->select('id')))
             ->when(config('chezvous.search.hide_stale'), fn ($q) => $q->where('freshness_bucket', '<', 2));
     }
 
@@ -39,6 +40,7 @@ class ListingSearch
         $props = DB::table('properties')->select('properties.id')->whereNull('properties.deleted_at');
 
         $q->when($f['transaction'] ?? null, fn ($q, $v) => $q->where('transaction', $v));
+        $q->when($f['agency'] ?? null, fn ($q, $slug) => $q->whereIn('agency_id', DB::table('agencies')->where('slug', $slug)->select('id')));
         $q->when($f['price_min'] ?? null, fn ($q, $v) => $q->where('price_xof', '>=', $v));
         $q->when($f['price_max'] ?? null, fn ($q, $v) => $q->where('price_xof', '<=', $v));
 

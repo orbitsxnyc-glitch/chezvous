@@ -157,6 +157,7 @@ return [
 
     'attributes' => [
         'name' => 'nom',
+        'agency_name' => 'nom de l\'agence',
         'phone' => 'téléphone',
         'email' => 'e-mail',
         'password' => 'mot de passe',

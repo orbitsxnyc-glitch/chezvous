@@ -22,6 +22,7 @@ class SearchListingsRequest extends FormRequest
             'transaction' => ['sometimes', Rule::enum(TransactionType::class)],
             'type' => ['sometimes', 'string', 'max:40'],
             'locality' => ['sometimes', 'string', 'max:120'],
+            'agency' => ['sometimes', 'string', 'max:120'],
             'q' => ['sometimes', 'string', 'max:100'],
             'price_min' => ['sometimes', 'integer', 'min:0'],
             'price_max' => ['sometimes', 'integer', 'min:0', ...($this->has('price_min') ? ['gte:price_min'] : [])],

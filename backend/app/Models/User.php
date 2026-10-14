@@ -4,12 +4,14 @@ namespace App\Models;
 
 use App\Concerns\Auditable;
 use App\Enums\AccountType;
+use App\Enums\AgencyStatus;
 use App\Enums\UserStatus;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -49,6 +51,20 @@ class User extends Authenticatable
             'status' => UserStatus::class,
             'notification_preferences' => 'array',
         ];
+    }
+
+    /** @return HasOne<AgencyMember, $this> */
+    public function agencyMembership(): HasOne
+    {
+        return $this->hasOne(AgencyMember::class);
+    }
+
+    /** Appartenance ACTIVE à une agence active (un membre suspendu n'a plus aucun accès à l'agence). */
+    public function activeMembership(): ?AgencyMember
+    {
+        $member = $this->agencyMembership()->with('agency')->first();
+
+        return $member !== null && $member->isActive() && $member->agency?->status === AgencyStatus::Active ? $member : null;
     }
 
     public function hasVerifiedPhone(): bool
