@@ -4,6 +4,8 @@ import '../core/api_client.dart';
 import '../core/format.dart';
 import '../inquiries/inquiries_screens.dart' show formatDateTime;
 import '../ui/widgets.dart';
+import 'editor_repository.dart';
+import 'listing_editor.dart';
 
 Map<String, dynamic> _map(Object? v) =>
     v is Map<String, dynamic> ? v : const {};
@@ -92,9 +94,10 @@ class MyListingsRepository {
 }
 
 class MyListingsScreen extends StatefulWidget {
-  const MyListingsScreen({super.key, required this.repository});
+  const MyListingsScreen({super.key, required this.repository, this.editor});
 
   final MyListingsRepository repository;
+  final EditorRepository? editor;
 
   @override
   State<MyListingsScreen> createState() => _MyListingsScreenState();
@@ -168,9 +171,26 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
     }
   }
 
+  Future<void> _open(Widget screen) async {
+    await Navigator.of(context)
+        .push(MaterialPageRoute<void>(builder: (_) => screen));
+    if (mounted) _reload();
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Mes annonces')),
+    appBar: AppBar(
+      title: const Text('Mes annonces'),
+      actions: [
+        if (widget.editor != null)
+          IconButton(
+            tooltip: 'Nouvelle annonce',
+            icon: const Icon(Icons.add),
+            onPressed: () =>
+                _open(NewListingScreen(repository: widget.editor!)),
+          ),
+      ],
+    ),
     body: FutureBuilder<List<MyListing>>(
       future: _future,
       builder: (context, snap) {
@@ -198,7 +218,7 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
             child: Padding(
               padding: EdgeInsets.all(24),
               child: Text(
-                "Aucune annonce. La création et l'édition se font pour l'instant sur le site web.",
+                "Aucune annonce. Touchez + pour en créer une.",
                 textAlign: TextAlign.center,
               ),
             ),
@@ -224,9 +244,19 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            l.title ?? l.reference,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+          InkWell(
+            onTap: widget.editor == null
+                ? null
+                : () => _open(
+                    ListingEditorScreen(repository: widget.editor!, id: l.id),
+                  ),
+            child: Text(
+              l.title ?? l.reference,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                decoration: TextDecoration.underline,
+              ),
+            ),
           ),
           Text('${l.reference} · ${listingStatusLabels[l.status] ?? l.status}'),
           Text(formatPrice(l.priceXof, l.transaction)),

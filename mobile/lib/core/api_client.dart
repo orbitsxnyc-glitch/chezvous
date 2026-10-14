@@ -70,11 +70,31 @@ class ApiClient {
       ..headers['Content-Type'] = 'application/json';
     if (token != null) request.headers['Authorization'] = 'Bearer $token';
     if (body != null) request.body = jsonEncode(body);
+    return _execute(request, token);
+  }
 
+  /// Envoi de fichiers (photos) en multipart ; le champ est `images[]` comme attendu par l'API.
+  Future<Map<String, dynamic>> upload(
+    String path,
+    List<http.MultipartFile> files,
+  ) async {
+    final token = await tokens.read();
+    final request = http.MultipartRequest('POST', Uri.parse('$_base$path'))
+      ..headers['Accept'] = 'application/json'
+      ..files.addAll(files);
+    if (token != null) request.headers['Authorization'] = 'Bearer $token';
+    return _execute(request, token, timeout: const Duration(seconds: 120));
+  }
+
+  Future<Map<String, dynamic>> _execute(
+    http.BaseRequest request,
+    String? token, {
+    Duration timeout = const Duration(seconds: 20),
+  }) async {
     http.Response response;
     try {
       response = await http.Response.fromStream(
-        await _client.send(request).timeout(const Duration(seconds: 20)),
+        await _client.send(request).timeout(timeout),
       );
     } catch (_) {
       throw const ApiException(

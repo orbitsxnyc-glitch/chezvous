@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../auth/auth_controller.dart';
+import '../advertiser/editor_repository.dart';
 import '../advertiser/my_listings.dart';
 import '../auth/auth_screens.dart';
 import '../engagement/alerts_screen.dart';
@@ -142,8 +143,10 @@ class _Account extends StatelessWidget {
           title: const Text('Mes annonces'),
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(
-              builder: (_) =>
-                  MyListingsScreen(repository: MyListingsRepository(auth.api)),
+              builder: (_) => MyListingsScreen(
+                repository: MyListingsRepository(auth.api),
+                editor: EditorRepository(auth.api),
+              ),
             ),
           ),
         ),
