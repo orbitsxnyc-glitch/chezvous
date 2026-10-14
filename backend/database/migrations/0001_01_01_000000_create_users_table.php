@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -13,18 +14,37 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->ulid('ulid')->unique();
             $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
+            $table->string('phone')->unique();
+            $table->string('email')->nullable()->unique();
+            $table->string('whatsapp')->nullable();
             $table->string('password');
+            $table->timestamp('phone_verified_at')->nullable();
+            $table->string('account_type', 20);
+            $table->string('status', 20)->default('active')->index();
+            $table->string('locale', 5)->default('fr');
+            $table->string('city')->nullable();
+            $table->string('photo_path')->nullable();
+            $table->jsonb('notification_preferences')->nullable();
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes();
         });
 
-        Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
+        DB::statement("ALTER TABLE users ADD CONSTRAINT users_account_type_check CHECK (account_type IN ('individual', 'agency'))");
+        DB::statement("ALTER TABLE users ADD CONSTRAINT users_status_check CHECK (status IN ('active', 'suspended', 'deleted'))");
+
+        Schema::create('otp_codes', function (Blueprint $table) {
+            $table->id();
+            $table->string('phone');
+            $table->string('purpose', 30);
+            $table->string('code_hash');
+            $table->timestamp('expires_at');
+            $table->unsignedSmallInteger('attempts')->default(0);
+            $table->timestamp('consumed_at')->nullable();
+            $table->timestamps();
+            $table->index(['phone', 'purpose']);
         });
 
         Schema::create('sessions', function (Blueprint $table) {
@@ -43,7 +63,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('otp_codes');
         Schema::dropIfExists('sessions');
     }
 };

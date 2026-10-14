@@ -5,3 +5,5 @@ parameters:
     paths:
         - app
     level: 6
+    # Le PHPDoc de Sanctum (currentAccessToken) annonce PersonalAccessToken alors qu'un TransientToken est possible en session.
+    treatPhpDocTypesAsCertain: false
