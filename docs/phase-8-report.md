@@ -23,7 +23,7 @@ Date : 2026-10-14. Branche `phase-8-mobile`, locale (non poussée).
 
 - **Application jamais lancée visuellement** : ni sur simulateur ni sur appareil ; aucune capture d'écran. Le design Figma n'est pas appliqué (thème sobre).
 - **Android non testé** : licences du SDK non acceptées, aucune compilation Android.
-- **Création et édition d'annonce, envoi de photos, abonnement : non faits sur mobile** (elles n'existent pas non plus sur le web ; l'API est prête). « Mes annonces » ne permet que de suivre et de gérer l'état.
+- **Création et édition d'annonce : ajoutées en Phase 9** (`docs/phase-9-report.md`). L'abonnement reste non fait sur mobile.
 - **Notifications push : non branchées.** Aucun compte Firebase, aucun jeton n'est enregistré. L'API accepte déjà les appareils (`POST /my/devices`).
 - **Pas de carte** (fournisseur non choisi, question 9), pas de zones de quartier plus fines que la liste.
 - **Pas de tests contre une API réelle dans la CI** : les tests utilisent une API simulée ; seule la lecture des modèles a été vérifiée à la main.
