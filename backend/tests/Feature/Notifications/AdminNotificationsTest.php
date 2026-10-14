@@ -41,7 +41,7 @@ it('liste les modèles actifs avec leurs variables', function () {
     $rows = $this->getJson('/api/v1/admin/notification-templates')->assertOk()->json('data');
     $row = collect($rows)->first(fn ($r) => $r['type'] === 'visit.reminder' && $r['channel'] === 'email');
 
-    expect($rows)->toHaveCount(31 * 4)->and($row['variables'])->toBe(['listing', 'hours', 'when'])->and($row['version'])->toBe(1);
+    expect($rows)->toHaveCount(count(config('notifications.types')) * 4)->and($row['variables'])->toBe(['listing', 'hours', 'when'])->and($row['version'])->toBe(1);
 });
 
 it('NOT-05 : une modification crée une NOUVELLE version active et conserve les précédentes', function () {

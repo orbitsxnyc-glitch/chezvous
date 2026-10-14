@@ -36,6 +36,7 @@ return [
         'security.password_changed' => ['category' => 'security', 'label' => 'Mot de passe modifié', 'vars' => [], 'defaults' => $mail, 'mandatory' => true, 'audience' => 'all'],
         'security.account_suspended' => ['category' => 'security', 'label' => 'Compte suspendu', 'vars' => [], 'defaults' => $mail, 'mandatory' => true, 'audience' => 'all'],
 
+        'moderation.warning' => ['category' => 'listing', 'label' => 'Avertissement de la modération', 'vars' => ['listing', 'reason'], 'defaults' => $on, 'mandatory' => false, 'audience' => 'all'],
         'listing.approved' => ['category' => 'listing', 'label' => 'Annonce approuvée', 'vars' => ['listing'], 'defaults' => $on, 'mandatory' => false, 'audience' => 'all'],
         'listing.rejected' => ['category' => 'listing', 'label' => 'Annonce refusée', 'vars' => ['listing', 'reason'], 'defaults' => $on, 'mandatory' => false, 'audience' => 'all'],
         'listing.hidden' => ['category' => 'listing', 'label' => 'Annonce masquée par la modération', 'vars' => ['listing'], 'defaults' => $on, 'mandatory' => false, 'audience' => 'all'],

@@ -67,6 +67,11 @@ class User extends Authenticatable
         return $member !== null && $member->isActive() && $member->agency?->status === AgencyStatus::Active ? $member : null;
     }
 
+    public function getRouteKeyName(): string
+    {
+        return 'ulid';
+    }
+
     public function hasVerifiedPhone(): bool
     {
         return $this->phone_verified_at !== null;
