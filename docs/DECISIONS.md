@@ -78,6 +78,17 @@ Le porteur du projet a délégué à Claude les décisions recommandées. Elles 
 | Crédits inclus | Une formule peut inclure des mises en avant : la première option est alors active sans règlement, comptées par période de souscription | Facile |
 | Fonctionnalités de formule | `advanced_stats`, `badge`, `enriched_agency_page` sont enregistrées et exposées mais **pas encore appliquées** | À faire |
 
+## Décisions de la Phase 7 (notifications, administration, durcissement)
+
+| Sujet | Décision | Réversibilité |
+|---|---|---|
+| Canaux | E-mail seul canal réel ; SMS, WhatsApp, push simulés et marqués « stubbed » | Facile (pilote par canal) |
+| Types de sécurité | Notifications OTP, changement de mot de passe, suspension, 2FA : obligatoires, non désactivables | Facile |
+| Second facteur | TOTP + 8 codes de secours, obligatoire pour les administrateurs (`CHEZVOUS_ADMIN_REQUIRE_2FA`) | Config |
+| Suspension d'un utilisateur | Coupe l'accès et masque ses annonces de particulier | Réactivation |
+| Rôle avant liaison | Le contrôle du rôle administrateur précède la liaison des modèles (403, jamais 404) | Définitif |
+| Tests de bout en bout | Playwright **non installé** (décision du porteur, 2026-10-14) | À reprendre quand souhaité |
+
 ## Questions ouvertes
 
 | # | Sujet | Recommandation | Impact |
