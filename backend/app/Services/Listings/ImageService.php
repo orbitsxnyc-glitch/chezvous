@@ -7,6 +7,7 @@ use App\Exceptions\ListingRuleException;
 use App\Jobs\ProcessPropertyImage;
 use App\Models\Property;
 use App\Models\PropertyImage;
+use App\Services\Commercial\EntitlementService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -20,7 +21,11 @@ class ImageService
      */
     public function add(Property $property, UploadedFile $file): PropertyImage
     {
-        $max = config('chezvous.listings.max_images');
+        // Plafond de photos : celui de la formule du souscripteur, sans jamais dépasser la limite technique.
+        $entitlements = app(EntitlementService::class);
+        $listing = $property->listings()->latest('id')->first();
+        $subscriber = $listing !== null ? $entitlements->subscriberOf($listing) : $property->creator;
+        $max = min((int) config('chezvous.listings.max_images'), $entitlements->limit($subscriber, 'photos_per_listing'));
         if ($property->images()->count() >= $max) {
             throw new ListingRuleException('too_many_images', "Maximum {$max} photos par annonce.");
         }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\CommercialController;
 use App\Http\Controllers\Api\V1\Admin\ModerationController;
 use App\Http\Controllers\Api\V1\Admin\VerificationController;
 use App\Http\Controllers\Api\V1\AgencyController;
@@ -9,6 +10,9 @@ use App\Http\Controllers\Api\V1\Auth\OtpController;
 use App\Http\Controllers\Api\V1\Auth\PasswordResetController;
 use App\Http\Controllers\Api\V1\Auth\RegisterController;
 use App\Http\Controllers\Api\V1\Auth\SessionController;
+use App\Http\Controllers\Api\V1\Commercial\CatalogController;
+use App\Http\Controllers\Api\V1\Commercial\PremiumController;
+use App\Http\Controllers\Api\V1\Commercial\SubscriptionController;
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\Engagement\FavoriteController;
 use App\Http\Controllers\Api\V1\Engagement\InquiryController;
@@ -57,6 +61,9 @@ Route::middleware('throttle:search')->group(function () {
     Route::get('listings/{identifier}', [PublicListingController::class, 'show'])->where('identifier', '[A-Za-z0-9-]+');
     Route::get('listings/{identifier}/similar', [PublicListingController::class, 'similar'])->where('identifier', '[A-Za-z0-9-]+');
     Route::get('seo/sitemap', SitemapController::class);
+    Route::get('plans', [CatalogController::class, 'plans']);
+    Route::get('premium-products', [CatalogController::class, 'products']);
+    Route::get('featured', [CatalogController::class, 'featured']);
     Route::get('agencies/{slug}', [PublicAgencyController::class, 'show'])->where('slug', '[a-z0-9-]+');
     Route::get('passports/{reference}', [PassportController::class, 'show'])->where('reference', '[A-Za-z0-9-]+');
 });
@@ -86,6 +93,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('my/saved-searches/{search}', [SavedSearchController::class, 'destroy']);
     Route::get('my/notifications', [NotificationController::class, 'index']);
     Route::patch('my/notifications/read', [NotificationController::class, 'read']);
+
+    // Offre commerciale sans paiement en ligne (COM-03 à COM-07).
+    Route::post('my/subscription-requests', [SubscriptionController::class, 'store'])->middleware('throttle:commercial');
+    Route::delete('my/subscription-requests/{subscription}', [SubscriptionController::class, 'cancel']);
+    Route::post('my/subscription-requests/{subscription}/payments', [SubscriptionController::class, 'declare'])->middleware('throttle:uploads');
+    Route::get('my/subscription', [SubscriptionController::class, 'show']);
+    Route::get('my/subscription/history', [SubscriptionController::class, 'history']);
+    Route::post('my/subscription/downgrade', [SubscriptionController::class, 'downgrade']);
+    Route::get('my/entitlements', [SubscriptionController::class, 'entitlements']);
+    Route::get('my/premium', [PremiumController::class, 'index']);
+    Route::delete('my/premium/{premium}', [PremiumController::class, 'cancel']);
+    Route::post('my/premium/{premium}/payments', [PremiumController::class, 'declare'])->middleware('throttle:uploads');
+    Route::post('my/listings/{listing}/premium', [PremiumController::class, 'store'])->middleware('throttle:commercial');
 
     // Annonces de l'annonceur connecté. `{listing}` se résout par ULID ; la Policy renvoie 404 pour l'annonce d'autrui.
     Route::prefix('my/listings')->group(function () {
@@ -123,6 +143,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('verification', [AgencyVerificationController::class, 'store'])->middleware('throttle:uploads');
     });
 
+    // Justificatifs de règlement : même principe (lien signé temporaire ET administrateur connecté).
+    Route::get('admin/payment-proofs/{payment}', [CommercialController::class, 'downloadProof'])->middleware('signed')->name('payment-proofs.download');
+
     // Justificatifs privés : lien signé temporaire ET administrateur connecté.
     Route::get('admin/verification-documents/{document}', [VerificationController::class, 'download'])
         ->middleware('signed')->name('verification-documents.download');
@@ -131,6 +154,27 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('admin')->group(function () {
         Route::get('moderation', [ModerationController::class, 'index']);
         Route::get('moderation/reasons', [ModerationController::class, 'reasons']);
+        Route::get('subscriptions', [CommercialController::class, 'subscriptions']);
+        Route::get('subscriptions/{subscription}', [CommercialController::class, 'showSubscription']);
+        Route::post('subscriptions/{subscription}/payments', [CommercialController::class, 'recordSubscriptionPayment'])->middleware('throttle:uploads');
+        Route::post('subscriptions/{subscription}/activate', [CommercialController::class, 'activateSubscription']);
+        Route::post('subscriptions/{subscription}/suspend', [CommercialController::class, 'suspendSubscription']);
+        Route::post('subscriptions/{subscription}/reinstate', [CommercialController::class, 'reinstateSubscription']);
+        Route::post('subscriptions/{subscription}/cancel', [CommercialController::class, 'cancelSubscription']);
+        Route::get('premium', [CommercialController::class, 'premiumIndex']);
+        Route::post('premium/{premium}/payments', [CommercialController::class, 'recordPremiumPayment'])->middleware('throttle:uploads');
+        Route::post('premium/{premium}/activate', [CommercialController::class, 'activatePremium']);
+        Route::post('premium/{premium}/suspend', [CommercialController::class, 'suspendPremium']);
+        Route::post('premium/{premium}/cancel', [CommercialController::class, 'cancelPremium']);
+        Route::post('payments/{payment}/confirm', [CommercialController::class, 'confirmPayment']);
+        Route::post('payments/{payment}/reject', [CommercialController::class, 'rejectPayment']);
+        Route::get('plans', [CommercialController::class, 'plans']);
+        Route::post('plans', [CommercialController::class, 'storePlan']);
+        Route::patch('plans/{plan}', [CommercialController::class, 'updatePlan']);
+        Route::get('premium-products', [CommercialController::class, 'products']);
+        Route::patch('premium-products/{product}', [CommercialController::class, 'updateProduct']);
+        Route::get('settings/payment-instructions', [CommercialController::class, 'paymentInstructions']);
+        Route::put('settings/payment-instructions', [CommercialController::class, 'updatePaymentInstructions']);
         Route::get('verifications', [VerificationController::class, 'index']);
         Route::get('verifications/{verification}', [VerificationController::class, 'show']);
         Route::post('verifications/{verification}/approve', [VerificationController::class, 'approve']);

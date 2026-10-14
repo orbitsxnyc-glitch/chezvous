@@ -15,3 +15,6 @@ Schedule::command('engagement:run --visits')->everyTenMinutes();
 Schedule::command('engagement:run --unanswered')->hourly();
 Schedule::command('engagement:run --favorites')->everyFifteenMinutes();
 Schedule::command('engagement:run --alerts')->everyFiveMinutes();
+Schedule::command('commercial:run --expire')->everyTenMinutes();
+Schedule::command('commercial:run --remind')->hourly();
+Schedule::command('commercial:run --enforce')->hourly();
