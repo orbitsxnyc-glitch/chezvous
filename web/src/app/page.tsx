@@ -69,6 +69,7 @@ export default function Home() {
         <Link href="/alertes">Alertes</Link>
         <Link href="/notifications">Notifications</Link>
         <Link href="/offres">Offres</Link>
+        <Link href="/mes-annonces">Mes annonces</Link>
         <Link href="/abonnement">Mon abonnement</Link>
       </nav>
     </main>
