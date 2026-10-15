@@ -55,6 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
     body: ListView(
       padding: const EdgeInsets.all(24),
       children: [
+        const BrandHeader(),
         AppField(
           controller: _phone,
           label: 'Téléphone (+221 7X XXX XX XX)',
