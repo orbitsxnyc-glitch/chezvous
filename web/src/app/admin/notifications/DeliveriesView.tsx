@@ -43,8 +43,8 @@ export default function DeliveriesView() {
   return (
     <section className="flex flex-col gap-4">
       <h1 className="text-2xl font-semibold">Envois de notifications</h1>
-      <p className="text-sm text-zinc-600">Seul l&apos;e-mail est un canal réel pour l&apos;instant ; SMS, WhatsApp et notifications push sont simulés et marqués comme tels.</p>
-      <select aria-label="Statut" className="self-start rounded border border-zinc-400 px-3 py-2" value={status} onChange={(e) => setStatus(e.target.value)}>
+      <p className="text-sm text-muted">Seul l&apos;e-mail est un canal réel pour l&apos;instant ; SMS, WhatsApp et notifications push sont simulés et marqués comme tels.</p>
+      <select aria-label="Statut" className="self-start rounded-lg border border-line-strong px-3 py-2" value={status} onChange={(e) => setStatus(e.target.value)}>
         <option value="">Tous</option>
         {Object.entries(STATUS_LABELS).map(([k, label]) => <option key={k} value={k}>{label} ({counts[k] ?? 0})</option>)}
       </select>
@@ -53,7 +53,7 @@ export default function DeliveriesView() {
         <thead><tr><th>Type</th><th>Canal</th><th>Statut</th><th>Essais</th><th>Erreur</th><th /></tr></thead>
         <tbody>
           {items.map((d) => (
-            <tr key={d.id} className="border-t border-zinc-300 align-top">
+            <tr key={d.id} className="border-t border-line align-top">
               <td className="py-2">{d.type}</td><td>{d.channel}</td><td>{STATUS_LABELS[d.status] ?? d.status}</td><td>{d.attempts}</td><td>{d.error}</td>
               <td>{d.status === "failed" && <button className="underline" onClick={() => retry(d)}>Relancer</button>}</td>
             </tr>

@@ -35,7 +35,7 @@ export function DeclarePaymentForm({ defaultAmount, onSubmit }: { defaultAmount:
       <p className="font-medium">J&apos;ai effectué le règlement</p>
       <label className="flex flex-col gap-1">
         Moyen
-        <select name="method" className="rounded border border-zinc-400 px-2 py-1">
+        <select name="method" className="rounded-lg border border-line-strong px-2 py-1">
           {Object.entries(METHOD_LABELS).map(([v, l]) => (
             <option key={v} value={v}>{l}</option>
           ))}
@@ -43,18 +43,18 @@ export function DeclarePaymentForm({ defaultAmount, onSubmit }: { defaultAmount:
       </label>
       <label className="flex flex-col gap-1">
         Montant (FCFA)
-        <input name="amount_xof" type="number" min={0} required defaultValue={defaultAmount} className="rounded border border-zinc-400 px-2 py-1" />
+        <input name="amount_xof" type="number" min={0} required defaultValue={defaultAmount} className="rounded-lg border border-line-strong px-2 py-1" />
       </label>
       <label className="flex flex-col gap-1">
         Référence de l&apos;opération
-        <input name="external_reference" maxLength={80} className="rounded border border-zinc-400 px-2 py-1" />
+        <input name="external_reference" maxLength={80} className="rounded-lg border border-line-strong px-2 py-1" />
       </label>
       <label className="flex flex-col gap-1">
         Justificatif (PDF, JPEG ou PNG, 5 Mo maximum)
         <input name="proof" type="file" accept="application/pdf,image/jpeg,image/png" />
       </label>
       {error && <FormMessage kind="error">{error}</FormMessage>}
-      <button type="submit" disabled={pending} className="self-start rounded bg-zinc-900 px-4 py-2 text-white disabled:opacity-50">
+      <button type="submit" disabled={pending} className="self-start rounded-lg bg-primary hover:bg-primary-hover px-4 py-2 text-white disabled:opacity-50">
         {pending ? "Envoi…" : "Déclarer mon règlement"}
       </button>
     </form>

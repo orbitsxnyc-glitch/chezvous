@@ -18,7 +18,7 @@ type Listing = { id: string; reference: string; title: string | null };
 function Instructions({ value }: { value: PaymentInstructions }) {
   if (!value) return <p className="text-sm">Les coordonnées de règlement vous seront communiquées par notre équipe.</p>;
   return (
-    <div className="rounded border border-dashed border-zinc-400 p-3 text-sm">
+    <div className="rounded-lg border border-dashed border-line-strong p-3 text-sm">
       <p className="font-medium">Comment régler (hors ligne)</p>
       <ul>
         {value.methods.map((m) => (
@@ -90,7 +90,7 @@ export default function SubscriptionView() {
       <h1 className="text-2xl font-semibold">Mon abonnement</h1>
       {error && <FormMessage kind="error">{error}</FormMessage>}
 
-      <section aria-labelledby="droits" className="flex flex-col gap-1 rounded border border-zinc-300 p-4">
+      <section aria-labelledby="droits" className="flex flex-col gap-1 rounded-lg border border-line p-4">
         <h2 id="droits" className="text-lg font-semibold">Mes droits</h2>
         <p>
           Formule : {sub.current ? sub.current.plan.name : "Gratuit"}
@@ -101,7 +101,7 @@ export default function SubscriptionView() {
           Agents : {limitLabel(sub.entitlements.limits.agents)} · Photos par annonce : {limitLabel(sub.entitlements.limits.photos_per_listing)} · Mises en avant incluses : {limitLabel(sub.entitlements.limits.featured_credits)}
         </p>
         {over && (
-          <p role="alert" className="text-red-700">
+          <p role="alert" className="text-danger">
             Vous avez plus d&apos;annonces actives que votre formule n&apos;en permet.
             {sub.downgrade_deadline_at ? ` Choisissez celles à garder avant le ${new Date(sub.downgrade_deadline_at).toLocaleDateString("fr-FR")} ; les plus anciennes seront ensuite mises en pause (jamais supprimées).` : ""}
           </p>
@@ -121,13 +121,13 @@ export default function SubscriptionView() {
                 <input type="checkbox" name="keep" value={l.id} /> {l.title ?? l.reference}
               </label>
             ))}
-            <button type="submit" className="self-start rounded border border-zinc-400 px-3 py-1">Mettre les autres en pause</button>
+            <button type="submit" className="self-start rounded-lg border border-line-strong px-3 py-1">Mettre les autres en pause</button>
           </form>
         )}
       </section>
 
       {sub.pending ? (
-        <section aria-labelledby="attente" className="flex flex-col gap-3 rounded border border-zinc-300 p-4">
+        <section aria-labelledby="attente" className="flex flex-col gap-3 rounded-lg border border-line p-4">
           <h2 id="attente" className="text-lg font-semibold">Demande en attente : {sub.pending.plan.name}</h2>
           <p>Référence à indiquer lors du règlement : <strong>{sub.pending.payment_reference}</strong></p>
           <p>Montant : {new Intl.NumberFormat("fr-FR").format(sub.pending.plan.price_xof)} FCFA</p>
@@ -145,9 +145,9 @@ export default function SubscriptionView() {
           ) : (
             <ul className="flex flex-col gap-2">
               {offered.map((p) => (
-                <li key={p.code} className="flex flex-wrap items-center justify-between gap-2 rounded border border-zinc-300 p-3">
+                <li key={p.code} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-line p-3">
                   <span>{p.name} · {new Intl.NumberFormat("fr-FR").format(p.price_xof)} FCFA</span>
-                  <button type="button" className="rounded bg-zinc-900 px-3 py-1 text-white" onClick={() => run(() => requestPlan(p.code))}>Demander</button>
+                  <button type="button" className="rounded-lg bg-primary hover:bg-primary-hover px-3 py-1 text-white" onClick={() => run(() => requestPlan(p.code))}>Demander</button>
                 </li>
               ))}
             </ul>
@@ -173,7 +173,7 @@ export default function SubscriptionView() {
           >
             <label className="flex flex-col gap-1">
               Annonce
-              <select name="listing" className="rounded border border-zinc-400 px-2 py-1">
+              <select name="listing" className="rounded-lg border border-line-strong px-2 py-1">
                 {listings.map((l) => (
                   <option key={l.id} value={l.id}>{l.title ?? l.reference}</option>
                 ))}
@@ -181,19 +181,19 @@ export default function SubscriptionView() {
             </label>
             <label className="flex flex-col gap-1">
               Option
-              <select name="product" className="rounded border border-zinc-400 px-2 py-1">
+              <select name="product" className="rounded-lg border border-line-strong px-2 py-1">
                 {products.map((p) => (
                   <option key={p.code} value={p.code}>{KIND_LABELS[p.kind]} · {p.duration_days} jours · {new Intl.NumberFormat("fr-FR").format(p.price_xof)} FCFA</option>
                 ))}
               </select>
             </label>
-            <button type="submit" className="self-start rounded bg-zinc-900 px-4 py-2 text-white">Demander cette option</button>
+            <button type="submit" className="self-start rounded-lg bg-primary hover:bg-primary-hover px-4 py-2 text-white">Demander cette option</button>
           </form>
         )}
         {premiumInstructions && <Instructions value={premiumInstructions} />}
         <ul className="flex flex-col gap-2">
           {premium.map((p) => (
-            <li key={p.id} className="flex flex-col gap-2 rounded border border-zinc-300 p-3 text-sm">
+            <li key={p.id} className="flex flex-col gap-2 rounded-lg border border-line p-3 text-sm">
               <span className="font-medium">{KIND_LABELS[p.kind]} · {p.listing.title ?? p.listing.reference}</span>
               <span>
                 {p.status === "active" ? `Active jusqu'au ${p.ends_at ? new Date(p.ends_at).toLocaleDateString("fr-FR") : ""}` : p.status === "pending" ? "En attente" : p.status === "suspended" ? "Suspendue" : p.status === "expired" ? "Terminée" : "Annulée"}

@@ -44,7 +44,7 @@ export default function AcceptInvitation({ params }: { params: Promise<{ token: 
         <>
           <p>Vous êtes connecté en tant que {user.name}. Acceptez-vous de rejoindre cette agence ?</p>
           {error && <FormMessage kind="error">{error}</FormMessage>}
-          <button type="button" onClick={accept} disabled={pending} className="self-start rounded bg-zinc-900 px-4 py-2 text-white disabled:opacity-50">
+          <button type="button" onClick={accept} disabled={pending} className="self-start rounded-lg bg-primary hover:bg-primary-hover px-4 py-2 text-white disabled:opacity-50">
             {pending ? "Veuillez patienter…" : "Accepter l'invitation"}
           </button>
         </>

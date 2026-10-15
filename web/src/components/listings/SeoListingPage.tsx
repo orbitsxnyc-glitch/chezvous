@@ -40,7 +40,7 @@ async function Content({ p }: { p: SeoParams }) {
     <>
       <h1 className="text-2xl font-semibold">{seo.title}</h1>
       {result ? <ResultsList result={result} params={seo.params} basePath="/annonces" /> : <p role="alert">Les annonces sont momentanément indisponibles.</p>}
-      <p className="text-sm text-zinc-600">
+      <p className="text-sm text-muted">
         Autres recherches : <a className="underline" href={`/${SEO_ROUTES[p.transaction].segment}/appartements/${p.locality}`}>appartements à {seo.neighborhood.name}</a>
       </p>
     </>

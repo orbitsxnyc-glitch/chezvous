@@ -4,7 +4,7 @@ Plateforme immobilière de confiance pour le marché sénégalais, avec un lance
 
 > Principe directeur : mieux vaut 500 biens réellement disponibles et fiables que 20 000 annonces obsolètes.
 
-**État actuel : Phase 10 terminée en local** (design Figma appliqué à l'application mobile). Mobile à périmètre réduit : voir `docs/phase-8-report.md`. Rapports par phase dans `docs/`.
+**État actuel : Phase 11 en local** (design Figma appliqué au mobile puis au web). Mobile à périmètre réduit : voir `docs/phase-8-report.md`. Rapports par phase dans `docs/`.
 
 ## Structure du monorepo
 

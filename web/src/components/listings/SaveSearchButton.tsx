@@ -32,11 +32,11 @@ export function SaveSearchButton({ params }: { params: SearchParams }) {
 
   return (
     <div className="flex items-center gap-3 text-sm">
-      <button type="button" onClick={save} disabled={state === "saved"} className="rounded border border-zinc-400 px-3 py-1 disabled:opacity-50">
+      <button type="button" onClick={save} disabled={state === "saved"} className="rounded-lg border border-line-strong px-3 py-1 disabled:opacity-50">
         {state === "saved" ? "✓ Alerte enregistrée" : "🔔 M'alerter des nouvelles annonces"}
       </button>
       {state === "saved" && <Link className="underline" href="/alertes">Gérer mes alertes</Link>}
-      {message && <span role="alert" className="text-red-700">{message}</span>}
+      {message && <span role="alert" className="text-danger">{message}</span>}
     </div>
   );
 }

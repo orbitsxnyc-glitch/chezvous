@@ -40,14 +40,14 @@ export default function NewListingForm() {
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <label className="flex flex-col gap-1 text-sm font-medium">
           Je propose
-          <select name="transaction" className="rounded border border-zinc-400 px-3 py-2" defaultValue="rent_long">
+          <select name="transaction" className="rounded-lg border border-line-strong px-3 py-2" defaultValue="rent_long">
             <option value="rent_long">Une location</option>
             <option value="sale">Une vente</option>
           </select>
         </label>
         <label className="flex flex-col gap-1 text-sm font-medium">
           Type de bien
-          <select name="type" required className="rounded border border-zinc-400 px-3 py-2">
+          <select name="type" required className="rounded-lg border border-line-strong px-3 py-2">
             {types.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
           </select>
         </label>

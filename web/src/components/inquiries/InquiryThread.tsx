@@ -86,9 +86,9 @@ export default function InquiryThread({ params }: { params: Promise<{ id: string
         <h2 id="messages" className="text-lg font-semibold">Messages</h2>
         <ul className="flex flex-col gap-2">
           {inquiry.messages.map((m) => (
-            <li key={m.id} className={`max-w-[85%] rounded p-3 ${m.mine ? "self-end bg-zinc-200" : "self-start border border-zinc-300"}`}>
+            <li key={m.id} className={`max-w-[85%] rounded-lg p-3 ${m.mine ? "self-end bg-sand-deep" : "self-start border border-line"}`}>
               <p className="whitespace-pre-line">{m.body}</p>
-              <p className="text-xs text-zinc-600">
+              <p className="text-xs text-muted">
                 {m.mine ? "Vous" : m.sender_name ?? (m.from === "owner" ? "Annonceur" : "Demandeur")} · {new Date(m.created_at).toLocaleString("fr-FR")}
               </p>
             </li>
@@ -98,9 +98,9 @@ export default function InquiryThread({ params }: { params: Promise<{ id: string
           <form onSubmit={onMessage} className="flex flex-col gap-2">
             <label className="flex flex-col gap-1 text-sm">
               Votre message
-              <textarea name="body" required maxLength={2000} rows={3} className="rounded border border-zinc-400 px-3 py-2" />
+              <textarea name="body" required maxLength={2000} rows={3} className="rounded-lg border border-line-strong px-3 py-2" />
             </label>
-            <button type="submit" className="self-start rounded bg-zinc-900 px-4 py-2 text-white">Envoyer</button>
+            <button type="submit" className="self-start rounded-lg bg-primary hover:bg-primary-hover px-4 py-2 text-white">Envoyer</button>
           </form>
         ) : open ? (
           <p className="text-sm">Cette demande est attribuée à un autre membre de l&apos;agence : vous pouvez la lire sans y répondre.</p>
@@ -127,20 +127,20 @@ export default function InquiryThread({ params }: { params: Promise<{ id: string
       )}
 
       {isOwnerSide && inquiry.notes && (
-        <section aria-labelledby="notes" className="flex flex-col gap-2 rounded border border-dashed border-zinc-400 p-3">
+        <section aria-labelledby="notes" className="flex flex-col gap-2 rounded-lg border border-dashed border-line-strong p-3">
           <h2 id="notes" className="text-lg font-semibold">Notes internes</h2>
-          <p className="text-xs text-zinc-600">Visibles de l&apos;agence uniquement, jamais du demandeur.</p>
+          <p className="text-xs text-muted">Visibles de l&apos;agence uniquement, jamais du demandeur.</p>
           <ul className="flex flex-col gap-1 text-sm">
             {inquiry.notes.map((n) => (
               <li key={n.id}>
-                {n.body} <span className="text-xs text-zinc-600">({n.author}, {formatDateTime(n.created_at)})</span>
+                {n.body} <span className="text-xs text-muted">({n.author}, {formatDateTime(n.created_at)})</span>
               </li>
             ))}
           </ul>
           {inquiry.can_respond && (
             <form onSubmit={onNote} className="flex gap-2">
-              <input name="note" aria-label="Nouvelle note" maxLength={2000} className="flex-1 rounded border border-zinc-400 px-2 py-1" />
-              <button type="submit" className="rounded border border-zinc-400 px-3">Ajouter</button>
+              <input name="note" aria-label="Nouvelle note" maxLength={2000} className="flex-1 rounded-lg border border-line-strong px-2 py-1" />
+              <button type="submit" className="rounded-lg border border-line-strong px-3">Ajouter</button>
             </form>
           )}
         </section>

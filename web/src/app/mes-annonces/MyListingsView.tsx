@@ -29,17 +29,17 @@ export default function MyListingsView() {
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Mes annonces</h1>
-        <Link href="/mes-annonces/nouvelle" className="rounded bg-zinc-900 px-4 py-2 text-white">Nouvelle annonce</Link>
+        <Link href="/mes-annonces/nouvelle" className="rounded-lg bg-primary hover:bg-primary-hover px-4 py-2 text-white">Nouvelle annonce</Link>
       </div>
       {error && <FormMessage kind="error">{error}</FormMessage>}
       {items === null && !error && <p>Chargement…</p>}
       {items?.length === 0 && <p>Vous n&apos;avez pas encore d&apos;annonce.</p>}
       <ul className="flex flex-col gap-3">
         {items?.map((l) => (
-          <li key={l.id} className="rounded border border-zinc-300 p-4">
+          <li key={l.id} className="rounded-lg border border-line p-4">
             <Link href={`/mes-annonces/${l.id}`} className="font-medium underline">{l.title ?? "Annonce sans titre"}</Link>
             <p className="text-sm">{l.reference} · {STATUS_LABELS[l.status] ?? l.status} · {formatPrice(l.price_xof, l.transaction)}</p>
-            {l.status === "rejected" && l.rejection?.comment && <p className="text-sm text-red-700">Motif : {l.rejection.comment}</p>}
+            {l.status === "rejected" && l.rejection?.comment && <p className="text-sm text-danger">Motif : {l.rejection.comment}</p>}
           </li>
         ))}
       </ul>

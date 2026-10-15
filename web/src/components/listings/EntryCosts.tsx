@@ -1,6 +1,6 @@
 import type { ListingDetail } from "@/lib/listings";
 
-const fmt = (n: number | null) => (n === null ? "Non renseigné" : `${new Intl.NumberFormat("fr-FR").format(n).replace(/ | /g, " ")} FCFA`);
+const fmt = (n: number | null) => (n === null ? "Non renseigné" : `${new Intl.NumberFormat("fr-FR").format(n).replace(/ | /g, " ")} FCFA`);
 
 /** Montants renseignés par l'annonceur, sans total calculé (règles légales à valider avant automatisation). */
 export function EntryCosts({ costs }: { costs: NonNullable<ListingDetail["entry_costs"]> }) {
@@ -12,19 +12,19 @@ export function EntryCosts({ costs }: { costs: NonNullable<ListingDetail["entry_
     ["Autres frais", costs.other_fees_xof],
   ];
   return (
-    <section aria-labelledby="couts" className="flex flex-col gap-2 rounded border border-zinc-300 p-4">
-      <h2 id="couts" className="text-lg font-semibold">
-        Coût d&apos;entrée
+    <section aria-labelledby="couts" className="rounded-xl border border-sand-deep bg-sand p-6">
+      <h2 id="couts" className="text-xl font-extrabold">
+        Frais à l&apos;entrée
       </h2>
-      <dl className="grid grid-cols-2 gap-1">
+      <dl className="mt-4">
         {rows.map(([label, value]) => (
-          <div key={label} className="contents">
+          <div key={label} className="flex justify-between gap-5 border-b border-[#e2d8c8] py-3 text-sm last:border-0">
             <dt>{label}</dt>
-            <dd className="text-right">{fmt(value)}</dd>
+            <dd className="font-bold">{fmt(value)}</dd>
           </div>
         ))}
       </dl>
-      <p className="text-xs text-zinc-600">{costs.disclaimer}</p>
+      <p className="mt-4 rounded-md bg-warning-soft p-3 text-xs leading-relaxed text-[#6f4a16]">{costs.disclaimer} Aucun total n&apos;est calculé par ChezVous.</p>
     </section>
   );
 }

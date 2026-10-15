@@ -26,10 +26,10 @@ function SlotInputs({ onSubmit, label }: { onSubmit: (slots: string[]) => Promis
       {["s1", "s2", "s3"].map((k, i) => (
         <label key={k} className="flex flex-col gap-1 text-sm">
           Créneau {i + 1}{i === 0 ? "" : " (facultatif)"}
-          <input type="datetime-local" name={k} required={i === 0} className="rounded border border-zinc-400 px-2 py-1" />
+          <input type="datetime-local" name={k} required={i === 0} className="rounded-lg border border-line-strong px-2 py-1" />
         </label>
       ))}
-      <button type="submit" disabled={pending} className="self-start rounded bg-zinc-900 px-4 py-2 text-white disabled:opacity-50">{label}</button>
+      <button type="submit" disabled={pending} className="self-start rounded-lg bg-primary hover:bg-primary-hover px-4 py-2 text-white disabled:opacity-50">{label}</button>
     </form>
   );
 }
@@ -57,7 +57,7 @@ export function VisitPanel({ inquiry, isOwnerSide, canAct, open, onChange }: { i
   }
 
   return (
-    <section aria-labelledby="visite" className="flex flex-col gap-3 rounded border border-zinc-300 p-4">
+    <section aria-labelledby="visite" className="flex flex-col gap-3 rounded-lg border border-line p-4">
       <h2 id="visite" className="text-lg font-semibold">Visite</h2>
       {error && <FormMessage kind="error">{error}</FormMessage>}
 
@@ -84,7 +84,7 @@ export function VisitPanel({ inquiry, isOwnerSide, canAct, open, onChange }: { i
           )}
           {active.awaiting_me && canAct && (
             <div className="flex flex-col gap-2">
-              <button type="button" disabled={!chosen} onClick={() => run(() => visitAction(active.id, { action: "confirm", slot: chosen }))} className="self-start rounded bg-zinc-900 px-4 py-2 text-white disabled:opacity-50">
+              <button type="button" disabled={!chosen} onClick={() => run(() => visitAction(active.id, { action: "confirm", slot: chosen }))} className="self-start rounded-lg bg-primary hover:bg-primary-hover px-4 py-2 text-white disabled:opacity-50">
                 Confirmer le créneau choisi
               </button>
               <details>
@@ -93,7 +93,7 @@ export function VisitPanel({ inquiry, isOwnerSide, canAct, open, onChange }: { i
               </details>
             </div>
           )}
-          {!active.awaiting_me && active.status !== "confirmed" && <p className="text-sm text-zinc-600">En attente de la réponse de l&apos;autre partie.</p>}
+          {!active.awaiting_me && active.status !== "confirmed" && <p className="text-sm text-muted">En attente de la réponse de l&apos;autre partie.</p>}
           {active.status === "confirmed" && canAct && (
             <details>
               <summary className="cursor-pointer text-sm underline">Reporter la visite</summary>
@@ -116,7 +116,7 @@ export function VisitPanel({ inquiry, isOwnerSide, canAct, open, onChange }: { i
       )}
 
       {done && !isOwnerSide && !done.feedback && (
-        <form onSubmit={(e) => feedback(e, done)} className="flex flex-col gap-2 border-t border-zinc-300 pt-3">
+        <form onSubmit={(e) => feedback(e, done)} className="flex flex-col gap-2 border-t border-line pt-3">
           <p className="font-medium">Votre retour sur la visite</p>
           <fieldset className="flex gap-4 text-sm">
             <legend className="sr-only">Le bien est-il toujours disponible ?</legend>
@@ -126,8 +126,8 @@ export function VisitPanel({ inquiry, isOwnerSide, canAct, open, onChange }: { i
             <legend className="sr-only">Le bien est-il conforme à l&apos;annonce ?</legend>
             Conforme à l&apos;annonce ? <label><input type="radio" name="conform" value="yes" defaultChecked /> Oui</label> <label><input type="radio" name="conform" value="no" /> Non</label>
           </fieldset>
-          <input name="comment" aria-label="Commentaire" maxLength={1000} placeholder="Commentaire (facultatif)" className="rounded border border-zinc-400 px-2 py-1" />
-          <button type="submit" className="self-start rounded bg-zinc-900 px-4 py-2 text-white">Envoyer mon retour</button>
+          <input name="comment" aria-label="Commentaire" maxLength={1000} placeholder="Commentaire (facultatif)" className="rounded-lg border border-line-strong px-2 py-1" />
+          <button type="submit" className="self-start rounded-lg bg-primary hover:bg-primary-hover px-4 py-2 text-white">Envoyer mon retour</button>
         </form>
       )}
       {done?.feedback && (

@@ -81,7 +81,7 @@ export default function ProfileView() {
       <form onSubmit={onDelete} className="flex flex-col gap-3">
         <h2 className="font-semibold">Supprimer mon compte</h2>
         <Field label="Confirmez avec votre mot de passe" name="password" type="password" autoComplete="current-password" required />
-        <button type="submit" className="self-start rounded border border-red-700 px-4 py-2 text-red-700">Supprimer mon compte</button>
+        <button type="submit" className="self-start rounded-lg border border-danger px-4 py-2 text-danger">Supprimer mon compte</button>
       </form>
     </Page>
   );

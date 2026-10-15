@@ -112,14 +112,14 @@ export default function AgencyDashboard() {
               ["Vues", stats.totals.views],
               ["Contacts", stats.totals.contacts],
             ].map(([label, value]) => (
-              <div key={label as string} className="rounded border border-zinc-300 p-3">
-                <dt className="text-xs text-zinc-600">{label}</dt>
+              <div key={label as string} className="rounded-lg border border-line p-3">
+                <dt className="text-xs text-muted">{label}</dt>
                 <dd className="text-xl">{value}</dd>
               </div>
             ))}
           </dl>
           {stats.quota && <p className="text-sm">Quota : {stats.quota.used} / {stats.quota.limit} annonces actives</p>}
-          <p className="text-xs text-zinc-600">{stats.note}</p>
+          <p className="text-xs text-muted">{stats.note}</p>
         </section>
       )}
 
@@ -127,11 +127,11 @@ export default function AgencyDashboard() {
         <h2 id="equipe" className="text-lg font-semibold">Équipe</h2>
         <ul className="flex flex-col gap-2">
           {members.map((m) => (
-            <li key={m.id} className="flex flex-wrap items-center gap-3 rounded border border-zinc-300 p-3">
+            <li key={m.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-line p-3">
               <span className="font-medium">{m.name}</span>
               <span className="text-sm">{m.role === "manager" ? "Gérant" : "Agent"}</span>
               {m.phone && <span className="text-sm">{m.phone}</span>}
-              {m.status === "suspended" && <span className="text-sm text-red-700">Suspendu</span>}
+              {m.status === "suspended" && <span className="text-sm text-danger">Suspendu</span>}
               {isManager && m.role === "agent" && (
                 <>
                   <button type="button" className="text-sm underline" onClick={() => act(() => updateMember(m.id, { status: m.status === "suspended" ? "active" : "suspended" }))}>

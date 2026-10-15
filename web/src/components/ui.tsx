@@ -2,7 +2,7 @@
 
 import type { InputHTMLAttributes, ReactNode } from "react";
 
-/** Composants volontairement minimalistes : le design final viendra de Figma. */
+/** Primitives de formulaire au style du design Figma (jetons dans globals.css). */
 
 export function Field({
   label,
@@ -20,16 +20,16 @@ export function Field({
         id={id}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
-        className="rounded border border-zinc-400 px-3 py-2"
+        className="min-h-12 rounded-lg border border-line-strong bg-white px-3 py-2 text-ink focus:border-primary focus:ring-3 focus:ring-primary/10 focus:outline-none"
         {...input}
       />
       {hint && !error && (
-        <p id={`${id}-hint`} className="text-xs text-zinc-600">
+        <p id={`${id}-hint`} className="text-xs text-muted">
           {hint}
         </p>
       )}
       {error && (
-        <p id={`${id}-error`} role="alert" className="text-sm text-red-700">
+        <p id={`${id}-error`} role="alert" className="text-sm text-danger">
           {error}
         </p>
       )}
@@ -42,7 +42,7 @@ export function SubmitButton({ pending, children }: { pending: boolean; children
     <button
       type="submit"
       disabled={pending}
-      className="rounded bg-zinc-900 px-4 py-2 text-white disabled:opacity-50"
+      className="min-h-12 rounded-lg bg-primary px-5 py-2 font-bold text-white hover:bg-primary-hover disabled:opacity-50"
     >
       {pending ? "Veuillez patienter…" : children}
     </button>
@@ -51,7 +51,7 @@ export function SubmitButton({ pending, children }: { pending: boolean; children
 
 export function FormMessage({ kind, children }: { kind: "error" | "info"; children: ReactNode }) {
   return (
-    <p role={kind === "error" ? "alert" : "status"} className={kind === "error" ? "text-red-700" : "text-green-800"}>
+    <p role={kind === "error" ? "alert" : "status"} className={kind === "error" ? "text-danger" : "text-success"}>
       {children}
     </p>
   );

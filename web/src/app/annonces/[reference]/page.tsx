@@ -53,7 +53,7 @@ async function Detail({ params }: { params: Props["params"] }) {
   return (
     <article className="flex flex-col gap-4">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(l) }} />
-      <p className="text-sm text-zinc-600">
+      <p className="text-sm text-muted">
         {TRANSACTION_LABELS[l.transaction]} · {l.property.type?.label} · Réf. {l.reference}
       </p>
       <h1 className="text-2xl font-semibold">{l.title ?? "Annonce"}</h1>
@@ -73,7 +73,7 @@ async function Detail({ params }: { params: Props["params"] }) {
                 height={600}
                 unoptimized
                 loading={cover && i === 0 ? "eager" : "lazy"}
-                className="w-full bg-zinc-100 object-cover"
+                className="w-full bg-sand object-cover"
               />
             </li>
           ))}
@@ -110,7 +110,7 @@ async function Detail({ params }: { params: Props["params"] }) {
       {l.entry_costs && <EntryCosts costs={l.entry_costs} />}
       <PassportPanel passport={l.passport} />
 
-      <section aria-labelledby="annonceur" className="rounded border border-zinc-300 p-4">
+      <section aria-labelledby="annonceur" className="rounded-lg border border-line p-4">
         <h2 id="annonceur" className="text-lg font-semibold">
           Annonceur
         </h2>

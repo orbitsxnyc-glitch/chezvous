@@ -62,7 +62,7 @@ export function ContactPanel({ listingId, reference }: { listingId: string; refe
 
   if (!user) {
     return (
-      <section aria-labelledby="contact" className="flex flex-col gap-2 rounded border border-zinc-300 p-4">
+      <section aria-labelledby="contact" className="flex flex-col gap-2 rounded-lg border border-line p-4">
         <h2 id="contact" className="text-lg font-semibold">Contacter l&apos;annonceur</h2>
         <p>Connectez-vous pour envoyer un message, demander une visite ou enregistrer ce bien en favori.</p>
         <p className="flex gap-4 underline">
@@ -74,20 +74,20 @@ export function ContactPanel({ listingId, reference }: { listingId: string; refe
   }
 
   return (
-    <section aria-labelledby="contact" className="flex flex-col gap-3 rounded border border-zinc-300 p-4">
+    <section aria-labelledby="contact" className="flex flex-col gap-3 rounded-lg border border-line p-4">
       <h2 id="contact" className="text-lg font-semibold">Contacter l&apos;annonceur</h2>
-      <button type="button" onClick={toggleFavorite} aria-pressed={favorite} className="self-start rounded border border-zinc-400 px-3 py-1 text-sm">
+      <button type="button" onClick={toggleFavorite} aria-pressed={favorite} className="self-start rounded-lg border border-line-strong px-3 py-1 text-sm">
         {favorite ? "★ Retirer des favoris" : "☆ Ajouter aux favoris"}
       </button>
       <form onSubmit={onSubmit} className="flex flex-col gap-3" noValidate>
         <label className="flex flex-col gap-1 text-sm">
           Votre message
-          <textarea name="message" required maxLength={2000} rows={4} defaultValue={`Bonjour, le bien ${reference} est-il toujours disponible ?`} className="rounded border border-zinc-400 px-3 py-2" />
+          <textarea name="message" required maxLength={2000} rows={4} defaultValue={`Bonjour, le bien ${reference} est-il toujours disponible ?`} className="rounded-lg border border-line-strong px-3 py-2" />
         </label>
         <Field label="Votre téléphone (facultatif, sinon celui de votre compte)" name="phone" type="tel" placeholder="77 123 45 67" hint="Il n'est visible que de l'annonceur." />
         <label className="flex flex-col gap-1 text-sm">
           Comment souhaitez-vous être recontacté ?
-          <select name="preferred_channel" defaultValue="message" className="rounded border border-zinc-400 px-2 py-2">
+          <select name="preferred_channel" defaultValue="message" className="rounded-lg border border-line-strong px-2 py-2">
             <option value="message">Par message ici</option>
             <option value="whatsapp">WhatsApp</option>
             <option value="phone">Appel téléphonique</option>
@@ -96,7 +96,7 @@ export function ContactPanel({ listingId, reference }: { listingId: string; refe
         {error && <FormMessage kind="error">{error}</FormMessage>}
         <SubmitButton pending={pending}>Envoyer ma demande</SubmitButton>
       </form>
-      <p className="text-xs text-zinc-600">Vous pourrez proposer des créneaux de visite dans la conversation.</p>
+      <p className="text-xs text-muted">Vous pourrez proposer des créneaux de visite dans la conversation.</p>
     </section>
   );
 }

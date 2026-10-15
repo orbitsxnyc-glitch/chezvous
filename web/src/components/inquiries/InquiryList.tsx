@@ -42,14 +42,14 @@ export default function InquiryList({ mode }: { mode: "sent" | "inbox" }) {
         <ul className="flex flex-col gap-2">
           {items.map((i) => (
             <li key={i.id}>
-              <Link href={`/demandes/${i.id}`} className="flex flex-col gap-1 rounded border border-zinc-300 p-3">
+              <Link href={`/demandes/${i.id}`} className="flex flex-col gap-1 rounded-lg border border-line p-3">
                 <span className="font-medium">{i.listing.title ?? i.listing.reference}</span>
                 <span className="text-sm">
                   {STATUS_LABELS[i.status]}
                   {i.unread > 0 ? ` · ${i.unread} non lu(s)` : ""}
                   {i.requester ? ` · ${i.requester.name}` : ""}
                 </span>
-                <span className="text-xs text-zinc-600">Dernière activité : {new Date(i.last_activity_at).toLocaleString("fr-FR")}</span>
+                <span className="text-xs text-muted">Dernière activité : {new Date(i.last_activity_at).toLocaleString("fr-FR")}</span>
               </Link>
             </li>
           ))}

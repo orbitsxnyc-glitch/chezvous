@@ -45,8 +45,8 @@ export default function UsersView() {
     <section className="flex flex-col gap-4">
       <h1 className="text-2xl font-semibold">Utilisateurs</h1>
       <div className="flex flex-wrap gap-2">
-        <input aria-label="Rechercher" placeholder="Nom, e-mail, téléphone, identifiant" className="min-w-64 rounded border border-zinc-400 px-3 py-2" value={q} onChange={(e) => setQ(e.target.value)} />
-        <select aria-label="Statut" className="rounded border border-zinc-400 px-3 py-2" value={status} onChange={(e) => setStatus(e.target.value)}>
+        <input aria-label="Rechercher" placeholder="Nom, e-mail, téléphone, identifiant" className="min-w-64 rounded-lg border border-line-strong px-3 py-2" value={q} onChange={(e) => setQ(e.target.value)} />
+        <select aria-label="Statut" className="rounded-lg border border-line-strong px-3 py-2" value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="">Tous les statuts</option>
           <option value="active">Actifs</option>
           <option value="suspended">Suspendus</option>
@@ -57,8 +57,8 @@ export default function UsersView() {
         <thead><tr><th>Nom</th><th>Contact</th><th>Type / rôles</th><th>Statut</th><th /></tr></thead>
         <tbody>
           {items.map((u) => (
-            <tr key={u.id} className="border-t border-zinc-300 align-top">
-              <td className="py-2">{u.name}{u.agency && <span className="block text-xs text-zinc-600">{u.agency.name} ({u.agency.role})</span>}</td>
+            <tr key={u.id} className="border-t border-line align-top">
+              <td className="py-2">{u.name}{u.agency && <span className="block text-xs text-muted">{u.agency.name} ({u.agency.role})</span>}</td>
               <td>{u.phone}{u.email && <span className="block text-xs">{u.email}</span>}</td>
               <td>{u.account_type}{u.roles.length > 0 && <span className="block text-xs">{u.roles.join(", ")}</span>}</td>
               <td>{u.status}</td>
