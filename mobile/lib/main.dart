@@ -7,6 +7,8 @@ import 'shell/app_shell.dart';
 import 'ui/theme.dart';
 
 void main() {
+  // Le trousseau (stockage du jeton) passe par un canal de plateforme : le moteur doit être prêt avant restore().
+  WidgetsFlutterBinding.ensureInitialized();
   final tokens = SecureTokenStore();
   final api = ApiClient(tokens: tokens);
   runApp(

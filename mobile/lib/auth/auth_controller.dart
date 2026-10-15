@@ -48,7 +48,14 @@ class AuthController extends ChangeNotifier {
 
   /// Restaure la session au démarrage ; un jeton refusé est effacé.
   Future<void> restore() async {
-    if (await tokens.read() == null) return _set(AuthStatus.signedOut, null);
+    String? token;
+    try {
+      token = await tokens.read();
+    } catch (_) {
+      // Trousseau illisible : on démarre déconnecté plutôt que de rester bloqué sur le chargement.
+      return _set(AuthStatus.signedOut, null);
+    }
+    if (token == null) return _set(AuthStatus.signedOut, null);
     try {
       final me = await api.get('/me');
       _set(

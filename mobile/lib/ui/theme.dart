@@ -218,6 +218,19 @@ ThemeData buildTheme() {
         ),
       ),
     ),
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: SegmentedButton.styleFrom(
+        backgroundColor: Colors.white,
+        foregroundColor: AppColors.muted,
+        selectedBackgroundColor: AppColors.primarySoft,
+        selectedForegroundColor: AppColors.primary,
+        side: const BorderSide(color: Color(0xFFAAC3BA)),
+        textStyle: const TextStyle(
+          fontFamily: 'Manrope',
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    ),
     dividerTheme: const DividerThemeData(color: AppColors.line, space: 1),
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,

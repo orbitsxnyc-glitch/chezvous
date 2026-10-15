@@ -26,6 +26,12 @@ class ListingsRepository {
     return ListingDetail.fromJson(res['data'] as Map<String, dynamic>);
   }
 
+  /// Annonces « À la une » : mises en avant par leurs annonceurs (à étiqueter comme telles).
+  Future<List<ListingSummary>> featured() async {
+    final res = await api.get('/featured');
+    return _list(res['data']).map(ListingSummary.fromJson).toList();
+  }
+
   Future<List<Locality>> neighborhoods() async {
     final res = await api.get('/localities', query: {'level': 'neighborhood'});
     return _list(res['data'])

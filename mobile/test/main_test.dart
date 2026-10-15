@@ -16,13 +16,18 @@ AuthController _auth(http.Client client, [TokenStore? tokens]) {
 
 void main() {
   testWidgets(
-    "la recherche est publique : l'application s'ouvre dessus, la connexion est dans Compte",
+    "l'accueil et la recherche sont publics, la connexion est dans Compte",
     (tester) async {
       final auth = _auth(MockClient((_) async => http.Response('{}', 200)));
       await auth.restore();
       await tester.pumpWidget(MainApp(auth: auth));
       await tester.pumpAndSettle();
-      expect(find.text('Recherche'), findsOneWidget);
+      // Accueil : promesse du produit, sans connexion.
+      expect(find.textContaining('réellement disponible'), findsOneWidget);
+      expect(find.text('Rechercher'), findsOneWidget);
+
+      await tester.tap(find.text('Rechercher'));
+      await tester.pumpAndSettle();
       expect(find.textContaining('Aucune annonce'), findsOneWidget);
 
       await tester.tap(find.text('Compte'));
@@ -31,4 +36,19 @@ void main() {
       expect(find.text('Créer un compte'), findsOneWidget);
     },
   );
+
+  testWidgets('publier et messages demandent une connexion', (tester) async {
+    final auth = _auth(MockClient((_) async => http.Response('{}', 200)));
+    await auth.restore();
+    await tester.pumpWidget(MainApp(auth: auth));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Publier'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Connectez-vous'), findsOneWidget);
+
+    await tester.tap(find.text('Messages'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Connectez-vous'), findsOneWidget);
+  });
 }
