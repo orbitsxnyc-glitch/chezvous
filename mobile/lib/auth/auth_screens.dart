@@ -175,7 +175,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         const SizedBox(height: 16),
         AppField(
           controller: _email,
-          label: 'E-mail (facultatif)',
+          label: 'E-mail (le code de vérification y est envoyé)',
           keyboard: TextInputType.emailAddress,
           error: _f('email'),
         ),
@@ -273,11 +273,13 @@ class _VerifyPhoneScreenState extends State<VerifyPhoneScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Vérifier mon numéro')),
+    appBar: AppBar(title: const Text('Vérifier mon compte')),
     body: ListView(
       padding: const EdgeInsets.all(24),
       children: [
-        Text('Saisissez le code reçu pour ${widget.phone}.'),
+        Text(
+          'Saisissez le code reçu par e-mail pour le compte ${widget.phone}. Pensez à vérifier vos courriers indésirables.',
+        ),
         const SizedBox(height: 16),
         AppField(
           controller: _code,

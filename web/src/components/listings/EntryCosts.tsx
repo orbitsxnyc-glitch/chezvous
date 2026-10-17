@@ -18,7 +18,7 @@ export function EntryCosts({ costs }: { costs: NonNullable<ListingDetail["entry_
       </h2>
       <dl className="mt-4">
         {rows.map(([label, value]) => (
-          <div key={label} className="flex justify-between gap-5 border-b border-[#e2d8c8] py-3 text-sm last:border-0">
+          <div key={label} className="flex justify-between gap-5 border-b border-[#ebd9b8] py-3 text-sm last:border-0">
             <dt>{label}</dt>
             <dd className="font-bold">{fmt(value)}</dd>
           </div>

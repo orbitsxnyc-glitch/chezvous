@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Mail;
 
 class MailOtpSender implements OtpSender
 {
+    public function channel(): string
+    {
+        return 'email';
+    }
+
     public function send(string $phone, ?string $email, string $code, OtpPurpose $purpose): bool
     {
         if ($email === null) {

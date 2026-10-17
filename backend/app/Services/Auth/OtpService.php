@@ -10,6 +10,12 @@ class OtpService
 {
     public function __construct(private readonly OtpSender $sender) {}
 
+    /** Canal du fournisseur courant (voir OtpSender::channel). */
+    public function channel(): string
+    {
+        return $this->sender->channel();
+    }
+
     /**
      * Émet un nouveau code (les précédents du même couple téléphone/usage sont invalidés).
      */

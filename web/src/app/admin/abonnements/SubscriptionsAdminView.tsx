@@ -11,7 +11,7 @@ import { formatXof } from "@/lib/format";
 
 const msg = (e: unknown) => (e instanceof ApiError ? e.message : "Erreur.");
 const SETTLEMENT_TONE: Record<Settlement, string> = {
-  unpaid: "bg-[#edf0ee] text-[#53605a]", declared: "bg-warning-soft text-[#714105]", confirmed: "bg-success-soft text-[#0b6240]", not_required: "bg-info-soft text-[#174f8d]",
+  unpaid: "bg-[#f1ece6] text-[#5a4f47]", declared: "bg-warning-soft text-[#714105]", confirmed: "bg-success-soft text-[#0b6240]", not_required: "bg-info-soft text-[#174f8d]",
 };
 
 type Row = (AdminSubscription | AdminPremium) & { id: string };

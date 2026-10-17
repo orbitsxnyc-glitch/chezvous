@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { Field, FormMessage, SubmitButton } from "@/components/ui";
+import { Logo } from "@/components/SiteChrome";
 import { useRequireAuth } from "@/components/useRequireAuth";
 import {
   isAdmin, twoFactorConfirm, twoFactorSetup, twoFactorStatus, twoFactorVerify, type TwoFactorStatus,
@@ -113,6 +115,7 @@ function Verify({ left, onDone }: { left: number; onDone: () => void }) {
 /** Garde de l'espace /admin. L'API refuse de toute façon (403) : ce composant n'est qu'un confort d'affichage. */
 export default function AdminShell({ children }: { children: ReactNode }) {
   const { user, loading, signOut } = useRequireAuth();
+  const pathname = usePathname();
   const [status, setStatus] = useState<TwoFactorStatus | null>(null);
   const [error, setError] = useState("");
   const reload = useCallback(() => {
@@ -131,14 +134,35 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   if (status.required && !status.verified) return <Verify left={status.recovery_codes_left} onDone={reload} />;
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-6">
-      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3">
-        <nav aria-label="Administration" className="flex flex-wrap gap-4">
-          {NAV.map(([href, label]) => <Link key={href} href={href} className="underline-offset-4 hover:underline">{label}</Link>)}
+    <div className="mx-auto grid w-full max-w-7xl gap-6 px-5 py-6 lg:grid-cols-[14.5rem_minmax(0,1fr)]">
+      <aside className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
+        <div className="flex items-center justify-between gap-3">
+          <Logo />
+          <span className="rounded-md bg-primary-soft px-2 py-1 text-[0.65rem] font-extrabold tracking-wider text-primary uppercase">Admin</span>
+        </div>
+        <nav aria-label="Administration" className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
+          {NAV.map(([href, label]) => {
+            const active = href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                aria-current={active ? "page" : undefined}
+                className={`flex min-h-11 shrink-0 items-center rounded-lg px-3.5 text-sm font-semibold transition-colors hover:bg-primary-soft hover:text-primary ${active ? "bg-primary-soft text-primary" : "text-muted"}`}
+              >
+                {label}
+              </Link>
+            );
+          })}
         </nav>
-        <button className="text-sm underline" onClick={() => signOut()}>Se déconnecter</button>
-      </header>
-      {children}
+        <div className="flex items-center justify-between gap-2 border-t border-line pt-3 text-sm">
+          <span className="truncate font-semibold">{user.name}</span>
+          <button className="shrink-0 font-bold text-primary underline" onClick={() => signOut()}>Se déconnecter</button>
+        </div>
+      </aside>
+      <main className="min-w-0">
+        {children}
+      </main>
     </div>
   );
 }

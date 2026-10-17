@@ -44,7 +44,7 @@ class ListingSummary {
       title: j['title'] as String?,
       priceXof: (j['price_xof'] as num?)?.toInt(),
       negotiable: j['negotiable'] == true,
-      propertyType: j['property_type'] as String?,
+      propertyType: (j['property_type_label'] ?? j['property_type']) as String?,
       locality: _map(j['locality'])['name'] as String?,
       surfaceM2: (j['surface_m2'] as num?)?.toInt(),
       bedrooms: (j['bedrooms'] as num?)?.toInt(),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../core/format.dart';
 import '../inquiries/inquiries_repository.dart';
+import '../ui/theme.dart';
 import '../ui/widgets.dart';
 import 'listing_detail_screen.dart';
 import 'listing_widgets.dart';
@@ -230,24 +232,62 @@ class _FilterBar extends StatelessWidget {
 
   static const _prices = [100000, 200000, 300000, 500000, 1000000];
 
+  /// Filtre en pastille du design : contour discret, fond vert clair (ici orangé) et texte coloré quand il est actif.
+  Widget _pill<T>({
+    required T value,
+    required bool active,
+    required List<DropdownMenuItem<T>> items,
+    required ValueChanged<T?> onChanged,
+    required String label,
+  }) => Semantics(
+    label: label,
+    child: Container(
+      constraints: const BoxConstraints(minHeight: 44),
+      padding: const EdgeInsets.only(left: 14, right: 8),
+      decoration: BoxDecoration(
+        color: active ? AppColors.primarySoft : Colors.white,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+        border: Border.all(color: active ? AppColors.primary : AppColors.line),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<T>(
+          value: value,
+          items: items,
+          onChanged: onChanged,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          style: TextStyle(
+            fontFamily: 'Manrope',
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: active ? AppColors.primary : AppColors.ink,
+          ),
+          iconEnabledColor: active ? AppColors.primary : AppColors.muted,
+        ),
+      ),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) => SingleChildScrollView(
     scrollDirection: Axis.horizontal,
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     child: Row(
       children: [
-        DropdownButton<String>(
+        _pill<String>(
+          label: 'Type de transaction',
           value: filters.transaction,
+          active: true,
           items: const [
             DropdownMenuItem(value: 'rent_long', child: Text('Location')),
             DropdownMenuItem(value: 'sale', child: Text('Vente')),
           ],
           onChanged: (v) => onChanged(filters.copyWith(transaction: v)),
         ),
-        const SizedBox(width: 12),
-        DropdownButton<String?>(
+        const SizedBox(width: 8),
+        _pill<String?>(
+          label: 'Quartier',
           value: filters.locality,
-          hint: const Text('Quartier'),
+          active: filters.locality != null,
           items: [
             const DropdownMenuItem<String?>(
               value: null,
@@ -258,23 +298,25 @@ class _FilterBar extends StatelessWidget {
           ],
           onChanged: (v) => onChanged(filters.copyWith(locality: () => v)),
         ),
-        const SizedBox(width: 12),
-        DropdownButton<int?>(
+        const SizedBox(width: 8),
+        _pill<int?>(
+          label: 'Nombre de chambres',
           value: filters.bedroomsMin,
-          hint: const Text('Chambres'),
+          active: filters.bedroomsMin != null,
           items: const [
             DropdownMenuItem<int?>(value: null, child: Text('Chambres')),
-            DropdownMenuItem<int?>(value: 1, child: Text('1+')),
-            DropdownMenuItem<int?>(value: 2, child: Text('2+')),
-            DropdownMenuItem<int?>(value: 3, child: Text('3+')),
-            DropdownMenuItem<int?>(value: 4, child: Text('4+')),
+            DropdownMenuItem<int?>(value: 1, child: Text('1+ chambre')),
+            DropdownMenuItem<int?>(value: 2, child: Text('2+ chambres')),
+            DropdownMenuItem<int?>(value: 3, child: Text('3+ chambres')),
+            DropdownMenuItem<int?>(value: 4, child: Text('4+ chambres')),
           ],
           onChanged: (v) => onChanged(filters.copyWith(bedroomsMin: () => v)),
         ),
-        const SizedBox(width: 12),
-        DropdownButton<int?>(
+        const SizedBox(width: 8),
+        _pill<int?>(
+          label: 'Budget maximum',
           value: filters.priceMax,
-          hint: const Text('Budget max'),
+          active: filters.priceMax != null,
           items: [
             const DropdownMenuItem<int?>(
               value: null,
@@ -283,7 +325,7 @@ class _FilterBar extends StatelessWidget {
             for (final p in _prices)
               DropdownMenuItem<int?>(
                 value: p,
-                child: Text('≤ ${p ~/ 1000} 000'),
+                child: Text('≤ ${groupThousands(p)} FCFA'),
               ),
           ],
           onChanged: (v) => onChanged(filters.copyWith(priceMax: () => v)),

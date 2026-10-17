@@ -54,7 +54,7 @@ export default function UsersView() {
       </div>
       {error && <FormMessage kind="error">{error}</FormMessage>}
       <table className="w-full text-left text-sm">
-        <thead><tr><th>Nom</th><th>Contact</th><th>Type / rôles</th><th>Statut</th><th /></tr></thead>
+        <thead><tr><th>Nom</th><th>Contact</th><th>Type / rôles</th><th>Statut</th><th><span className="sr-only">Actions</span></th></tr></thead>
         <tbody>
           {items.map((u) => (
             <tr key={u.id} className="border-t border-line align-top">

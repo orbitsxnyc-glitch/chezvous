@@ -62,14 +62,15 @@ class ListingCard extends StatelessWidget {
                       ],
                       const SizedBox(height: 8),
                       Text(
-                        formatPrice(l.priceXof, l.transaction) +
-                            (l.negotiable ? ' · négociable' : ''),
+                        formatPrice(l.priceXof, l.transaction),
                         style: const TextStyle(
                           color: AppColors.primary,
                           fontWeight: FontWeight.w800,
                           fontSize: 15,
                         ),
                       ),
+                      if (l.negotiable)
+                        Text('Prix négociable', style: text.bodySmall),
                       const SizedBox(height: 8),
                       FreshnessBadge(availability: l.availability),
                     ],

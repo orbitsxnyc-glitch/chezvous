@@ -167,3 +167,11 @@ it('fournit au sitemap uniquement les annonces publiques', function () {
 
     expect(collect($res->json('data'))->pluck('reference')->all())->toBe([$a->reference]);
 });
+
+it('la liste publique donne le libellé français du type de bien, pas seulement son code technique', function () {
+    $listing = publicListing();
+
+    $row = collect($this->getJson('/api/v1/listings')->assertOk()->json('data'))->firstWhere('reference', $listing->reference);
+
+    expect($row['property_type'])->toBeString()->and($row['property_type_label'])->toBeString()->not->toBe($row['property_type']);
+});

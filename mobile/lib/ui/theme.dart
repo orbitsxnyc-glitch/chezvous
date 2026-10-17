@@ -2,18 +2,23 @@ import 'package:flutter/material.dart';
 
 /// Jetons du design Figma (docs/design-figma/src/index.css).
 abstract final class AppColors {
-  static const primary = Color(0xFF0D4A3E);
-  static const primaryHover = Color(0xFF083A31);
-  static const primarySoft = Color(0xFFE4F0EC);
-  static const sand = Color(0xFFF6F1E8);
-  static const sandDeep = Color(0xFFEDE4D6);
+  // Couleurs du logo : décor et grands textes uniquement (insuffisamment contrastées avec du blanc pour du texte courant).
+  static const brandOrange = Color(0xFFF66F11);
+  static const brandRed = Color(0xFFF13B3A);
+  static const brandYellow = Color(0xFFFBB413);
+  // Couleurs d'interface dérivées, contrastées AA.
+  static const primary = Color(0xFFC2410C);
+  static const primaryHover = Color(0xFF9A3412);
+  static const primarySoft = Color(0xFFFFF1E6);
+  static const sand = Color(0xFFFFF7E8);
+  static const sandDeep = Color(0xFFFBE8C8);
   static const surface = Color(0xFFFFFFFF);
-  static const surfaceSoft = Color(0xFFFAF9F6);
-  static const accent = Color(0xFFB84F32);
-  static const accentSoft = Color(0xFFF8E9E3);
-  static const ink = Color(0xFF17201D);
-  static const muted = Color(0xFF5F6B66);
-  static const line = Color(0xFFDBE1DD);
+  static const surfaceSoft = Color(0xFFFAF8F5);
+  static const accent = Color(0xFFC62828);
+  static const accentSoft = Color(0xFFFDE8E8);
+  static const ink = Color(0xFF1F1B16);
+  static const muted = Color(0xFF6B5E55);
+  static const line = Color(0xFFE7DDD3);
   static const success = Color(0xFF147A52);
   static const successSoft = Color(0xFFE6F4ED);
   static const warning = Color(0xFF935910);
@@ -30,7 +35,7 @@ abstract final class AppRadius {
   static const lg = 18.0;
 }
 
-const _field = BorderSide(color: Color(0xFFCBD4CF));
+const _field = BorderSide(color: Color(0xFFD6C9BD));
 
 ThemeData buildTheme() {
   const scheme = ColorScheme.light(
@@ -86,7 +91,10 @@ ThemeData buildTheme() {
           height: 1.4,
           color: AppColors.muted,
         ),
-      );
+      )
+      // Les styles redéfinis ci-dessus n'héritent pas de la police : on la force pour tout le texte (sinon police du système).
+      .apply(fontFamily: 'Manrope');
+
   final shape = RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(AppRadius.sm),
   );
@@ -117,8 +125,8 @@ ThemeData buildTheme() {
           fontWeight: FontWeight.w700,
           fontSize: 14,
         ),
-        disabledBackgroundColor: const Color(0xFFEDF0EE),
-        disabledForegroundColor: const Color(0xFF8C9692),
+        disabledBackgroundColor: const Color(0xFFF1ECE6),
+        disabledForegroundColor: const Color(0xFFA39A92),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -126,7 +134,7 @@ ThemeData buildTheme() {
         minimumSize: const Size(48, 48),
         shape: shape,
         foregroundColor: AppColors.primary,
-        side: const BorderSide(color: Color(0xFFAAC3BA)),
+        side: const BorderSide(color: Color(0xFFE5B999)),
         textStyle: const TextStyle(
           fontFamily: 'Manrope',
           fontWeight: FontWeight.w700,
@@ -224,7 +232,7 @@ ThemeData buildTheme() {
         foregroundColor: AppColors.muted,
         selectedBackgroundColor: AppColors.primarySoft,
         selectedForegroundColor: AppColors.primary,
-        side: const BorderSide(color: Color(0xFFAAC3BA)),
+        side: const BorderSide(color: Color(0xFFE5B999)),
         textStyle: const TextStyle(
           fontFamily: 'Manrope',
           fontWeight: FontWeight.w700,
@@ -273,8 +281,8 @@ class AppBadge extends StatelessWidget {
     BadgeTone.success => (const Color(0xFF0B6240), AppColors.successSoft),
     BadgeTone.warning => (const Color(0xFF714105), AppColors.warningSoft),
     BadgeTone.info => (const Color(0xFF174F8D), AppColors.infoSoft),
-    BadgeTone.accent => (const Color(0xFF8B321C), AppColors.accentSoft),
-    BadgeTone.neutral => (const Color(0xFF53605A), const Color(0xFFEDF0EE)),
+    BadgeTone.accent => (const Color(0xFF8B1C1C), AppColors.accentSoft),
+    BadgeTone.neutral => (const Color(0xFF5A4F47), const Color(0xFFF1ECE6)),
   };
 
   @override

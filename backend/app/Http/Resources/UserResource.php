@@ -25,6 +25,8 @@ class UserResource extends JsonResource
             'locale' => $this->locale,
             'city' => $this->city,
             'phone_verified' => $this->hasVerifiedPhone(),
+            // Compte vérifié ≠ numéro prouvé : faux quand la vérification s'est faite par e-mail.
+            'phone_proven' => $this->hasProvenPhone(),
             'roles' => $this->getRoleNames(),
             'notification_preferences' => $this->notification_preferences,
         ];

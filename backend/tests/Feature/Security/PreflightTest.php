@@ -67,7 +67,7 @@ it('les avis (suivi d\'erreurs, canaux factices, stockage local) n\'empêchent p
     productionConfig(['sentry.dsn' => null, 'chezvous.images.disk' => 'public']);
     $codes = collect((new Preflight)->problems())->where(0, 'warn')->pluck(1)->all();
 
-    expect($codes)->toContain('sentry')->toContain('sms_stub')->toContain('whatsapp_stub')->toContain('push_stub')->toContain('media_storage');
+    expect($codes)->toContain('sentry')->toContain('sms_stub')->toContain('whatsapp_stub')->toContain('push_stub')->toContain('media_storage')->toContain('phone_unproven');
     $this->artisan('chezvous:preflight')->assertSuccessful();
 });
 

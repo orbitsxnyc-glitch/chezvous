@@ -62,21 +62,20 @@ export function ContactPanel({ listingId, reference }: { listingId: string; refe
 
   if (!user) {
     return (
-      <section aria-labelledby="contact" className="flex flex-col gap-2 rounded-lg border border-line p-4">
-        <h2 id="contact" className="text-lg font-semibold">Contacter l&apos;annonceur</h2>
+      <section aria-labelledby="contact" className="flex flex-col gap-3 rounded-xl border border-line bg-white p-5 shadow-panel">
+        <h2 id="contact" className="text-lg font-extrabold">Contacter l&apos;annonceur</h2>
         <p>Connectez-vous pour envoyer un message, demander une visite ou enregistrer ce bien en favori.</p>
-        <p className="flex gap-4 underline">
-          <Link href="/connexion">Se connecter</Link>
-          <Link href="/inscription">Créer un compte</Link>
-        </p>
+        <Link href="/connexion" className="flex min-h-12 items-center justify-center rounded-lg bg-primary text-sm font-bold text-white hover:bg-primary-hover">Se connecter</Link>
+        <Link href="/inscription" className="flex min-h-12 items-center justify-center rounded-lg border border-line-strong text-sm font-bold text-primary hover:bg-primary-soft">Créer un compte</Link>
+        <p className="text-xs text-muted">Les coordonnées de l&apos;annonceur restent privées : vous le contactez par message.</p>
       </section>
     );
   }
 
   return (
-    <section aria-labelledby="contact" className="flex flex-col gap-3 rounded-lg border border-line p-4">
-      <h2 id="contact" className="text-lg font-semibold">Contacter l&apos;annonceur</h2>
-      <button type="button" onClick={toggleFavorite} aria-pressed={favorite} className="self-start rounded-lg border border-line-strong px-3 py-1 text-sm">
+    <section aria-labelledby="contact" className="flex flex-col gap-3 rounded-xl border border-line bg-white p-5 shadow-panel">
+      <h2 id="contact" className="text-lg font-extrabold">Contacter l&apos;annonceur</h2>
+      <button type="button" onClick={toggleFavorite} aria-pressed={favorite} className="min-h-11 self-start rounded-lg border border-line-strong px-3 text-sm font-semibold">
         {favorite ? "★ Retirer des favoris" : "☆ Ajouter aux favoris"}
       </button>
       <form onSubmit={onSubmit} className="flex flex-col gap-3" noValidate>

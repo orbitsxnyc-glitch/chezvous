@@ -22,7 +22,7 @@ export function Logo() {
     <Link href="/" className="flex min-h-11 items-center gap-2" aria-label="ChezVous, accueil">
       <Image src="/brand/mark.png" alt="" width={44} height={36} priority />
       <span className="text-xl font-extrabold tracking-tight">
-        Chez<span className="text-accent">Vous</span>
+        Chez<span className="text-brand-red">Vous</span>
       </span>
     </Link>
   );
@@ -61,11 +61,12 @@ export function SiteHeader() {
             </Link>
           ) : (
             <>
-              <Link href="/connexion" className="flex min-h-11 items-center rounded-lg px-3.5 text-sm font-bold text-primary hover:bg-primary-soft">
+              <Link href="/connexion" className="flex min-h-11 items-center rounded-lg px-2.5 text-sm font-bold text-primary hover:bg-primary-soft sm:px-3.5">
                 Se connecter
               </Link>
               <Link href="/inscription" className="flex min-h-11 items-center rounded-lg bg-primary px-4 text-sm font-bold text-white hover:bg-primary-hover">
-                Créer un compte
+                <span className="sm:hidden">S&apos;inscrire</span>
+                <span className="hidden sm:inline">Créer un compte</span>
               </Link>
             </>
           )}

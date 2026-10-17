@@ -68,8 +68,8 @@ class AccountService
             return false;
         }
 
-        $user->forceFill(['phone_verified_at' => now()])->save();
-        $user->recordAudit('user.phone_verified', null, null, $user->id);
+        $user->forceFill(['phone_verified_at' => now(), 'verified_via' => $this->verifiedVia()])->save();
+        $user->recordAudit('user.phone_verified', null, ['via' => $this->otp->channel()], $user->id);
 
         return true;
     }
@@ -96,7 +96,7 @@ class AccountService
             return false;
         }
 
-        $user->forceFill(['password' => $password, 'phone_verified_at' => $user->phone_verified_at ?? now()])->save();
+        $user->forceFill(['password' => $password] + ($user->phone_verified_at === null ? ['phone_verified_at' => now(), 'verified_via' => $this->verifiedVia()] : []))->save();
         $user->tokens()->delete();
         $user->recordAudit('user.password_reset', null, null, $user->id);
         $this->notifications->notify($user, 'security.password_changed'); // message de sécurité : non désactivable
@@ -126,5 +126,15 @@ class AccountService
             $user->recordAudit('user.deleted', null, null, $user->id);
             $user->delete();
         });
+    }
+
+    /** Un code reçu par e-mail prouve la boîte, pas le numéro ; le développement (journal) reste neutre. */
+    private function verifiedVia(): ?string
+    {
+        return match ($this->otp->channel()) {
+            'email' => 'email',
+            'sms' => 'sms',
+            default => null,
+        };
     }
 }

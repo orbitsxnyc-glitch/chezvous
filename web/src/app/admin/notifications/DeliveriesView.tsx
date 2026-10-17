@@ -50,7 +50,7 @@ export default function DeliveriesView() {
       </select>
       {error && <FormMessage kind="error">{error}</FormMessage>}
       <table className="w-full text-left text-sm">
-        <thead><tr><th>Type</th><th>Canal</th><th>Statut</th><th>Essais</th><th>Erreur</th><th /></tr></thead>
+        <thead><tr><th>Type</th><th>Canal</th><th>Statut</th><th>Essais</th><th>Erreur</th><th><span className="sr-only">Actions</span></th></tr></thead>
         <tbody>
           {items.map((d) => (
             <tr key={d.id} className="border-t border-line align-top">

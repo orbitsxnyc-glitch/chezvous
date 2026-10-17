@@ -32,7 +32,7 @@ export default function RegisterForm() {
       await registerAccount({
         name: String(form.get("name")).trim(),
         phone,
-        email: email || undefined,
+        email,
         password: String(form.get("password")),
         account_type: accountType,
         agency_name: accountType === "agency" ? String(form.get("agency_name")).trim() : undefined,
@@ -51,7 +51,7 @@ export default function RegisterForm() {
       <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
         <Field label="Nom complet" name="name" autoComplete="name" required error={errors.name} />
         <Field label="Téléphone" name="phone" type="tel" autoComplete="tel" required placeholder="77 123 45 67" error={errors.phone} />
-        <Field label="E-mail (facultatif)" name="email" type="email" autoComplete="email" error={errors.email} />
+        <Field label="E-mail" name="email" type="email" autoComplete="email" required error={errors.email} hint="Votre code de vérification vous est envoyé à cette adresse." />
         <Field
           label="Mot de passe"
           name="password"

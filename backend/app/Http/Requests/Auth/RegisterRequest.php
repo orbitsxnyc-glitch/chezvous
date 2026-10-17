@@ -30,7 +30,8 @@ class RegisterRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:120'],
             'phone' => ['required', 'string'],
-            'email' => ['nullable', 'email:rfc', 'max:190'],
+            // Le code de vérification part par e-mail tant qu'aucun fournisseur de SMS n'est en place.
+            'email' => [config('chezvous.otp.driver') === 'mail' ? 'required' : 'nullable', 'email:rfc', 'max:190'],
             'password' => ['required', 'string', Password::min(8)->max(128)],
             'account_type' => ['required', Rule::enum(AccountType::class)],
             'agency_name' => ['required_if:account_type,agency', 'nullable', 'string', 'max:120'],
@@ -39,6 +40,9 @@ class RegisterRequest extends FormRequest
 
     public function messages(): array
     {
-        return ['phone.required' => 'Numéro de téléphone sénégalais invalide (format +221 7X XXX XX XX).'];
+        return [
+            'phone.required' => 'Numéro de téléphone sénégalais invalide (format +221 7X XXX XX XX).',
+            'email.required' => 'Une adresse e-mail est nécessaire : le code de vérification vous y est envoyé.',
+        ];
     }
 }

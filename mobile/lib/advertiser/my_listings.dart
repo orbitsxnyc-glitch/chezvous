@@ -4,6 +4,7 @@ import '../core/api_client.dart';
 import '../core/format.dart';
 import '../inquiries/inquiries_screens.dart' show formatDateTime;
 import '../ui/widgets.dart';
+import '../ui/theme.dart';
 import 'editor_repository.dart';
 import 'listing_editor.dart';
 
@@ -258,14 +259,41 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
               ),
             ),
           ),
-          Text('${l.reference} · ${listingStatusLabels[l.status] ?? l.status}'),
-          Text(formatPrice(l.priceXof, l.transaction)),
+          const SizedBox(height: 4),
+          Text(l.reference, style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              AppBadge(
+                listingStatusLabels[l.status] ?? l.status,
+                tone: switch (l.status) {
+                  'published' => BadgeTone.success,
+                  'rejected' => BadgeTone.accent,
+                  'pending_moderation' => BadgeTone.info,
+                  'paused' || 'expired' => BadgeTone.warning,
+                  _ => BadgeTone.neutral,
+                },
+              ),
+              const SizedBox(width: 10),
+              Flexible(
+                child: Text(
+                  formatPrice(l.priceXof, l.transaction),
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
           if (l.status == 'published' && l.expiresAt != null)
             Text('Expire le ${formatDateTime(l.expiresAt!)}'),
           if (l.status == 'rejected' && l.rejectionComment != null)
             Text('Motif : ${l.rejectionComment}'),
           if (l.missingFields.isNotEmpty)
-            Text('À compléter sur le site : ${l.missingFields.join(', ')}'),
+            Text(
+              'À compléter : ${l.missingFields.map((f) => missingLabels[f] ?? f).join(', ')}',
+            ),
           Wrap(
             spacing: 8,
             children: [

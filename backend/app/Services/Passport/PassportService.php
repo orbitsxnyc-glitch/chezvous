@@ -40,7 +40,8 @@ class PassportService
             ->all();
 
         // Le téléphone vérifié de l'annonceur (inscription par OTP) est un contrôle de téléphone réussi.
-        $phoneVerifiedAt = $listing->advertiser?->phone_verified_at;
+        // Un compte vérifié par e-mail n'a PAS de numéro prouvé : aucun contrôle « téléphone » n'est affiché pour lui.
+        $phoneVerifiedAt = $listing->advertiser?->hasProvenPhone() ? $listing->advertiser->phone_verified_at : null;
         if ($phoneVerifiedAt !== null && ! isset($latest['phone'])) {
             $latest['phone'] = ['type' => 'phone', 'status' => 'passed', 'performed_at' => $phoneVerifiedAt->toIso8601String()];
         }
