@@ -77,3 +77,13 @@ body {
 h1, h2 {
   letter-spacing: -0.025em;
 }
+
+/* Pastilles de prix de la carte (Leaflet). */
+.cv-pin-wrap { background: transparent; border: 0; }
+.cv-pin {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 52px; height: 28px; padding: 0 10px;
+  border-radius: 14px; background: var(--primary); color: #fff; font-size: 12px; font-weight: 800; white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(60, 30, 10, 0.35); border: 2px solid #fff;
+}
+.leaflet-marker-icon:focus-visible .cv-pin, .leaflet-marker-icon:hover .cv-pin { background: var(--primary-hover); }
+.leaflet-popup-content { margin: 12px; font-family: var(--font-sans); }

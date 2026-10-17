@@ -12,6 +12,7 @@ use App\Services\Search\ListingSearch;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Storage;
 
 class PublicListingController extends Controller
 {
@@ -39,11 +40,15 @@ class PublicListingController extends Controller
         $rows = $this->search->inBounds($bbox, $request->safe()->except('bbox'))
             ->with(self::SUMMARY_RELATIONS)->limit(config('chezvous.search.map_limit'))->get();
 
+        $disk = Storage::disk(config('chezvous.images.disk'));
+
         return response()->json([
             'data' => $rows->map(fn (Listing $l) => [
                 'id' => $l->ulid, 'reference' => $l->reference, 'transaction' => $l->transaction->value, 'price_xof' => $l->price_xof,
                 'title' => $l->title, 'lat' => round((float) $l->pub_lat, 5), 'lon' => round((float) $l->pub_lon, 5),
-                'cover' => $l->property->coverImage?->sizes['thumb'] ?? null,
+                // URL publique de la vignette (et non le chemin de stockage), prête à afficher dans une infobulle.
+                'cover' => ($thumb = $l->property->coverImage?->sizes['thumb'] ?? null) ? $disk->url($thumb) : null,
+                'locality' => $l->property->locality?->name, 'property_type_label' => $l->property->type?->label,
             ]),
             'meta' => ['count' => $rows->count(), 'limit' => config('chezvous.search.map_limit'), 'truncated' => $rows->count() >= config('chezvous.search.map_limit')],
         ]);

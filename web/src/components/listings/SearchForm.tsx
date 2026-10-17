@@ -7,13 +7,14 @@ const control = "min-h-11 w-full rounded-lg border border-line-strong bg-white p
 const label = "flex flex-col gap-1.5 text-xs font-bold text-[#3f362f]";
 
 /** Panneau de filtres du design. Formulaire GET : fonctionne sans JavaScript et produit des URL partageables. */
-export function SearchForm({ values, neighborhoods }: { values: SearchParams; neighborhoods: Locality[] }) {
+export function SearchForm({ values, neighborhoods, view = "liste" }: { values: SearchParams; neighborhoods: Locality[]; view?: "liste" | "carte" }) {
   const active = Object.keys(values).filter((k) => k !== "cursor" && k !== "sort").length;
   return (
     <form action="/annonces" method="get" role="search" aria-label="Filtres de recherche" className="flex flex-col gap-4 rounded-xl border border-line bg-white p-5 shadow-card">
+      {view === "carte" && <input type="hidden" name="vue" value="carte" />}
       <div className="flex items-center justify-between">
         <h2 className="text-base font-extrabold">Filtres{active > 0 ? <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-xs text-white">{active}</span> : null}</h2>
-        {active > 0 && <Link href="/annonces" className="text-xs font-bold text-primary underline">Réinitialiser</Link>}
+        {active > 0 && <Link href={view === "carte" ? "/annonces?vue=carte" : "/annonces"} className="text-xs font-bold text-primary underline">Réinitialiser</Link>}
       </div>
       <label className={label}>
         Recherche libre

@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\ListingReport;
+use App\Models\PropertyImage;
 use App\Models\User;
 use Database\Seeders\ReferenceDataSeeder;
 use Illuminate\Support\Facades\DB;
@@ -174,4 +175,19 @@ it('la liste publique donne le libellé français du type de bien, pas seulement
     $row = collect($this->getJson('/api/v1/listings')->assertOk()->json('data'))->firstWhere('reference', $listing->reference);
 
     expect($row['property_type'])->toBeString()->and($row['property_type_label'])->toBeString()->not->toBe($row['property_type']);
+});
+
+it('la carte donne des liens de vignette utilisables et le quartier, sans coordonnée exacte', function () {
+    $listing = publicListing();
+    $listing->property->images()->update(['status' => 'ready']);
+    PropertyImage::where('property_id', $listing->property_id)->update(['sizes' => ['thumb' => 'img/x-thumb.webp']]);
+
+    $row = collect($this->getJson('/api/v1/listings/map?bbox=-17.5,14.7,-17.4,14.8')->assertOk()->json('data'))->firstWhere('reference', $listing->reference);
+
+    expect($row['locality'])->toBeString()->and($row['property_type_label'])->toBeString();
+    if ($row['cover'] !== null) {
+        expect($row['cover'])->toStartWith('http');
+    }
+    // La position publique est arrondie à 5 décimales (zone approximative), jamais l'adresse exacte.
+    expect(strlen(substr(strrchr((string) $row['lat'], '.') ?: '.', 1)))->toBeLessThanOrEqual(5);
 });
