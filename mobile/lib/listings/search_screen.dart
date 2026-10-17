@@ -285,7 +285,7 @@ class _FilterBar extends StatelessWidget {
           onChanged: onChanged,
           borderRadius: BorderRadius.circular(AppRadius.md),
           style: TextStyle(
-            fontFamily: 'Manrope',
+            fontFamily: 'Inter',
             fontSize: 13,
             fontWeight: FontWeight.w700,
             color: active ? AppColors.primary : AppColors.ink,

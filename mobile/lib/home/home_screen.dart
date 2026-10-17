@@ -7,6 +7,7 @@ import '../listings/listing_widgets.dart';
 import '../listings/listings_repository.dart';
 import '../listings/models.dart';
 import '../ui/theme.dart';
+import '../ui/widgets.dart';
 
 /// Accueil du design : recherche rapide, annonces « À la une », quartiers, pourquoi ChezVous.
 class HomeScreen extends StatefulWidget {
@@ -66,31 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      titleSpacing: 16,
-      title: Row(
-        children: [
-          Image.asset(
-            'assets/brand/mark.png',
-            height: 32,
-            semanticLabel: 'ChezVous',
-          ),
-          const SizedBox(width: 8),
-          const Text.rich(
-            TextSpan(
-              text: 'Chez',
-              children: [
-                TextSpan(
-                  text: 'Vous',
-                  style: TextStyle(color: AppColors.brandRed),
-                ),
-              ],
-            ),
-            style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: -.5),
-          ),
-        ],
-      ),
-    ),
+    appBar: AppBar(titleSpacing: 16, title: const BrandLogo()),
     body: ListView(
       children: [
         _hero(context),

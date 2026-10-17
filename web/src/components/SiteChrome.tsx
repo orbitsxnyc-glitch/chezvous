@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "./AuthProvider";
@@ -17,12 +16,32 @@ const MEMBER_LINKS = [
   ["/favoris", "Favoris"],
 ] as const;
 
+/** Pictogramme de la marque (maison et repère), en SVG : net à toutes les tailles, sans fichier à charger. */
+export function BrandMark({ className = "h-9 w-auto" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 750 720" className={className} aria-hidden>
+      <defs>
+        <linearGradient id="bm-roof" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stopColor="#F2530D" /><stop offset="1" stopColor="#FF7A10" /></linearGradient>
+        <linearGradient id="bm-slab" x1="0.5" y1="0" x2="0.5" y2="1"><stop offset="0" stopColor="#FF9A1F" /><stop offset="1" stopColor="#F2530D" /></linearGradient>
+        <linearGradient id="bm-ring" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#FF6A00" /><stop offset="0.6" stopColor="#FF7A10" /><stop offset="1" stopColor="#FFB020" /></linearGradient>
+        <linearGradient id="bm-fold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#F25A06" /><stop offset="1" stopColor="#D84200" /></linearGradient>
+      </defs>
+      <path fill="url(#bm-roof)" d="M400 55 Q412 55 424 64 L690 275 Q702 285 702 300 L702 392 Q702 402 692 396 L400 175 L112 393 Q70 412 38 380 Q10 345 40 318 L376 62 Q388 55 400 55 Z" />
+      <path fill="url(#bm-slab)" d="M232 352 L232 580 Q232 600 214 611 L150 653 Q115 672 115 632 L115 442 Q115 428 126 420 Z" />
+      <path fill="url(#bm-ring)" fillRule="evenodd" d="M405 272 C480 272 548 330 548 410 C548 438 540 462 540 480 L545 600 Q545 640 510 652 Q484 660 462 642 L360 548 C310 520 258 470 258 410 C258 330 330 272 405 272 Z M405 340 C372 340 336 366 336 408 C336 438 352 460 372 492 L402 540 L432 492 C452 460 474 438 474 408 C474 366 438 340 405 340 Z" />
+      <path fill="url(#bm-fold)" d="M545 600 Q545 640 510 652 Q484 660 462 642 L360 548 C420 560 500 500 532 430 C538 450 542 470 542 490 Z" />
+      <circle cx="404" cy="415" r="24" fill="#FF6A00" />
+    </svg>
+  );
+}
+
+/** Logo : pictogramme + mot-symbole (« Chez » anthracite, « Vous » en dégradé orange). Un logotype est exempté des exigences de contraste. */
 export function Logo() {
   return (
     <Link href="/" className="flex min-h-11 items-center gap-2" aria-label="ChezVous, accueil">
-      <Image src="/brand/mark.png" alt="" width={44} height={36} priority />
-      <span className="text-xl font-extrabold tracking-tight">
-        Chez<span className="text-brand-red">Vous</span>
+      <BrandMark />
+      <span className="text-[1.45rem] leading-none font-black tracking-tight" aria-hidden>
+        Chez<span className="bg-[image:var(--brand-gradient)] bg-clip-text text-transparent">Vous</span>
       </span>
     </Link>
   );

@@ -55,7 +55,7 @@ export function SearchForm({ values, neighborhoods, view = "liste" }: { values: 
         <input name="bedrooms_min" type="number" min={0} max={50} inputMode="numeric" defaultValue={values.bedrooms_min ?? ""} className={control} />
       </label>
       <label className="flex min-h-11 items-center gap-2 text-sm font-semibold">
-        <input type="checkbox" name="furnished" value="1" defaultChecked={values.furnished === "1"} className="size-5 accent-[#c2410c]" /> Meublé
+        <input type="checkbox" name="furnished" value="1" defaultChecked={values.furnished === "1"} className="size-5 accent-[#c93f00]" /> Meublé
       </label>
       <label className={label}>
         Trier par

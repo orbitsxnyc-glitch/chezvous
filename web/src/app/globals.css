@@ -2,41 +2,42 @@
 
 /* Jetons du design Figma (docs/design-figma/src/index.css). */
 :root {
-  /* Couleurs du logo : décor et grands textes uniquement (le blanc dessus est trop peu contrasté pour du texte courant). */
-  --brand-orange: #f66f11;
-  --brand-red: #f13b3a;
-  --brand-yellow: #fbb413;
-  /* Couleurs d'interface dérivées, contrastées AA avec le blanc. */
-  --primary: #c2410c;
-  --primary-hover: #9a3412;
+  /* Charte ChezVous (planche de marque) : orange principal, orange chaud, ambre, anthracite, gris, blanc. */
+  --brand-orange: #ff6a00;
+  --brand-orange-warm: #e74b00;
+  --brand-amber: #ffb020;
+  --brand-gradient: linear-gradient(135deg, #ff6a00 0%, #e74b00 100%);
+  /* Couleurs d'interface : l'orange vif n'atteint pas 4,5 avec du blanc (2,9) ; l'interface utilise cet orange plus profond. */
+  --primary: #c93f00;
+  --primary-hover: #b03500;
   --primary-soft: #fff1e6;
-  --sand: #fff7e8;
-  --sand-deep: #fbe8c8;
+  --sand: #fff7f0;
+  --sand-deep: #ffe4cc;
   --surface: #ffffff;
-  --surface-soft: #faf8f5;
-  --accent: #c62828;
-  --accent-soft: #fde8e8;
-  --ink: #1f1b16;
-  --muted: #6b5e55;
-  --line: #e7ddd3;
-  --line-strong: #d6c9bd;
-  --success: #147a52;
-  --success-soft: #e6f4ed;
-  --warning: #935910;
-  --warning-soft: #fff2d9;
+  --surface-soft: #fafafa;
+  --accent: #e74b00;
+  --accent-soft: #fff1e6;
+  --ink: #1f1f1f;
+  --muted: #6b6b6b;
+  --line: #e8e4e0;
+  --line-strong: #d6d0ca;
+  --success: #15803d;
+  --success-soft: #e8f8ee;
+  --warning: #8a5300;
+  --warning-soft: #fff4d6;
   --danger: #b42318;
   --danger-soft: #feeceb;
   --info: #205ea6;
   --info-soft: #e8f1fb;
-  --shadow-sm: 0 2px 8px rgba(60, 30, 10, 0.07);
-  --shadow-md: 0 14px 40px rgba(60, 30, 10, 0.12);
+  --shadow-sm: 0 2px 8px rgba(31, 31, 31, 0.06);
+  --shadow-md: 0 14px 40px rgba(31, 31, 31, 0.12);
   color-scheme: light;
 }
 
 @theme inline {
   --color-brand-orange: var(--brand-orange);
-  --color-brand-red: var(--brand-red);
-  --color-brand-yellow: var(--brand-yellow);
+  --color-brand-warm: var(--brand-orange-warm);
+  --color-brand-amber: var(--brand-amber);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-primary-soft: var(--primary-soft);
@@ -58,7 +59,7 @@
   --color-danger-soft: var(--danger-soft);
   --color-info: var(--info);
   --color-info-soft: var(--info-soft);
-  --font-sans: var(--font-manrope), system-ui, sans-serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
   --shadow-card: var(--shadow-sm);
   --shadow-panel: var(--shadow-md);
 }
@@ -83,7 +84,7 @@ h1, h2 {
 .cv-pin {
   display: inline-flex; align-items: center; justify-content: center; min-width: 52px; height: 28px; padding: 0 10px;
   border-radius: 14px; background: var(--primary); color: #fff; font-size: 12px; font-weight: 800; white-space: nowrap;
-  box-shadow: 0 2px 6px rgba(60, 30, 10, 0.35); border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(31, 31, 31, 0.35); border: 2px solid #fff;
 }
 .leaflet-marker-icon:focus-visible .cv-pin, .leaflet-marker-icon:hover .cv-pin { background: var(--primary-hover); }
 .leaflet-popup-content { margin: 12px; font-family: var(--font-sans); }
@@ -92,5 +93,5 @@ h1, h2 {
 .cv-cluster {
   display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%;
   background: var(--primary); color: #fff; font-size: 13px; font-weight: 800; border: 3px solid #fff;
-  box-shadow: 0 0 0 4px rgba(194, 65, 12, 0.28), 0 2px 6px rgba(60, 30, 10, 0.35);
+  box-shadow: 0 0 0 4px rgba(212, 66, 0, 0.28), 0 2px 6px rgba(31, 31, 31, 0.35);
 }

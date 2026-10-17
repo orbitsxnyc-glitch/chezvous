@@ -2,27 +2,27 @@ import 'package:flutter/material.dart';
 
 /// Jetons du design Figma (docs/design-figma/src/index.css).
 abstract final class AppColors {
-  // Couleurs du logo : décor et grands textes uniquement (insuffisamment contrastées avec du blanc pour du texte courant).
-  static const brandOrange = Color(0xFFF66F11);
-  static const brandRed = Color(0xFFF13B3A);
-  static const brandYellow = Color(0xFFFBB413);
-  // Couleurs d'interface dérivées, contrastées AA.
-  static const primary = Color(0xFFC2410C);
-  static const primaryHover = Color(0xFF9A3412);
+  // Couleurs de la marque (planche de marque) : décor, pastilles, fonds ; le texte dessus est anthracite (le blanc n'y est pas assez contrasté).
+  static const brandOrange = Color(0xFFFF6A00);
+  static const brandOrangeWarm = Color(0xFFE74B00);
+  static const brandAmber = Color(0xFFFFB020);
+  // Couleurs d'interface : l'orange vif n'atteint pas 4,5 avec du blanc (2,9) ; l'interface utilise cet orange plus profond.
+  static const primary = Color(0xFFC93F00);
+  static const primaryHover = Color(0xFFB03500);
   static const primarySoft = Color(0xFFFFF1E6);
-  static const sand = Color(0xFFFFF7E8);
-  static const sandDeep = Color(0xFFFBE8C8);
+  static const sand = Color(0xFFFFF7F0);
+  static const sandDeep = Color(0xFFFFE4CC);
   static const surface = Color(0xFFFFFFFF);
-  static const surfaceSoft = Color(0xFFFAF8F5);
-  static const accent = Color(0xFFC62828);
-  static const accentSoft = Color(0xFFFDE8E8);
-  static const ink = Color(0xFF1F1B16);
-  static const muted = Color(0xFF6B5E55);
-  static const line = Color(0xFFE7DDD3);
-  static const success = Color(0xFF147A52);
-  static const successSoft = Color(0xFFE6F4ED);
-  static const warning = Color(0xFF935910);
-  static const warningSoft = Color(0xFFFFF2D9);
+  static const surfaceSoft = Color(0xFFFAFAFA);
+  static const accent = Color(0xFFE74B00);
+  static const accentSoft = Color(0xFFFFF1E6);
+  static const ink = Color(0xFF1F1F1F);
+  static const muted = Color(0xFF6B6B6B);
+  static const line = Color(0xFFE8E4E0);
+  static const success = Color(0xFF15803D);
+  static const successSoft = Color(0xFFE8F8EE);
+  static const warning = Color(0xFF8A5300);
+  static const warningSoft = Color(0xFFFFF4D6);
   static const danger = Color(0xFFB42318);
   static const dangerSoft = Color(0xFFFEECEB);
   static const info = Color(0xFF205EA6);
@@ -35,7 +35,7 @@ abstract final class AppRadius {
   static const lg = 18.0;
 }
 
-const _field = BorderSide(color: Color(0xFFD6C9BD));
+const _field = BorderSide(color: Color(0xFFD6D0CA));
 
 ThemeData buildTheme() {
   const scheme = ColorScheme.light(
@@ -59,7 +59,7 @@ ThemeData buildTheme() {
   final base = ThemeData(
     colorScheme: scheme,
     useMaterial3: true,
-    fontFamily: 'Manrope',
+    fontFamily: 'Inter',
   );
   final text = base.textTheme
       .apply(bodyColor: AppColors.ink, displayColor: AppColors.ink)
@@ -93,7 +93,7 @@ ThemeData buildTheme() {
         ),
       )
       // Les styles redéfinis ci-dessus n'héritent pas de la police : on la force pour tout le texte (sinon police du système).
-      .apply(fontFamily: 'Manrope');
+      .apply(fontFamily: 'Inter');
 
   final shape = RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -110,7 +110,7 @@ ThemeData buildTheme() {
       surfaceTintColor: Colors.transparent,
       shape: Border(bottom: BorderSide(color: AppColors.line)),
       titleTextStyle: TextStyle(
-        fontFamily: 'Manrope',
+        fontFamily: 'Inter',
         fontSize: 18,
         fontWeight: FontWeight.w800,
         color: AppColors.ink,
@@ -121,7 +121,7 @@ ThemeData buildTheme() {
         minimumSize: const Size(48, 48),
         shape: shape,
         textStyle: const TextStyle(
-          fontFamily: 'Manrope',
+          fontFamily: 'Inter',
           fontWeight: FontWeight.w700,
           fontSize: 14,
         ),
@@ -134,9 +134,9 @@ ThemeData buildTheme() {
         minimumSize: const Size(48, 48),
         shape: shape,
         foregroundColor: AppColors.primary,
-        side: const BorderSide(color: Color(0xFFE5B999)),
+        side: const BorderSide(color: Color(0xFFE8B98F)),
         textStyle: const TextStyle(
-          fontFamily: 'Manrope',
+          fontFamily: 'Inter',
           fontWeight: FontWeight.w700,
           fontSize: 14,
         ),
@@ -147,7 +147,7 @@ ThemeData buildTheme() {
         minimumSize: const Size(48, 48),
         foregroundColor: AppColors.primary,
         textStyle: const TextStyle(
-          fontFamily: 'Manrope',
+          fontFamily: 'Inter',
           fontWeight: FontWeight.w700,
           fontSize: 14,
         ),
@@ -196,7 +196,7 @@ ThemeData buildTheme() {
       selectedColor: AppColors.primarySoft,
       side: const BorderSide(color: AppColors.line),
       labelStyle: const TextStyle(
-        fontFamily: 'Manrope',
+        fontFamily: 'Inter',
         fontWeight: FontWeight.w600,
         fontSize: 13,
         color: AppColors.ink,
@@ -210,7 +210,7 @@ ThemeData buildTheme() {
       height: 68,
       labelTextStyle: WidgetStateProperty.resolveWith(
         (s) => TextStyle(
-          fontFamily: 'Manrope',
+          fontFamily: 'Inter',
           fontSize: 11,
           fontWeight: FontWeight.w700,
           color: s.contains(WidgetState.selected)
@@ -232,9 +232,9 @@ ThemeData buildTheme() {
         foregroundColor: AppColors.muted,
         selectedBackgroundColor: AppColors.primarySoft,
         selectedForegroundColor: AppColors.primary,
-        side: const BorderSide(color: Color(0xFFE5B999)),
+        side: const BorderSide(color: Color(0xFFE8B98F)),
         textStyle: const TextStyle(
-          fontFamily: 'Manrope',
+          fontFamily: 'Inter',
           fontWeight: FontWeight.w700,
         ),
       ),

@@ -382,8 +382,8 @@ Future<void> _shot(
 
 void main() {
   setUpAll(() async {
-    final loader = FontLoader('Manrope')
-      ..addFont(rootBundle.load('assets/fonts/Manrope.ttf'));
+    final loader = FontLoader('Inter')
+      ..addFont(rootBundle.load('assets/fonts/Inter.ttf'));
     await loader.load();
     // Icônes Material : sans elles, le moteur de test dessine des carrés.
     final icons = FontLoader('MaterialIcons')

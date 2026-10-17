@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../core/api_client.dart';
+import 'theme.dart';
 
 /// Composants volontairement sobres : le design final viendra de Figma.
 class AppField extends StatelessWidget {
@@ -58,20 +60,68 @@ class PrimaryButton extends StatelessWidget {
 String errorText(Object e) =>
     e is ApiException ? e.message : 'Une erreur est survenue.';
 
-/// Logo de marque (image fournie) pour les écrans d'accueil du compte.
+/// Pictogramme de la marque (maison et repère) en vectoriel : net à toutes les tailles.
+class BrandMark extends StatelessWidget {
+  const BrandMark({super.key, this.height = 32, this.icon = false});
+
+  final double height;
+
+  /// Version simplifiée (icône d'application) plutôt que le pictogramme complet.
+  final bool icon;
+
+  @override
+  Widget build(BuildContext context) => SvgPicture.asset(
+    icon ? 'assets/brand/iconmark.svg' : 'assets/brand/mark.svg',
+    height: height,
+    semanticsLabel: 'ChezVous',
+  );
+}
+
+/// Logo : pictogramme + mot-symbole (« Chez » anthracite, « Vous » en orange de marque). Un logotype est exempté des exigences de contraste.
+class BrandLogo extends StatelessWidget {
+  const BrandLogo({super.key, this.size = 22, this.light = false});
+
+  final double size;
+
+  /// Fond sombre : « Chez » en blanc.
+  final bool light;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      BrandMark(height: size * 1.4),
+      SizedBox(width: size * 0.35),
+      Text.rich(
+        TextSpan(
+          text: 'Chez',
+          style: TextStyle(color: light ? Colors.white : AppColors.ink),
+          children: const [
+            TextSpan(
+              text: 'Vous',
+              style: TextStyle(color: AppColors.brandOrange),
+            ),
+          ],
+        ),
+        style: TextStyle(
+          fontSize: size,
+          fontWeight: FontWeight.w900,
+          letterSpacing: -0.6,
+          height: 1,
+        ),
+      ),
+    ],
+  );
+}
+
+/// Logo centré pour les écrans d'accueil du compte.
 class BrandHeader extends StatelessWidget {
   const BrandHeader({super.key});
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 20),
-    child: Center(
-      child: Image.asset(
-        'assets/brand/logo.png',
-        height: 120,
-        semanticLabel: 'ChezVous',
-      ),
-    ),
+  Widget build(BuildContext context) => const Padding(
+    padding: EdgeInsets.only(bottom: 24, top: 8),
+    child: Center(child: BrandLogo(size: 30)),
   );
 }
 

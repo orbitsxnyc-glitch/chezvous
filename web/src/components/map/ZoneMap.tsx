@@ -12,8 +12,8 @@ export default function ZoneMap({ lat, lon, exact }: { lat: number; lon: number;
     if (!node.current) return;
     const map = L.map(node.current, { center: [lat, lon], zoom: exact ? 16 : 14, scrollWheelZoom: false });
     L.tileLayer(MAP_TILES, { attribution: MAP_ATTRIBUTION, maxZoom: 18 }).addTo(map);
-    if (exact) L.circleMarker([lat, lon], { radius: 9, color: "#c2410c", fillColor: "#c2410c", fillOpacity: 0.9 }).addTo(map);
-    else L.circle([lat, lon], { radius: 350, color: "#c2410c", fillColor: "#c2410c", fillOpacity: 0.18, weight: 2 }).addTo(map);
+    if (exact) L.circleMarker([lat, lon], { radius: 9, color: "#c93f00", fillColor: "#c93f00", fillOpacity: 0.9 }).addTo(map);
+    else L.circle([lat, lon], { radius: 350, color: "#c93f00", fillColor: "#c93f00", fillOpacity: 0.18, weight: 2 }).addTo(map);
     return () => {
       map.remove();
     };
