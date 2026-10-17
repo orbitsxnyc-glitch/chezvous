@@ -67,13 +67,13 @@ export type ListingDetail = {
   expires_at: string | null;
 };
 
-export type SearchResult = { items: ListingSummary[]; nextCursor: string | null };
+export type SearchResult = { items: ListingSummary[]; nextCursor: string | null; total: number | null };
 
 export async function searchListings(params: SearchParams): Promise<SearchResult | null> {
   "use cache";
   cacheLife("minutes");
-  const res = await publicGet<{ data: ListingSummary[]; meta: { next_cursor: string | null } }>("/listings", params);
-  return res ? { items: res.data, nextCursor: res.meta?.next_cursor ?? null } : null;
+  const res = await publicGet<{ data: ListingSummary[]; meta: { next_cursor: string | null; total?: number } }>("/listings", params);
+  return res ? { items: res.data, nextCursor: res.meta?.next_cursor ?? null, total: res.meta?.total ?? null } : null;
 }
 
 export async function getListing(reference: string): Promise<ListingDetail | null> {

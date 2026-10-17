@@ -48,7 +48,11 @@ async function Search({ searchParams }: { searchParams: PageProps<"/annonces">["
             {tab("liste", "Liste")}
             {tab("carte", "Carte")}
           </div>
-          {view === "liste" && <p className="text-sm text-muted">{result ? `${result.items.length} bien${result.items.length > 1 ? "s" : ""} affiché${result.items.length > 1 ? "s" : ""}${result.nextCursor ? " (d'autres suivent)" : ""}` : ""}</p>}
+          {view === "liste" && result && (
+            <p className="text-sm font-bold">
+              {result.total !== null ? `${result.total} bien${result.total > 1 ? "s" : ""} trouvé${result.total > 1 ? "s" : ""}` : `${result.items.length} bien${result.items.length > 1 ? "s" : ""} affiché${result.items.length > 1 ? "s" : ""}${result.nextCursor ? " (d'autres suivent)" : ""}`}
+            </p>
+          )}
           <SaveSearchButton params={params} />
         </div>
         {view === "carte" ? (
