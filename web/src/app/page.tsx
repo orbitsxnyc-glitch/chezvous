@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { cacheLife } from "next/cache";
 import { connection } from "next/server";
 import { ListingCard } from "@/components/listings/ListingCard";
-import { getNeighborhoods, type ListingSummary } from "@/lib/listings";
+import { getNeighborhoods, getPopularNeighborhoods, type ListingSummary } from "@/lib/listings";
 import { publicGet } from "@/lib/server-api";
 import { SEO_ROUTES, seoPath } from "@/lib/seo";
 
@@ -95,18 +95,30 @@ async function Featured() {
   );
 }
 
+const TILES = [
+  "from-primary to-[#8a2d00] text-white",
+  "from-brand-amber to-brand-orange text-ink",
+  "from-brand-orange to-brand-amber text-ink",
+] as const;
+
 async function Districts() {
   await connection();
-  const neighborhoods = await getNeighborhoods().catch(() => []);
+  const neighborhoods = await getPopularNeighborhoods().catch(() => []);
   if (neighborhoods.length === 0) return null;
   return (
     <section aria-labelledby="quartiers" className="mx-auto w-full max-w-6xl px-5 pt-16">
-      <h2 id="quartiers" className="text-3xl font-extrabold">Quartiers de Dakar</h2>
-      <ul className="mt-6 flex flex-wrap gap-3">
-        {neighborhoods.map((n) => (
+      <h2 id="quartiers" className="text-3xl font-extrabold">Quartiers populaires</h2>
+      <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        {neighborhoods.slice(0, 8).map((n, i) => (
           <li key={n.slug}>
-            <Link href={`/annonces?transaction=rent_long&locality=${n.slug}`} className="flex min-h-11 items-center rounded-lg border border-line bg-white px-4 text-sm font-semibold hover:border-primary hover:text-primary">
-              {n.name}
+            <Link
+              href={`/annonces?transaction=rent_long&locality=${n.slug}`}
+              className={`flex min-h-28 flex-col justify-end rounded-xl bg-gradient-to-br p-4 shadow-card hover:brightness-95 ${TILES[i % TILES.length]}`}
+            >
+              <span className="text-lg font-extrabold">{n.name}</span>
+              {typeof n.listings_count === "number" && (
+                <span className="text-xs">{n.listings_count} bien{n.listings_count > 1 ? "s" : ""}</span>
+              )}
             </Link>
           </li>
         ))}
@@ -131,7 +143,7 @@ export default function Home() {
             Trouvez un logement <span className="text-primary">réellement disponible</span>
           </h1>
           <p className="mt-5 max-w-xl text-base leading-7 text-muted sm:text-lg">
-            Trouvez. Vérifiez. Visitez. Des biens dont la disponibilité est datée, avec leur Passeport.
+            Trouvez. Vivez. Avancez. Des biens dont la disponibilité est datée, avec leur Passeport.
           </p>
           <div className="mt-9 w-full">
             <Suspense fallback={<div className="h-44 w-full rounded-2xl bg-white shadow-panel" aria-hidden />}>

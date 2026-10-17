@@ -295,9 +295,9 @@ class _DistrictCard extends StatelessWidget {
   final VoidCallback onTap;
 
   static const _gradients = [
-    [Color(0xFFFF6A00), Color(0xFFE74B00)],
+    [Color(0xFFC93F00), Color(0xFF8A2D00)],
     [Color(0xFFFFB020), Color(0xFFFF6A00)],
-    [Color(0xFFE74B00), Color(0xFF8A2D00)],
+    [Color(0xFFB03500), Color(0xFF8A2D00)],
   ];
 
   @override

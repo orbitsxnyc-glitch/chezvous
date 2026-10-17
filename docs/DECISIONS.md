@@ -171,3 +171,12 @@ Le porteur du projet a délégué à Claude les décisions recommandées. Elles 
 | 16 | Modération : processus et responsabilités | Définir une file et des rôles | Qualité de l'inventaire |
 | 17 | Emplacement de Flutter (actuellement dans `~/Downloads`) | Le déplacer vers un emplacement stable | Risque de perte de l'outil |
 | 18 | Cahier des charges détaillé | Le placer dans `docs/` | Écarts non évaluables sans lui |
+
+## Phase 16 — Refonte graphique
+| Décision | Choix | Raison |
+|---|---|---|
+| Couleur interactive | #C93F00 (hover #B03500) ; #FF6A00/#FFB020 en décor, texte sombre dessus | Contraste WCAG AA |
+| Connexion Google/Apple | Reportée | Comptes externes, accord requis |
+| Libellés de confiance | « Contrôles effectués », sans score global | Règle 6 |
+| Logo | Vectorisation manuelle provisoire | Fichiers d'origine à fournir |
+Détail des écarts : `docs/phase-16-report.md`.

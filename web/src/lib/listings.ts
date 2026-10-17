@@ -90,13 +90,21 @@ export async function getSimilar(reference: string): Promise<ListingSummary[]> {
   return res?.data ?? [];
 }
 
-export type Locality = { id: number; parent_id: number | null; level: string; name: string; slug: string };
+export type Locality = { id: number; parent_id: number | null; level: string; name: string; slug: string; listings_count?: number };
 
 export async function getNeighborhoods(): Promise<Locality[]> {
   "use cache";
   cacheLife("hours");
   const res = await publicGet<{ data: Locality[] }>("/localities", { level: "neighborhood" });
   return res?.data ?? [];
+}
+
+/** Quartiers avec leur nombre d'annonces visibles, les plus fournis d'abord. */
+export async function getPopularNeighborhoods(): Promise<Locality[]> {
+  "use cache";
+  cacheLife("minutes");
+  const res = await publicGet<{ data: Locality[] }>("/localities", { level: "neighborhood", with_counts: "1" });
+  return [...(res?.data ?? [])].sort((a, b) => (b.listings_count ?? 0) - (a.listings_count ?? 0));
 }
 
 export async function getSitemapListings(): Promise<{ reference: string; updated_at: string }[]> {
