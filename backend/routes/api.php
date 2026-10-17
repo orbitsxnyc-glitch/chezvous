@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\Admin\CommercialController;
 use App\Http\Controllers\Api\V1\Admin\DashboardController;
 use App\Http\Controllers\Api\V1\Admin\ModerationController;
 use App\Http\Controllers\Api\V1\Admin\NotificationAdminController;
+use App\Http\Controllers\Api\V1\Admin\PassportCheckController;
 use App\Http\Controllers\Api\V1\Admin\ReferentialController;
 use App\Http\Controllers\Api\V1\Admin\ReportAdminController;
 use App\Http\Controllers\Api\V1\Admin\UserAdminController;
@@ -241,6 +242,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('verifications/{verification}', [VerificationController::class, 'show']);
         Route::post('verifications/{verification}/approve', [VerificationController::class, 'approve']);
         Route::post('verifications/{verification}/reject', [VerificationController::class, 'reject']);
+        Route::get('passports/{reference}/checks', [PassportCheckController::class, 'show'])->where('reference', '[A-Za-z0-9-]+');
+        Route::post('passports/{reference}/checks', [PassportCheckController::class, 'store'])->where('reference', '[A-Za-z0-9-]+');
         Route::post('listings/{listing}/approve', [ModerationController::class, 'approve']);
         Route::post('listings/{listing}/reject', [ModerationController::class, 'reject']);
     });

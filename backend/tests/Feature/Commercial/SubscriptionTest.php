@@ -11,6 +11,7 @@ use App\Services\Commercial\EntitlementService;
 use App\Services\Commercial\SubscriptionService;
 use Database\Seeders\CommercialSeeder;
 use Database\Seeders\ReferenceDataSeeder;
+use Database\Seeders\RolesSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -492,4 +493,19 @@ it('la commande expire aussi les souscriptions suspendues sans délai de grâce'
     app(SubscriptionService::class)->expireDue();
 
     expect($sub->fresh()->status->value)->toBe('expired')->and($sub->fresh()->downgrade_deadline_at)->toBeNull();
+});
+
+it("la vue administrateur indique qui a demandé l'abonnement, jamais la vue du client", function () {
+    $this->seed(RolesSeeder::class);
+    $owner = particulier();
+    $sub = activeSubscription($owner);
+    Sanctum::actingAs(moderator('admin'));
+
+    $row = collect($this->getJson('/api/v1/admin/subscriptions')->assertOk()->json('data'))->firstWhere('id', $sub->ulid);
+    expect($row['subscriber'])->toMatchArray(['type' => 'user', 'name' => $owner->name, 'requested_by' => $owner->name]);
+
+    app('auth')->forgetGuards();
+    Sanctum::actingAs($owner);
+    $mine = $this->getJson('/api/v1/my/subscription')->assertOk()->json('data');
+    expect($mine)->not->toHaveKey('subscriber');
 });

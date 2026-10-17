@@ -103,7 +103,7 @@ class CommercialController extends Controller
     {
         Gate::authorize('moderate');
         $request->validate(['status' => ['sometimes', Rule::enum(PremiumStatus::class)]]);
-        $page = PremiumListing::with('listing')->when($request->query('status'), fn ($q, $s) => $q->where('status', $s))->orderByDesc('id')->cursorPaginate(30)->withQueryString();
+        $page = PremiumListing::with(['listing.agency', 'listing.advertiser'])->when($request->query('status'), fn ($q, $s) => $q->where('status', $s))->orderByDesc('id')->cursorPaginate(30)->withQueryString();
 
         return response()->json(['data' => collect($page->items())->map(fn ($p) => (new PremiumListingResource($p, true))->toArray($request)), 'meta' => ['next_cursor' => $page->nextCursor()?->encode()]]);
     }

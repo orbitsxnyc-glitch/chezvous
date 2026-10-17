@@ -109,6 +109,16 @@ Le porteur du projet a délégué à Claude les décisions recommandées. Elles 
 | Couleurs de marque | **À trancher** : le logo (orange, rouge, jaune) et la palette du design (vert, terre cuite) ne s'accordent pas | Décision de marque |
 | Ordre | Mobile d'abord, web ensuite | Facile |
 
+## Décisions de la Phase 12 (administration)
+
+| Sujet | Décision | Réversibilité |
+|---|---|---|
+| Contrôles du Passeport | Saisis par les administrateurs : identité, localisation, document, visite terrain ; dernier contrôle de chaque type fait foi ; échec ou expiration masque l'ancien succès | Définitif (règle de confiance) |
+| Pièces justificatives | Pas d'envoi de pièces pour les contrôles du Passeport (minimiser les données personnelles) | Facile |
+| Encaissement saisi par un admin | Un encaissement enregistré par un administrateur est directement confirmé (il atteste l'avoir reçu) | Définitif |
+| Catalogue | Modification réservée au super administrateur ; une formule ne change jamais un abonnement déjà souscrit | Définitif |
+| Référentiels | Désactiver plutôt que supprimer ; codes immuables | Définitif |
+
 ## Questions ouvertes
 
 | # | Sujet | Recommandation | Impact |

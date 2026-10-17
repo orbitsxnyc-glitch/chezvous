@@ -65,3 +65,70 @@ export const fetchDeliveries = (status: string, cursor?: string) => {
   return apiFetch<Page<Delivery> & { meta: { counts: Record<string, number> } }>(`/admin/notification-deliveries?${p}`);
 };
 export const retryDelivery = (id: number) => apiFetch<unknown>(`/admin/notification-deliveries/${id}/retry`, { method: "POST" });
+
+// ---- Modération des annonces (file d'attente) ----
+import type { MyListing } from "./myListings";
+
+export type ModerationListing = MyListing;
+export type RejectionReason = { code: string; label: string };
+
+export const fetchModerationQueue = (cursor?: string) =>
+  apiFetch<Page<ModerationListing>>(`/admin/moderation${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ""}`);
+export const fetchRejectionReasons = () => apiFetch<Data<RejectionReason[]>>("/admin/moderation/reasons");
+export const approveListing = (id: string) => apiFetch<Data<ModerationListing>>(`/admin/listings/${encodeURIComponent(id)}/approve`, { method: "POST" });
+export const rejectListing = (id: string, reasonCode: string, comment: string) =>
+  apiFetch<Data<ModerationListing>>(`/admin/listings/${encodeURIComponent(id)}/reject`, {
+    method: "POST",
+    body: { reason_code: reasonCode, ...(comment.trim() ? { comment: comment.trim() } : {}) },
+  });
+
+/** Libellé d'un référentiel par identifiant (type de bien, quartier) ; l'API de modération ne renvoie que les identifiants. */
+export function labelById(items: { id: number; label?: string; name?: string }[], id: number | null): string | null {
+  if (id === null) return null;
+  const found = items.find((i) => i.id === id);
+  return found ? (found.label ?? found.name ?? null) : null;
+}
+
+// ---- Vérification des agences ----
+export type VerificationSummary = { id: string; agency: string; submitted_at: string };
+export type VerificationDetail = {
+  id: string;
+  status: string;
+  agency: { name: string; ninea: string | null; rccm: string | null };
+  documents: { kind: string; mime: string; size_bytes: number; url: string; expires_in_minutes: number }[];
+};
+export const DOCUMENT_LABELS: Record<string, string> = {
+  ninea: "NINEA", rccm: "RCCM", id: "Pièce d'identité du gérant", identity: "Pièce d'identité du gérant", licence: "Licence ou autorisation", other: "Autre document",
+};
+export const fetchVerifications = () => apiFetch<Data<VerificationSummary[]>>("/admin/verifications");
+export const fetchVerification = (id: string) => apiFetch<Data<VerificationDetail>>(`/admin/verifications/${id}`);
+export const approveVerification = (id: string) => apiFetch<Data<{ status: string }>>(`/admin/verifications/${id}/approve`, { method: "POST" });
+export const rejectVerification = (id: string, note: string) => apiFetch<Data<{ status: string }>>(`/admin/verifications/${id}/reject`, { method: "POST", body: { note } });
+
+// ---- Contrôles du Passeport du Bien ----
+export type PassportCheckRow = { type: string; status: "passed" | "failed" | "pending" | "expired"; performed_at: string; valid_until: string | null; note: string | null; by: string | null };
+export type PassportAdminView = {
+  listing: { id: string; reference: string; title: string | null; status: string };
+  manual_types: string[];
+  history: PassportCheckRow[];
+};
+export const CHECK_TYPE_LABELS: Record<string, string> = {
+  phone: "Téléphone vérifié", identity: "Identité vérifiée", professional: "Professionnel vérifié", location: "Localisation vérifiée",
+  document: "Document contrôlé", field_visit: "Visite terrain effectuée",
+};
+export const fetchPassportAdmin = (reference: string) => apiFetch<Data<PassportAdminView>>(`/admin/passports/${encodeURIComponent(reference.trim())}/checks`);
+export const recordPassportCheck = (reference: string, body: { type: string; status: "passed" | "failed"; note?: string; valid_until?: string }) =>
+  apiFetch<Data<PassportAdminView>>(`/admin/passports/${encodeURIComponent(reference)}/checks`, { method: "POST", body });
+
+// ---- Modèles de notification (versionnés) ----
+export type TemplateRow = { type: string; channel: string; locale: string; version: number; subject: string | null; body: string; variables: string[] };
+export const CHANNEL_LABELS: Record<string, string> = { in_app: "Dans l'application", email: "E-mail", push: "Notification push", whatsapp: "WhatsApp", sms: "SMS" };
+export const fetchTemplates = () => apiFetch<Data<TemplateRow[]>>("/admin/notification-templates");
+export const saveTemplate = (type: string, channel: string, body: { subject?: string; body: string }) =>
+  apiFetch<Data<{ version: number }>>(`/admin/notification-templates/${encodeURIComponent(type)}/${encodeURIComponent(channel)}`, { method: "PUT", body });
+
+/** Variables {nom} utilisées dans un texte (pour signaler celles que le modèle n'autorise pas avant l'envoi). */
+export function placeholders(text: string): string[] {
+  return [...new Set([...text.matchAll(/\{([a-z_]+)\}/g)].map((m) => m[1]))];
+}
+export const unknownVariables = (text: string, allowed: string[]) => placeholders(text).filter((v) => !allowed.includes(v));

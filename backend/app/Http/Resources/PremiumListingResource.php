@@ -30,6 +30,7 @@ class PremiumListingResource extends JsonResource
             'product' => ['code' => $this->product_snapshot['code'], 'duration_days' => $this->product_snapshot['duration_days'], 'price_xof' => $this->product_snapshot['price_xof']],
             'listing' => ['id' => $this->listing->ulid, 'reference' => $this->listing->reference, 'title' => $this->listing->title],
             'payment_reference' => $this->payment_reference,
+            'advertiser' => $this->when($this->admin, fn () => $this->listing->agency->name ?? $this->listing->advertiser->name ?? 'Compte supprimé'),
             'settlement' => $this->source->value === 'credit' ? 'not_required' : $payments->settlementStatus($this->resource),
             'starts_at' => $this->starts_at,
             'ends_at' => $this->ends_at,
