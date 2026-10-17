@@ -88,3 +88,19 @@ export function labelById(items: { id: number; label?: string; name?: string }[]
   const found = items.find((i) => i.id === id);
   return found ? (found.label ?? found.name ?? null) : null;
 }
+
+// ---- Vérification des agences ----
+export type VerificationSummary = { id: string; agency: string; submitted_at: string };
+export type VerificationDetail = {
+  id: string;
+  status: string;
+  agency: { name: string; ninea: string | null; rccm: string | null };
+  documents: { kind: string; mime: string; size_bytes: number; url: string; expires_in_minutes: number }[];
+};
+export const DOCUMENT_LABELS: Record<string, string> = {
+  ninea: "NINEA", rccm: "RCCM", id: "Pièce d'identité du gérant", identity: "Pièce d'identité du gérant", licence: "Licence ou autorisation", other: "Autre document",
+};
+export const fetchVerifications = () => apiFetch<Data<VerificationSummary[]>>("/admin/verifications");
+export const fetchVerification = (id: string) => apiFetch<Data<VerificationDetail>>(`/admin/verifications/${id}`);
+export const approveVerification = (id: string) => apiFetch<Data<{ status: string }>>(`/admin/verifications/${id}/approve`, { method: "POST" });
+export const rejectVerification = (id: string, note: string) => apiFetch<Data<{ status: string }>>(`/admin/verifications/${id}/reject`, { method: "POST", body: { note } });
