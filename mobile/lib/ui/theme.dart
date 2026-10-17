@@ -91,7 +91,10 @@ ThemeData buildTheme() {
           height: 1.4,
           color: AppColors.muted,
         ),
-      );
+      )
+      // Les styles redéfinis ci-dessus n'héritent pas de la police : on la force pour tout le texte (sinon police du système).
+      .apply(fontFamily: 'Manrope');
+
   final shape = RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(AppRadius.sm),
   );

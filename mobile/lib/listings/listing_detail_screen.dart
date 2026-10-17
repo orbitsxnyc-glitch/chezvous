@@ -275,6 +275,7 @@ class _KeyFacts extends StatelessWidget {
         children: [
           for (final (value, label) in items)
             Expanded(
+              flex: label == 'Type' ? 2 : 1,
               child: Column(
                 children: [
                   Text(

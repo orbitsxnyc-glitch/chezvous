@@ -170,6 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String?>(
+                isExpanded: true,
                 initialValue: _filters.locality,
                 decoration: const InputDecoration(
                   labelText: 'Quartier',
@@ -192,6 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<int?>(
+                isExpanded: true,
                 initialValue: _filters.priceMax,
                 decoration: const InputDecoration(
                   labelText: 'Budget maximum',
@@ -245,7 +247,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 300,
+          height: 312,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
