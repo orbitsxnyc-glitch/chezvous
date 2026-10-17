@@ -44,6 +44,9 @@ class InquiryResource extends JsonResource
             'created_at' => $this->created_at,
             'last_activity_at' => $this->last_activity_at,
             'first_response_at' => $this->first_response_at,
+            // Aperçu de la conversation (liste des messages) : dernier message et interlocuteur affiché.
+            'last_message' => ($last = $this->messages()->latest('id')->first()) ? ['body' => mb_strimwidth($last->body, 0, 140, '…'), 'mine' => $last->sender_id === $viewer->id, 'at' => $last->created_at] : null,
+            'counterpart' => $isRequester ? ($this->agency_id ? $this->agency->name : 'Annonceur') : $this->requester->name,
             'unread' => $this->messages()->whereNull('read_at')->when($isRequester, fn ($q) => $q->where('sender_id', '!=', $viewer->id), fn ($q) => $q->where('sender_id', $this->requester_id))->count(),
         ];
 

@@ -4,6 +4,7 @@ import '../core/format.dart';
 import '../inquiries/inquiries_repository.dart';
 import '../ui/theme.dart';
 import '../ui/widgets.dart';
+import 'filters_screen.dart';
 import 'listing_detail_screen.dart';
 import 'listing_widgets.dart';
 import 'listings_repository.dart';
@@ -39,6 +40,7 @@ class _SearchScreenState extends State<SearchScreen> {
   String? _error;
   int _generation = 0;
   bool _showMap = false;
+  int? _total;
 
   @override
   void initState() {
@@ -74,6 +76,7 @@ class _SearchScreenState extends State<SearchScreen> {
       setState(() {
         _items.addAll(page.items);
         _cursor = page.nextCursor;
+        if (!more) _total = page.total;
       });
     } catch (e) {
       if (mounted && generation == _generation) {
@@ -86,6 +89,41 @@ class _SearchScreenState extends State<SearchScreen> {
   void _apply(SearchFilters f) {
     _filters = f;
     _load();
+  }
+
+  Future<void> _openFilters() async {
+    final result = await Navigator.of(context).push<SearchFilters>(
+      MaterialPageRoute(builder: (_) => FiltersScreen(repository: widget.repository, initial: _filters)),
+    );
+    if (result != null) _apply(result);
+  }
+
+  static const _sorts = [
+    ('relevance', 'Pertinence'),
+    ('newest', 'Plus récentes'),
+    ('price_asc', 'Prix croissant'),
+    ('price_desc', 'Prix décroissant'),
+  ];
+
+  Future<void> _openSort() async {
+    final chosen = await showModalBottomSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(padding: EdgeInsets.all(16), child: Text('Trier par', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17))),
+            for (final (code, label) in _sorts)
+              ListTile(
+                title: Text(label),
+                trailing: (_filters.sort ?? 'relevance') == code ? const Icon(Icons.check, color: AppColors.primary) : null,
+                onTap: () => Navigator.pop(ctx, code),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (chosen != null) _apply(_filters.copyWith(sort: () => chosen == 'relevance' ? null : chosen));
   }
 
   Future<void> _saveSearch() async {
@@ -142,7 +180,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
-      title: const Text('ChezVous'),
+      title: const Text('Recherche'),
       actions: [
         IconButton(
           tooltip: _showMap ? 'Afficher la liste' : 'Afficher la carte',
@@ -162,7 +200,23 @@ class _SearchScreenState extends State<SearchScreen> {
           filters: _filters,
           localities: _localities,
           onChanged: _apply,
+          onMore: _openFilters,
         ),
+        if (!_showMap)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _loading && _items.isEmpty ? 'Recherche…' : _total != null ? '$_total bien${_total! > 1 ? 's' : ''} trouvé${_total! > 1 ? 's' : ''}' : '',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+                TextButton.icon(onPressed: _openSort, icon: const Icon(Icons.swap_vert, size: 20), label: const Text('Trier')),
+              ],
+            ),
+          ),
         Expanded(
           child: _showMap
               ? ListingsMapView(
@@ -253,11 +307,13 @@ class _FilterBar extends StatelessWidget {
     required this.filters,
     required this.localities,
     required this.onChanged,
+    required this.onMore,
   });
 
   final SearchFilters filters;
   final List<Locality> localities;
   final ValueChanged<SearchFilters> onChanged;
+  final VoidCallback onMore;
 
   static const _prices = [100000, 200000, 300000, 500000, 1000000];
 
@@ -358,6 +414,12 @@ class _FilterBar extends StatelessWidget {
               ),
           ],
           onChanged: (v) => onChanged(filters.copyWith(priceMax: () => v)),
+        ),
+        const SizedBox(width: 8),
+        ActionChip(
+          avatar: const Icon(Icons.tune, size: 18, color: AppColors.primary),
+          label: Text(filters.activeCount > 0 ? 'Filtres (${filters.activeCount})' : 'Filtres'),
+          onPressed: onMore,
         ),
       ],
     ),

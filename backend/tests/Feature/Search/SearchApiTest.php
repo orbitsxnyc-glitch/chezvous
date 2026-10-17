@@ -150,3 +150,22 @@ it('renvoie les annonces similaires : même type, zone et prix à ± 25 %', func
 
     expect(ids($res->json()))->toBe([$near->reference]);
 });
+
+it('la première page donne le total des résultats filtrés', function () {
+    foreach (range(1, 3) as $i) {
+        publicListing(['price_xof' => $i * 100000]);
+    }
+
+    expect($this->getJson('/api/v1/listings?price_max=250000')->assertOk()->json('meta.total'))->toBe(2)
+        ->and($this->getJson('/api/v1/listings')->json('meta.total'))->toBe(3);
+});
+
+it("les quartiers peuvent donner leur nombre d'annonces publiques", function () {
+    publicListing();
+    publicListing();
+
+    $rows = collect($this->getJson('/api/v1/localities?level=neighborhood&with_counts=1')->assertOk()->json('data'));
+
+    expect($rows->sum('listings_count'))->toBe(2)->and($rows->firstWhere('slug', 'yoff')['listings_count'])->toBe(2);
+    expect($this->getJson('/api/v1/localities?level=neighborhood')->json('data.0'))->not->toHaveKey('listings_count');
+});

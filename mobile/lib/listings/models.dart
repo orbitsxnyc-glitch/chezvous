@@ -184,17 +184,32 @@ class ListingDetail {
 }
 
 class Locality {
-  const Locality(this.slug, this.name);
+  const Locality(this.slug, this.name, [this.count]);
 
   final String slug;
   final String name;
+
+  /// Nombre d'annonces publiques du quartier (si demandé à l'API).
+  final int? count;
 }
 
 class SearchPage {
-  const SearchPage(this.items, this.nextCursor);
+  const SearchPage(this.items, this.nextCursor, [this.total]);
 
   final List<ListingSummary> items;
   final String? nextCursor;
+
+  /// Nombre total de résultats (donné à la première page seulement).
+  final int? total;
+}
+
+/// Type de bien (filtre de recherche et création d'annonce).
+class PropertyKind {
+  const PropertyKind(this.id, this.code, this.label);
+
+  final int id;
+  final String code;
+  final String label;
 }
 
 class SearchFilters {
@@ -202,27 +217,53 @@ class SearchFilters {
     this.transaction = 'rent_long',
     this.locality,
     this.bedroomsMin,
+    this.priceMin,
     this.priceMax,
+    this.type,
+    this.q,
     this.sort,
   });
 
   final String transaction;
   final String? locality;
   final int? bedroomsMin;
+  final int? priceMin;
   final int? priceMax;
+
+  /// Code du type de bien (ex. `apartment`).
+  final String? type;
+
+  /// Recherche libre (quartier, repère, résidence…).
+  final String? q;
   final String? sort;
+
+  /// Nombre de critères actifs hors transaction et tri (pastille du bouton « Filtres »).
+  int get activeCount => [
+    locality,
+    bedroomsMin,
+    priceMin,
+    priceMax,
+    type,
+    q,
+  ].where((v) => v != null).length;
 
   SearchFilters copyWith({
     String? transaction,
     String? Function()? locality,
     int? Function()? bedroomsMin,
+    int? Function()? priceMin,
     int? Function()? priceMax,
+    String? Function()? type,
+    String? Function()? q,
     String? Function()? sort,
   }) => SearchFilters(
     transaction: transaction ?? this.transaction,
     locality: locality != null ? locality() : this.locality,
     bedroomsMin: bedroomsMin != null ? bedroomsMin() : this.bedroomsMin,
+    priceMin: priceMin != null ? priceMin() : this.priceMin,
     priceMax: priceMax != null ? priceMax() : this.priceMax,
+    type: type != null ? type() : this.type,
+    q: q != null ? q() : this.q,
     sort: sort != null ? sort() : this.sort,
   );
 
@@ -231,7 +272,10 @@ class SearchFilters {
     'transaction': transaction,
     'locality': ?locality,
     if (bedroomsMin != null) 'bedrooms_min': '$bedroomsMin',
+    if (priceMin != null) 'price_min': '$priceMin',
     if (priceMax != null) 'price_max': '$priceMax',
+    'type': ?type,
+    'q': ?q,
     'sort': ?sort,
   };
 }

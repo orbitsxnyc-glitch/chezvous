@@ -24,7 +24,14 @@ class PublicListingController extends Controller
     {
         $query = $this->search->search($request->validated())->with(self::SUMMARY_RELATIONS);
 
-        return PublicListingSummaryResource::collection($query->cursorPaginate(config('chezvous.search.per_page'))->withQueryString());
+        $resource = PublicListingSummaryResource::collection($query->cursorPaginate(config('chezvous.search.per_page'))->withQueryString());
+
+        // Total des résultats : calculé à la première page seulement (le compte coûte une requête de plus).
+        if (! $request->has('cursor')) {
+            $resource->additional(['meta' => ['total' => $this->search->search($request->validated())->count()]]);
+        }
+
+        return $resource;
     }
 
     /** Recherche dans la zone visible de la carte : bbox=ouest,sud,est,nord. */

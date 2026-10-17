@@ -18,6 +18,7 @@ class ListingsRepository {
     return SearchPage(
       _list(res['data']).map(ListingSummary.fromJson).toList(),
       meta is Map ? meta['next_cursor'] as String? : null,
+      meta is Map ? (meta['total'] as num?)?.toInt() : null,
     );
   }
 
@@ -72,10 +73,32 @@ class ListingsRepository {
     return _list(res['data']).map(ListingSummary.fromJson).toList();
   }
 
-  Future<List<Locality>> neighborhoods() async {
-    final res = await api.get('/localities', query: {'level': 'neighborhood'});
+  Future<List<Locality>> neighborhoods({bool withCounts = false}) async {
+    final res = await api.get(
+      '/localities',
+      query: {'level': 'neighborhood', if (withCounts) 'with_counts': '1'},
+    );
     return _list(res['data'])
-        .map((l) => Locality('${l['slug']}', '${l['name']}'))
+        .map(
+          (l) => Locality(
+            '${l['slug']}',
+            '${l['name']}',
+            (l['listings_count'] as num?)?.toInt(),
+          ),
+        )
+        .toList();
+  }
+
+  Future<List<PropertyKind>> propertyTypes() async {
+    final res = await api.get('/property-types');
+    return _list(res['data'])
+        .map(
+          (t) => PropertyKind(
+            (t['id'] as num).toInt(),
+            '${t['code']}',
+            '${t['label']}',
+          ),
+        )
         .toList();
   }
 

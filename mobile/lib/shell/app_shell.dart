@@ -15,8 +15,8 @@ import '../listings/search_screen.dart';
 import '../ui/theme.dart';
 import '../ui/widgets.dart';
 
-/// Navigation du design : Accueil, Recherche, Publier, Messages, Compte.
-/// L'accueil et la recherche sont publics ; publier, messages et compte demandent une connexion.
+/// Navigation du design : Accueil, Recherche, Favoris, Messages, Compte (« Mon espace », qui porte aussi les annonces à publier).
+/// L'accueil et la recherche sont publics ; favoris et messages demandent une connexion.
 class AppShell extends StatefulWidget {
   const AppShell({super.key, required this.auth});
 
@@ -82,6 +82,14 @@ class _AppShellState extends State<AppShell> {
           signedIn: signedIn,
           inquiries: signedIn ? _inquiries : null,
           onSearch: _goSearch,
+          userName: widget.auth.user?.name,
+          onNotifications: signedIn
+              ? () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => NotificationsScreen(repository: _inquiries),
+                  ),
+                )
+              : () => setState(() => _tab = 4),
         ),
         SearchScreen(
           key: ValueKey('search-$who-$_searchSeed'),
@@ -91,12 +99,12 @@ class _AppShellState extends State<AppShell> {
           initialFilters: _filters,
         ),
         signedIn
-            ? MyListingsScreen(
-                key: ValueKey('mine-$who'),
-                repository: MyListingsRepository(widget.auth.api),
-                editor: EditorRepository(widget.auth.api),
+            ? FavoritesScreen(
+                key: ValueKey('fav-$who'),
+                repository: _listings,
+                inquiries: _inquiries,
               )
-            : const _SignInPrompt(what: 'publier et gérer vos annonces'),
+            : const _SignInPrompt(what: 'retrouver vos favoris'),
         signedIn
             ? MessagesScreen(key: ValueKey('msg-$who'), repository: _inquiries)
             : const _SignInPrompt(what: 'vos messages'),
@@ -121,9 +129,9 @@ class _AppShellState extends State<AppShell> {
             ),
             NavigationDestination(icon: Icon(Icons.search), label: 'Recherche'),
             NavigationDestination(
-              icon: Icon(Icons.add_circle_outline),
-              selectedIcon: Icon(Icons.add_circle),
-              label: 'Publier',
+              icon: Icon(Icons.favorite_border),
+              selectedIcon: Icon(Icons.favorite),
+              label: 'Favoris',
             ),
             NavigationDestination(
               icon: Icon(Icons.chat_bubble_outline),
@@ -249,9 +257,11 @@ class _Account extends StatelessWidget {
       Navigator.of(context)
           .push(MaterialPageRoute<void>(builder: (_) => screen));
 
+  MyListingsRepository get _mine => MyListingsRepository(auth.api);
+
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Compte')),
+    appBar: AppBar(title: const Text('Mon espace')),
     body: ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -287,13 +297,40 @@ class _Account extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
+        _Stats(mine: _mine, inquiries: inquiries),
+        const SizedBox(height: 16),
+        FilledButton.icon(
+          onPressed: () => _push(
+            context,
+            MyListingsScreen(
+              repository: _mine,
+              editor: EditorRepository(auth.api),
+            ),
+          ),
+          icon: const Icon(Icons.add_home_work_outlined),
+          label: const Text('Publier ou gérer mes annonces'),
+        ),
+        const SizedBox(height: 16),
         Card(
           child: Column(
             children: [
               ListTile(
+                leading: const Icon(Icons.home_work_outlined),
+                title: const Text('Mes annonces'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => _push(
+                  context,
+                  MyListingsScreen(
+                    repository: _mine,
+                    editor: EditorRepository(auth.api),
+                  ),
+                ),
+              ),
+              const Divider(),
+              ListTile(
                 leading: const Icon(Icons.favorite_border),
-                title: const Text('Favoris'),
+                title: const Text('Mes favoris'),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => _push(
                   context,
@@ -330,6 +367,69 @@ class _Account extends StatelessWidget {
           child: const Text('Supprimer mon compte'),
         ),
       ],
+    ),
+  );
+}
+
+/// Trois compteurs du compte : annonces, messages reçus et envoyés. Un compteur indisponible reste vide plutôt que faux.
+class _Stats extends StatefulWidget {
+  const _Stats({required this.mine, required this.inquiries});
+
+  final MyListingsRepository mine;
+  final InquiriesRepository inquiries;
+
+  @override
+  State<_Stats> createState() => _StatsState();
+}
+
+class _StatsState extends State<_Stats> {
+  int? _listings;
+  int? _received;
+  int? _sent;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.mine.list().then((v) {
+      if (mounted) setState(() => _listings = v.length);
+    }).catchError((_) {});
+    widget.inquiries.inbox().then((v) {
+      if (mounted) setState(() => _received = v.length);
+    }).catchError((_) {});
+    widget.inquiries.sent().then((v) {
+      if (mounted) setState(() => _sent = v.length);
+    }).catchError((_) {});
+  }
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      _tile(Icons.home_work_outlined, _listings, 'Annonces'),
+      const SizedBox(width: 8),
+      _tile(Icons.mark_email_unread_outlined, _received, 'Reçus'),
+      const SizedBox(width: 8),
+      _tile(Icons.send_outlined, _sent, 'Envoyés'),
+    ],
+  );
+
+  Widget _tile(IconData icon, int? value, String label) => Expanded(
+    child: Container(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: BoxDecoration(
+        color: AppColors.primarySoft,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: AppColors.primary),
+          const SizedBox(height: 6),
+          Text(
+            value?.toString() ?? '–',
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
+          ),
+          Text(label, style: const TextStyle(fontSize: 12)),
+        ],
+      ),
     ),
   );
 }

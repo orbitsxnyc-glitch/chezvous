@@ -23,10 +23,9 @@ void main() {
       await tester.pumpWidget(MainApp(auth: auth));
       await tester.pumpAndSettle();
       // Accueil : promesse du produit, sans connexion.
-      expect(find.textContaining('réellement disponible'), findsOneWidget);
-      expect(find.text('Rechercher'), findsOneWidget);
+      expect(find.textContaining('Où souhaitez-vous vivre'), findsOneWidget);
 
-      await tester.tap(find.text('Rechercher'));
+      await tester.tap(find.text('Recherche'));
       await tester.pumpAndSettle();
       expect(find.textContaining('Aucune annonce'), findsOneWidget);
 
@@ -37,13 +36,13 @@ void main() {
     },
   );
 
-  testWidgets('publier et messages demandent une connexion', (tester) async {
+  testWidgets('favoris et messages demandent une connexion', (tester) async {
     final auth = _auth(MockClient((_) async => http.Response('{}', 200)));
     await auth.restore();
     await tester.pumpWidget(MainApp(auth: auth));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Publier'));
+    await tester.tap(find.text('Favoris'));
     await tester.pumpAndSettle();
     expect(find.textContaining('Connectez-vous'), findsOneWidget);
 
