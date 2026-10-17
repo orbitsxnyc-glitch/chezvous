@@ -65,3 +65,26 @@ export const fetchDeliveries = (status: string, cursor?: string) => {
   return apiFetch<Page<Delivery> & { meta: { counts: Record<string, number> } }>(`/admin/notification-deliveries?${p}`);
 };
 export const retryDelivery = (id: number) => apiFetch<unknown>(`/admin/notification-deliveries/${id}/retry`, { method: "POST" });
+
+// ---- Modération des annonces (file d'attente) ----
+import type { MyListing } from "./myListings";
+
+export type ModerationListing = MyListing;
+export type RejectionReason = { code: string; label: string };
+
+export const fetchModerationQueue = (cursor?: string) =>
+  apiFetch<Page<ModerationListing>>(`/admin/moderation${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ""}`);
+export const fetchRejectionReasons = () => apiFetch<Data<RejectionReason[]>>("/admin/moderation/reasons");
+export const approveListing = (id: string) => apiFetch<Data<ModerationListing>>(`/admin/listings/${encodeURIComponent(id)}/approve`, { method: "POST" });
+export const rejectListing = (id: string, reasonCode: string, comment: string) =>
+  apiFetch<Data<ModerationListing>>(`/admin/listings/${encodeURIComponent(id)}/reject`, {
+    method: "POST",
+    body: { reason_code: reasonCode, ...(comment.trim() ? { comment: comment.trim() } : {}) },
+  });
+
+/** Libellé d'un référentiel par identifiant (type de bien, quartier) ; l'API de modération ne renvoie que les identifiants. */
+export function labelById(items: { id: number; label?: string; name?: string }[], id: number | null): string | null {
+  if (id === null) return null;
+  const found = items.find((i) => i.id === id);
+  return found ? (found.label ?? found.name ?? null) : null;
+}
