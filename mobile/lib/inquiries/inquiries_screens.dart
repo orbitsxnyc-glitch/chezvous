@@ -73,7 +73,12 @@ class _InquiryListState extends State<_InquiryList> {
         return const Center(child: CircularProgressIndicator());
       }
       if (snap.hasError) {
-        return Center(child: Text(errorText(snap.error!)));
+        return ErrorRetry(
+          message: errorText(snap.error!),
+          onRetry: () => setState(() {
+            _future = widget.load();
+          }),
+        );
       }
       final items = snap.data!;
       if (items.isEmpty) {
@@ -86,7 +91,9 @@ class _InquiryListState extends State<_InquiryList> {
       }
       return RefreshIndicator(
         onRefresh: () async {
-          setState(() => _future = widget.load());
+          setState(() {
+            _future = widget.load();
+          });
           await _future;
         },
         child: ListView(
@@ -107,7 +114,11 @@ class _InquiryListState extends State<_InquiryList> {
                           ThreadScreen(repository: widget.repository, id: i.id),
                     ),
                   );
-                  if (mounted) setState(() => _future = widget.load());
+                  if (mounted) {
+                    setState(() {
+                      _future = widget.load();
+                    });
+                  }
                 },
               ),
           ],
@@ -139,8 +150,9 @@ class _ThreadScreenState extends State<ThreadScreen> {
     super.dispose();
   }
 
-  void _reload() =>
-      setState(() => _future = widget.repository.detail(widget.id));
+  void _reload() => setState(() {
+    _future = widget.repository.detail(widget.id);
+  });
 
   Future<void> _run(Future<void> Function() action) async {
     try {
@@ -191,7 +203,7 @@ class _ThreadScreenState extends State<ThreadScreen> {
           return const Center(child: CircularProgressIndicator());
         }
         if (snap.hasError) {
-          return Center(child: Text(errorText(snap.error!)));
+          return ErrorRetry(message: errorText(snap.error!), onRetry: _reload);
         }
         final d = snap.data!;
         return Column(
@@ -501,7 +513,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           onPressed: () async {
             await widget.repository.markAllRead();
             if (mounted) {
-              setState(() => _future = widget.repository.notifications());
+              setState(() {
+                _future = widget.repository.notifications();
+              });
             }
           },
           child: const Text('Tout lire'),
@@ -515,7 +529,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           return const Center(child: CircularProgressIndicator());
         }
         if (snap.hasError) {
-          return Center(child: Text(errorText(snap.error!)));
+          return ErrorRetry(
+            message: errorText(snap.error!),
+            onRetry: () => setState(() {
+              _future = widget.repository.notifications();
+            }),
+          );
         }
         final items = snap.data!.items;
         if (items.isEmpty) {

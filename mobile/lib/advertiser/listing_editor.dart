@@ -17,7 +17,7 @@ class NewListingScreen extends StatefulWidget {
 }
 
 class _NewListingScreenState extends State<NewListingScreen> {
-  late final Future<List<Option>> _types = widget.repository.propertyTypes();
+  late Future<List<Option>> _types = widget.repository.propertyTypes();
   String _transaction = 'rent_long';
   int? _type;
   bool _pending = false;
@@ -58,7 +58,12 @@ class _NewListingScreenState extends State<NewListingScreen> {
           return const Center(child: CircularProgressIndicator());
         }
         if (snap.hasError) {
-          return Center(child: Text(errorText(snap.error!)));
+          return ErrorRetry(
+            message: errorText(snap.error!),
+            onRetry: () => setState(() {
+              _types = widget.repository.propertyTypes();
+            }),
+          );
         }
         return ListView(
           padding: const EdgeInsets.all(24),

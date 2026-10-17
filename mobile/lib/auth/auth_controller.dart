@@ -44,6 +44,9 @@ class AuthController extends ChangeNotifier {
   final String deviceName;
 
   AuthStatus status = AuthStatus.unknown;
+
+  /// Vrai quand une session ouverte a été refusée par le serveur (jeton révoqué ou expiré) : l'écran l'annonce une fois.
+  bool sessionExpired = false;
   AppUser? user;
 
   /// Restaure la session au démarrage ; un jeton refusé est effacé.
@@ -117,8 +120,16 @@ class AuthController extends ChangeNotifier {
     _set(AuthStatus.signedOut, null);
   }
 
+  /// Suppression du compte (exigée par les boutiques d'applications) : mot de passe demandé, données personnelles anonymisées côté serveur.
+  Future<void> deleteAccount(String password) async {
+    await api.delete('/me', body: {'password': password});
+    await tokens.clear();
+    _set(AuthStatus.signedOut, null);
+  }
+
   void _expire() {
     tokens.clear();
+    sessionExpired = status == AuthStatus.signedIn;
     _set(AuthStatus.signedOut, null);
   }
 

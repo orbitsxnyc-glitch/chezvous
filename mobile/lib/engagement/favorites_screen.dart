@@ -23,7 +23,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   Future<void> _remove(ListingSummary l) async {
     try {
       await widget.repository.removeFavorite(l.id);
-      setState(() => _future = widget.repository.favorites());
+      setState(() {
+        _future = widget.repository.favorites();
+      });
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
@@ -41,7 +43,14 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         if (snap.connectionState != ConnectionState.done) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (snap.hasError) return Center(child: Text(errorText(snap.error!)));
+        if (snap.hasError) {
+          return ErrorRetry(
+            message: errorText(snap.error!),
+            onRetry: () => setState(() {
+              _future = widget.repository.favorites();
+            }),
+          );
+        }
         final items = snap.data!;
         if (items.isEmpty) {
           return const Center(child: Text('Aucun favori pour le moment.'));

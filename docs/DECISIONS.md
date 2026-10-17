@@ -136,6 +136,17 @@ Le porteur du projet a délégué à Claude les décisions recommandées. Elles 
 | Couleurs du logo | Réservées au décor et aux grands textes ; l'interface utilise des teintes dérivées contrastées AA (testées) | Définitif (accessibilité) |
 | Accessibilité | Cible WCAG 2.1 AA ; audit axe-core réutilisable (`infra/scripts/web-audit.mjs`) | — |
 
+## Décisions de la Phase 15 (carte, Android, publication)
+
+| Sujet | Décision | Réversibilité |
+|---|---|---|
+| Carte | Leaflet (web) et flutter_map (mobile), fonds OpenStreetMap par défaut, gratuits et sans compte ; fournisseur réglable par variable (`NEXT_PUBLIC_MAP_TILES_URL`, `MAP_TILES_URL`) | Facile |
+| Positions | Toujours approximatives ; jamais d'adresse exacte avant contact | Définitif (vie privée) |
+| Regroupement | Côté serveur, par cellule de grille, sous le zoom 14 (réglable) | Facile |
+| Android | Licences du SDK acceptées à la demande du porteur ; signature par `key.properties` hors Git | — |
+| Lectures réseau | Une nouvelle tentative automatique ; jamais pour les envois | Facile |
+| Boutiques | Suppression de compte et signalement dans l'application (exigences Apple et Google) | Définitif |
+
 ## Questions ouvertes
 
 | # | Sujet | Recommandation | Impact |
@@ -150,7 +161,7 @@ Le porteur du projet a délégué à Claude les décisions recommandées. Elles 
 | 6 | Prestataire WhatsApp Business et coût des messages | Valider avant toute conception de relances | Coût, modèles de messages |
 | 7 | Fournisseur push et config mobile | FCM probable, à confirmer | Comptes Apple/Google |
 | 8 | Stockage compatible S3 | Comparer région et coût | Médias, sauvegardes |
-| 9 | Cartographie et fournisseur géographique | À comparer (coût, couverture de Dakar) | Recherche par carte |
+| 9 | Cartographie et fournisseur géographique | Carte livrée avec OpenStreetMap (pilote) ; fournisseur dédié à choisir avant le lancement public | Coût, conformité |
 | 10 | Langues de lancement | Français d'abord | Volume de contenu |
 | 11 | Précision de localisation publique | Zone approximative avant contact | Vie privée, sécurité |
 | 12 | Contrôle des identités, mandats, documents | Manuel au MVP | Charge opérationnelle |

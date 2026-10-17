@@ -191,12 +191,7 @@ class _SearchScreenState extends State<SearchScreen> {
     if (_items.isEmpty) {
       if (_loading) return const Center(child: CircularProgressIndicator());
       if (_error != null) {
-        return Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text(_error!),
-          ),
-        );
+        return ErrorRetry(message: _error!, onRetry: _load);
       }
       return const Center(
         child: Padding(
@@ -212,7 +207,15 @@ class _SearchScreenState extends State<SearchScreen> {
       itemCount: _items.length + 1,
       itemBuilder: (context, i) {
         if (i == _items.length) {
-          if (_error != null) return Text(_error!);
+          if (_error != null) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: ErrorRetry(
+                message: _error!,
+                onRetry: () => _load(more: true),
+              ),
+            );
+          }
           if (_loading) {
             return const Padding(
               padding: EdgeInsets.all(16),

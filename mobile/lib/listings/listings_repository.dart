@@ -45,6 +45,22 @@ class ListingsRepository {
     );
   }
 
+  /// Motifs de signalement (publics).
+  Future<List<({String code, String label})>> reportReasons() async =>
+      _list((await api.get('/report-reasons'))['data'])
+          .map((r) => (code: '${r['code']}', label: '${r['label']}'))
+          .toList();
+
+  /// Signale une annonce publiée (compte connecté requis) ; traité par la modération.
+  Future<void> reportListing(
+    String listingId,
+    String reasonCode, {
+    String? comment,
+  }) => api.post('/listings/${Uri.encodeComponent(listingId)}/reports', {
+    'reason_code': reasonCode,
+    if (comment != null && comment.trim().isNotEmpty) 'comment': comment.trim(),
+  });
+
   Future<ListingDetail> detail(String reference) async {
     final res = await api.get('/listings/${Uri.encodeComponent(reference)}');
     return ListingDetail.fromJson(res['data'] as Map<String, dynamic>);

@@ -2,7 +2,7 @@
     <!-- Sans cette permission, une version publiée (release) ne peut appeler aucune API. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="chezvous"
+        android:label="ChezVous"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

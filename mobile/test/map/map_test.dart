@@ -35,6 +35,7 @@ ListingsRepository _repo(MockClientHandler h) => ListingsRepository(
     tokens: MemoryTokenStore(),
     client: MockClient(h),
     baseUrl: 'http://api.test',
+    retryDelay: Duration.zero,
   ),
 );
 

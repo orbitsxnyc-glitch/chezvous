@@ -13,6 +13,7 @@ import '../listings/listings_repository.dart';
 import '../listings/models.dart';
 import '../listings/search_screen.dart';
 import '../ui/theme.dart';
+import '../ui/widgets.dart';
 
 /// Navigation du design : Accueil, Recherche, Publier, Messages, Compte.
 /// L'accueil et la recherche sont publics ; publier, messages et compte demandent une connexion.
@@ -35,6 +36,31 @@ class _AppShellState extends State<AppShell> {
   late final InquiriesRepository _inquiries = InquiriesRepository(
     widget.auth.api,
   );
+
+  @override
+  void initState() {
+    super.initState();
+    widget.auth.addListener(_announceExpiry);
+  }
+
+  @override
+  void dispose() {
+    widget.auth.removeListener(_announceExpiry);
+    super.dispose();
+  }
+
+  /// Une session refusée par le serveur déconnecte l'application : on le dit une fois, au lieu d'un changement silencieux.
+  void _announceExpiry() {
+    if (!widget.auth.sessionExpired) return;
+    widget.auth.sessionExpired = false;
+    if (!mounted) return;
+    setState(() => _tab = 4);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Votre session a expiré : reconnectez-vous.'),
+      ),
+    );
+  }
 
   void _goSearch(SearchFilters f) => setState(() {
     _filters = f;
@@ -158,6 +184,67 @@ class _Account extends StatelessWidget {
   final ListingsRepository listings;
   final InquiriesRepository inquiries;
 
+  Future<void> _confirmDelete(BuildContext context) async {
+    final password = TextEditingController();
+    final messenger = ScaffoldMessenger.of(context);
+    var error = '';
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          title: const Text('Supprimer mon compte ?'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Cette action est définitive : vos données personnelles seront anonymisées et vos annonces retirées. Saisissez votre mot de passe pour confirmer.',
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: password,
+                obscureText: true,
+                decoration: const InputDecoration(labelText: 'Mot de passe'),
+              ),
+              if (error.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    error,
+                    style: const TextStyle(color: AppColors.danger),
+                  ),
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Annuler'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+              onPressed: () async {
+                try {
+                  await auth.deleteAccount(password.text);
+                  if (ctx.mounted) Navigator.pop(ctx, true);
+                } catch (e) {
+                  setState(() => error = errorText(e));
+                }
+              },
+              child: const Text('Supprimer définitivement'),
+            ),
+          ],
+        ),
+      ),
+    );
+    password.dispose();
+    if (confirmed == true) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Votre compte a été supprimé.')),
+      );
+    }
+  }
+
   void _push(BuildContext context, Widget screen) =>
       Navigator.of(context)
           .push(MaterialPageRoute<void>(builder: (_) => screen));
@@ -235,6 +322,12 @@ class _Account extends StatelessWidget {
         OutlinedButton(
           onPressed: auth.logout,
           child: const Text('Se déconnecter'),
+        ),
+        const SizedBox(height: 4),
+        TextButton(
+          onPressed: () => _confirmDelete(context),
+          style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+          child: const Text('Supprimer mon compte'),
         ),
       ],
     ),

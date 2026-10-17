@@ -32,10 +32,102 @@ class ListingDetailScreen extends StatefulWidget {
 }
 
 class _ListingDetailScreenState extends State<ListingDetailScreen> {
-  late final Future<ListingDetail> _future = widget.repository.detail(
+  late Future<ListingDetail> _future = widget.repository.detail(
     widget.reference,
   );
   bool? _favorite;
+
+  /// Signalement : réservé aux comptes connectés (motifs fournis par l'API), traité par la modération.
+  Future<void> _report(ListingDetail d) async {
+    final messenger = ScaffoldMessenger.of(context);
+    if (!widget.signedIn) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Connectez-vous (onglet Compte) pour signaler une annonce.',
+          ),
+        ),
+      );
+      return;
+    }
+    List<({String code, String label})> reasons;
+    try {
+      reasons = await widget.repository.reportReasons();
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(errorText(e))));
+      return;
+    }
+    if (!mounted) return;
+    String? chosen;
+    final comment = TextEditingController();
+    final send = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          title: const Text('Signaler cette annonce'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                RadioGroup<String>(
+                  groupValue: chosen,
+                  onChanged: (v) => setState(() => chosen = v),
+                  child: Column(
+                    children: [
+                      for (final r in reasons)
+                        RadioListTile<String>(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(r.label),
+                          value: r.code,
+                        ),
+                    ],
+                  ),
+                ),
+                TextField(
+                  controller: comment,
+                  maxLines: 3,
+                  maxLength: 1000,
+                  decoration: const InputDecoration(
+                    labelText: 'Précisions (facultatif)',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Annuler'),
+            ),
+            FilledButton(
+              onPressed: chosen == null ? null : () => Navigator.pop(ctx, true),
+              child: const Text('Envoyer'),
+            ),
+          ],
+        ),
+      ),
+    );
+    final text = comment.text;
+    comment.dispose();
+    if (send != true || chosen == null) return;
+    try {
+      await widget.repository.reportListing(
+        d.summary.id,
+        chosen!,
+        comment: text,
+      );
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Merci : votre signalement a été transmis à notre équipe.',
+          ),
+        ),
+      );
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(errorText(e))));
+    }
+  }
 
   Future<void> _contact(ListingDetail d) async {
     final repo = widget.inquiries;
@@ -101,13 +193,18 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
             (snap.error as ApiException).status == 404;
         return Scaffold(
           appBar: AppBar(),
-          body: Center(
-            child: Text(
-              notFound
-                  ? "Cette annonce n'est plus disponible."
-                  : errorText(snap.error!),
-            ),
-          ),
+          body: notFound
+              ? const Center(
+                  child: Text("Cette annonce n'est plus disponible."),
+                )
+              : ErrorRetry(
+                  message: errorText(snap.error!),
+                  onRetry: () => setState(() {
+                    // `ignore` : un échec immédiat (avant la reconstruction) ne doit pas être signalé comme erreur non gérée.
+                    _future = widget.repository.detail(widget.reference)
+                      ..ignore();
+                  }),
+                ),
         );
       }
       final d = snap.data!;
@@ -261,6 +358,15 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                     ],
                   ),
                   const SizedBox(height: 8),
+                  Center(
+                    child: TextButton(
+                      onPressed: () => _report(d),
+                      child: const Text(
+                        'Signaler cette annonce',
+                        style: TextStyle(color: AppColors.muted, fontSize: 13),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

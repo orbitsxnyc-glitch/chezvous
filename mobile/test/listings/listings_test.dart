@@ -175,4 +175,35 @@ void main() {
       expect(find.textContaining('Aucune annonce'), findsOneWidget);
     },
   );
+
+  test(
+    'le signalement transmet le motif choisi et des précisions facultatives',
+    () async {
+      final calls = <http.Request>[];
+      final repo = _repo((r) async {
+        calls.add(r);
+        return r.method == 'GET'
+            ? _json({
+                'data': [
+                  {'code': 'fraud', 'label': 'Suspicion de fraude'},
+                ],
+              })
+            : _json({
+                'data': {'message': 'ok'},
+              }, 201);
+      });
+      final reasons = await repo.reportReasons();
+      expect(reasons.single.label, 'Suspicion de fraude');
+
+      await repo.reportListing('ulid-1', 'fraud', comment: '  Prix suspect  ');
+      expect(calls.last.url.path, '/api/v1/listings/ulid-1/reports');
+      expect(jsonDecode(calls.last.body), {
+        'reason_code': 'fraud',
+        'comment': 'Prix suspect',
+      });
+
+      await repo.reportListing('ulid-1', 'fraud', comment: '   ');
+      expect(jsonDecode(calls.last.body), {'reason_code': 'fraud'});
+    },
+  );
 }

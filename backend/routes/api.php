@@ -69,6 +69,7 @@ Route::middleware('auth:sanctum')->group(function () {
 // Référentiels publics (ANN-02, RCH-01).
 Route::get('localities', [ReferenceController::class, 'localities']);
 Route::get('property-types', [ReferenceController::class, 'propertyTypes']);
+Route::get('report-reasons', [ReferenceController::class, 'reportReasons']);
 Route::get('amenities', [ReferenceController::class, 'amenities']);
 
 // Recherche et consultation publiques (RCH-01 à RCH-05). `listings/map` doit précéder `listings/{identifier}`.

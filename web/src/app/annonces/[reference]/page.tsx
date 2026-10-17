@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
+import { ReportListing } from "@/components/listings/ReportListing";
 import { ContactPanel } from "@/components/listings/ContactPanel";
 import { ZoneMapLoader } from "@/components/map/ZoneMapLoader";
 import { SafeImage } from "@/components/SafeImage";
@@ -167,6 +168,7 @@ async function Detail({ params }: { params: Props["params"] }) {
             </div>
           </section>
           <ContactPanel listingId={l.id} reference={l.reference} />
+          <ReportListing listingId={l.id} />
         </div>
       </div>
 

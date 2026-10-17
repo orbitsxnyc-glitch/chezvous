@@ -107,7 +107,9 @@ class MyListingsScreen extends StatefulWidget {
 class _MyListingsScreenState extends State<MyListingsScreen> {
   late Future<List<MyListing>> _future = widget.repository.list();
 
-  void _reload() => setState(() => _future = widget.repository.list());
+  void _reload() => setState(() {
+    _future = widget.repository.list();
+  });
 
   Future<void> _run(Future<void> Function() action, String done) async {
     try {
@@ -201,17 +203,18 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
         if (snap.hasError) {
           final e = snap.error;
           final denied = e is ApiException && e.status == 403;
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(
-                denied
-                    ? "Votre compte ne publie pas d'annonces."
-                    : errorText(e!),
-                textAlign: TextAlign.center,
+          if (denied) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Text(
+                  "Votre compte ne publie pas d'annonces.",
+                  textAlign: TextAlign.center,
+                ),
               ),
-            ),
-          );
+            );
+          }
+          return ErrorRetry(message: errorText(e!), onRetry: _reload);
         }
         final items = snap.data!;
         if (items.isEmpty) {

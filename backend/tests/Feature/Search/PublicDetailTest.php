@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\ListingReport;
+use App\Models\ModerationReason;
 use App\Models\PropertyImage;
 use App\Models\User;
 use Database\Seeders\ReferenceDataSeeder;
@@ -221,4 +222,14 @@ it('les groupes de la carte respectent les filtres et ne révèlent jamais une p
 
     expect($res->json('meta.count'))->toBe(1);
     $this->getJson('/api/v1/listings/map?bbox=-17.6,14.6,-17.3,14.85&zoom=99')->assertStatus(422);
+});
+
+it('les motifs de signalement sont publics, actifs uniquement, et ne contiennent que des motifs de signalement', function () {
+    ModerationReason::where('code', 'fraud')->update(['is_active' => false]);
+
+    $codes = collect($this->getJson('/api/v1/report-reasons')->assertOk()->json('data'))->pluck('code');
+
+    expect($codes)->toContain('not_available', 'wrong_info')->not->toContain('fraud');
+    // Les motifs de refus d'annonce (réservés à la modération) n'y figurent pas.
+    expect($codes->intersect(['incomplete', 'bad_photos', 'duplicate']))->toBeEmpty();
 });

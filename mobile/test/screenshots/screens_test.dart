@@ -351,8 +351,11 @@ Future<void> _shot(
   String name,
   Widget screen, {
   double height = 844,
+  double width = 390,
+  double scale = 1,
+  String? dir,
 }) async {
-  tester.view.physicalSize = Size(390 * 2, height * 2);
+  tester.view.physicalSize = Size(width * 2, height * 2);
   tester.view.devicePixelRatio = 2;
   addTearDown(tester.view.reset);
   final key = GlobalKey();
@@ -370,9 +373,10 @@ Future<void> _shot(
   await tester.runAsync(() async {
     final boundary =
         key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
-    final image = await boundary.toImage(pixelRatio: 1);
+    final image = await boundary.toImage(pixelRatio: scale);
     final bytes = (await image.toByteData(format: ui.ImageByteFormat.png))!;
-    await File('$_dir/$name.png').writeAsBytes(bytes.buffer.asUint8List());
+    await File('${dir ?? _dir}/$name.png')
+        .writeAsBytes(bytes.buffer.asUint8List());
   });
 }
 
@@ -473,5 +477,59 @@ void main() {
           ..status = AuthStatus.signedOut,
       ),
     );
+  });
+
+  // Captures pour les fiches des boutiques d'applications : STORE_DIR=/chemin flutter test test/screenshots
+  final storeDir = Platform.environment['STORE_DIR'];
+  testWidgets('captures boutiques', skip: storeDir == null, (tester) async {
+    final api = _client();
+    final listings = ListingsRepository(api);
+    final inquiries = InquiriesRepository(api);
+    final auth = AuthController(api: api, tokens: MemoryTokenStore('t'));
+    final screens = <String, Widget>{
+      '1-accueil': HomeScreen(
+        repository: listings,
+        signedIn: false,
+        onSearch: (_) {},
+      ),
+      '2-recherche': SearchScreen(
+        repository: listings,
+        signedIn: true,
+        inquiries: inquiries,
+      ),
+      '3-fiche': ListingDetailScreen(
+        repository: listings,
+        reference: 'CV-2026-000101',
+        signedIn: true,
+        inquiries: inquiries,
+      ),
+      '4-messages': ThreadScreen(repository: inquiries, id: 'inq1'),
+      '5-annonceur': MyListingsScreen(
+        repository: MyListingsRepository(api),
+        editor: EditorRepository(api),
+      ),
+    };
+    for (final e in screens.entries) {
+      // iPhone 6,7 pouces : 1290 × 2796 ; téléphone Android : 1080 × 1920.
+      await _shot(
+        tester,
+        e.key,
+        e.value,
+        width: 430,
+        height: 932,
+        scale: 3,
+        dir: '$storeDir/ios-6.7',
+      );
+      await _shot(
+        tester,
+        e.key,
+        e.value,
+        width: 360,
+        height: 640,
+        scale: 3,
+        dir: '$storeDir/android-telephone',
+      );
+    }
+    expect(auth.status, AuthStatus.unknown);
   });
 }

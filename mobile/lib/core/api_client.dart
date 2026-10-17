@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -33,13 +34,24 @@ class ApiException implements Exception {
 }
 
 class ApiClient {
-  ApiClient({required this.tokens, http.Client? client, String? baseUrl})
-    : _client = client ?? http.Client(),
-      _base = '${baseUrl ?? defaultApiUrl}/api/v1';
+  ApiClient({
+    required this.tokens,
+    http.Client? client,
+    String? baseUrl,
+    this.retryDelay = const Duration(milliseconds: 400),
+    this.requestTimeout = const Duration(seconds: 20),
+  }) : _client = client ?? http.Client(),
+       _base = '${baseUrl ?? defaultApiUrl}/api/v1';
 
   final TokenStore tokens;
   final http.Client _client;
   final String _base;
+
+  /// Pause avant la nouvelle tentative d'une lecture en échec passager (réglable pour les tests).
+  final Duration retryDelay;
+
+  /// Délai maximal d'une requête ordinaire (réglable pour les tests).
+  final Duration requestTimeout;
 
   /// Appelée quand l'API répond 401 avec un jeton présent (jeton révoqué ou expiré).
   void Function()? onUnauthorized;
@@ -64,7 +76,10 @@ class ApiClient {
   Future<Map<String, dynamic>> patch(String path, Map<String, dynamic> body) =>
       _send('PATCH', path, body: body);
 
-  Future<Map<String, dynamic>> delete(String path) => _send('DELETE', path);
+  Future<Map<String, dynamic>> delete(
+    String path, {
+    Map<String, dynamic>? body,
+  }) => _send('DELETE', path, body: body);
 
   Future<Map<String, dynamic>> _send(
     String method,
@@ -74,12 +89,18 @@ class ApiClient {
   }) async {
     final token = await _token();
     final uri = Uri.parse('$_base$path').replace(queryParameters: query);
-    final request = http.Request(method, uri)
-      ..headers['Accept'] = 'application/json'
-      ..headers['Content-Type'] = 'application/json';
-    if (token != null) request.headers['Authorization'] = 'Bearer $token';
-    if (body != null) request.body = jsonEncode(body);
-    return _execute(request, token);
+    // Une requête ne s'envoie qu'une fois : on la reconstruit pour une nouvelle tentative.
+    http.BaseRequest build() {
+      final request = http.Request(method, uri)
+        ..headers['Accept'] = 'application/json'
+        ..headers['Content-Type'] = 'application/json';
+      if (token != null) request.headers['Authorization'] = 'Bearer $token';
+      if (body != null) request.body = jsonEncode(body);
+      return request;
+    }
+
+    // Seules les lectures sont rejouées automatiquement : rejouer un envoi pourrait le faire en double.
+    return _execute(build, token, retry: method == 'GET');
   }
 
   /// Envoi de fichiers (photos) en multipart ; le champ est `images[]` comme attendu par l'API.
@@ -92,18 +113,53 @@ class ApiClient {
       ..headers['Accept'] = 'application/json'
       ..files.addAll(files);
     if (token != null) request.headers['Authorization'] = 'Bearer $token';
-    return _execute(request, token, timeout: const Duration(seconds: 120));
+    return _execute(
+      () => request,
+      token,
+      timeout: const Duration(seconds: 120),
+    );
   }
 
   Future<Map<String, dynamic>> _execute(
-    http.BaseRequest request,
+    http.BaseRequest Function() build,
     String? token, {
-    Duration timeout = const Duration(seconds: 20),
+    Duration? timeout,
+    bool retry = false,
   }) async {
+    var attempt = 0;
+    while (true) {
+      attempt++;
+      try {
+        return await _attempt(build(), token, timeout ?? requestTimeout);
+      } on ApiException catch (e) {
+        // Panne passagère (réseau, lenteur, 502/503/504) : une seule nouvelle tentative, après une courte pause.
+        final transient =
+            e.code == 'network_error' ||
+            e.code == 'timeout' ||
+            e.status == 502 ||
+            e.status == 503 ||
+            e.status == 504;
+        if (!retry || !transient || attempt >= 2) rethrow;
+        await Future<void>.delayed(retryDelay);
+      }
+    }
+  }
+
+  Future<Map<String, dynamic>> _attempt(
+    http.BaseRequest request,
+    String? token,
+    Duration timeout,
+  ) async {
     http.Response response;
     try {
       response = await http.Response.fromStream(
         await _client.send(request).timeout(timeout),
+      );
+    } on TimeoutException {
+      throw const ApiException(
+        0,
+        'timeout',
+        'Le serveur met trop de temps à répondre. Réessayez dans un instant.',
       );
     } catch (_) {
       throw const ApiException(
@@ -113,7 +169,10 @@ class ApiClient {
       );
     }
 
-    if (response.statusCode == 204 || response.body.isEmpty) return const {};
+    if (response.statusCode == 204 || response.body.isEmpty) {
+      if (response.statusCode >= 400) throw _failure(response, const {});
+      return const {};
+    }
     Object? decoded;
     try {
       decoded = jsonDecode(utf8.decode(response.bodyBytes));
@@ -126,14 +185,28 @@ class ApiClient {
 
     if (response.statusCode >= 400) {
       if (response.statusCode == 401 && token != null) onUnauthorized?.call();
-      throw ApiException(
-        response.statusCode,
-        (payload['code'] as String?) ?? 'unknown_error',
-        (payload['message'] as String?) ?? 'Une erreur est survenue.',
-        _errors(payload['errors']),
-      );
+      throw _failure(response, payload);
     }
     return payload;
+  }
+
+  /// Erreur lisible : le message du serveur s'il existe, sinon un texte adapté au type de panne.
+  ApiException _failure(http.Response response, Map<String, dynamic> payload) {
+    final status = response.statusCode;
+    final fallback = switch (status) {
+      429 => 'Trop de demandes en peu de temps. Patientez quelques secondes puis réessayez.',
+      >= 500 => 'Le service rencontre un problème. Réessayez dans un instant.',
+      _ => 'Une erreur est survenue.',
+    };
+    return ApiException(
+      status,
+      (payload['code'] as String?) ??
+          (status == 429 ? 'throttled' : 'unknown_error'),
+      status >= 500 || status == 429
+          ? fallback
+          : (payload['message'] as String?) ?? fallback,
+      _errors(payload['errors']),
+    );
   }
 
   Map<String, List<String>> _errors(Object? raw) {
