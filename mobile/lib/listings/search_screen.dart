@@ -93,7 +93,10 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Future<void> _openFilters() async {
     final result = await Navigator.of(context).push<SearchFilters>(
-      MaterialPageRoute(builder: (_) => FiltersScreen(repository: widget.repository, initial: _filters)),
+      MaterialPageRoute(
+        builder: (_) =>
+            FiltersScreen(repository: widget.repository, initial: _filters),
+      ),
     );
     if (result != null) _apply(result);
   }
@@ -112,18 +115,30 @@ class _SearchScreenState extends State<SearchScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Padding(padding: EdgeInsets.all(16), child: Text('Trier par', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17))),
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'Trier par',
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
+              ),
+            ),
             for (final (code, label) in _sorts)
               ListTile(
                 title: Text(label),
-                trailing: (_filters.sort ?? 'relevance') == code ? const Icon(Icons.check, color: AppColors.primary) : null,
+                trailing: (_filters.sort ?? 'relevance') == code
+                    ? const Icon(Icons.check, color: AppColors.primary)
+                    : null,
                 onTap: () => Navigator.pop(ctx, code),
               ),
           ],
         ),
       ),
     );
-    if (chosen != null) _apply(_filters.copyWith(sort: () => chosen == 'relevance' ? null : chosen));
+    if (chosen != null) {
+      _apply(
+        _filters.copyWith(sort: () => chosen == 'relevance' ? null : chosen),
+      );
+    }
   }
 
   Future<void> _saveSearch() async {
@@ -209,11 +224,19 @@ class _SearchScreenState extends State<SearchScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    _loading && _items.isEmpty ? 'Recherche…' : _total != null ? '$_total bien${_total! > 1 ? 's' : ''} trouvé${_total! > 1 ? 's' : ''}' : '',
+                    _loading && _items.isEmpty
+                        ? 'Recherche…'
+                        : _total != null
+                        ? '$_total bien${_total! > 1 ? 's' : ''} trouvé${_total! > 1 ? 's' : ''}'
+                        : '',
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),
-                TextButton.icon(onPressed: _openSort, icon: const Icon(Icons.swap_vert, size: 20), label: const Text('Trier')),
+                TextButton.icon(
+                  onPressed: _openSort,
+                  icon: const Icon(Icons.swap_vert, size: 20),
+                  label: const Text('Trier'),
+                ),
               ],
             ),
           ),
@@ -418,7 +441,11 @@ class _FilterBar extends StatelessWidget {
         const SizedBox(width: 8),
         ActionChip(
           avatar: const Icon(Icons.tune, size: 18, color: AppColors.primary),
-          label: Text(filters.activeCount > 0 ? 'Filtres (${filters.activeCount})' : 'Filtres'),
+          label: Text(
+            filters.activeCount > 0
+                ? 'Filtres (${filters.activeCount})'
+                : 'Filtres',
+          ),
           onPressed: onMore,
         ),
       ],

@@ -18,9 +18,10 @@ import '../ui/widgets.dart';
 /// Navigation du design : Accueil, Recherche, Favoris, Messages, Compte (« Mon espace », qui porte aussi les annonces à publier).
 /// L'accueil et la recherche sont publics ; favoris et messages demandent une connexion.
 class AppShell extends StatefulWidget {
-  const AppShell({super.key, required this.auth});
+  const AppShell({super.key, required this.auth, this.initialTab = 0});
 
   final AuthController auth;
+  final int initialTab;
 
   @override
   State<AppShell> createState() => _AppShellState();
@@ -29,7 +30,7 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   static const _search = 1;
 
-  int _tab = 0;
+  late int _tab = widget.initialTab;
   SearchFilters _filters = const SearchFilters();
   int _searchSeed = 0;
   late final ListingsRepository _listings = ListingsRepository(widget.auth.api);
@@ -390,15 +391,24 @@ class _StatsState extends State<_Stats> {
   @override
   void initState() {
     super.initState();
-    widget.mine.list().then((v) {
-      if (mounted) setState(() => _listings = v.length);
-    }).catchError((_) {});
-    widget.inquiries.inbox().then((v) {
-      if (mounted) setState(() => _received = v.length);
-    }).catchError((_) {});
-    widget.inquiries.sent().then((v) {
-      if (mounted) setState(() => _sent = v.length);
-    }).catchError((_) {});
+    widget.mine
+        .list()
+        .then((v) {
+          if (mounted) setState(() => _listings = v.length);
+        })
+        .catchError((_) {});
+    widget.inquiries
+        .inbox()
+        .then((v) {
+          if (mounted) setState(() => _received = v.length);
+        })
+        .catchError((_) {});
+    widget.inquiries
+        .sent()
+        .then((v) {
+          if (mounted) setState(() => _sent = v.length);
+        })
+        .catchError((_) {});
   }
 
   @override

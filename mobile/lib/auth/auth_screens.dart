@@ -56,9 +56,18 @@ class _LoginScreenState extends State<LoginScreen> {
       padding: const EdgeInsets.all(24),
       children: [
         const BrandHeader(),
+        Text('Bon retour 👋', style: Theme.of(context).textTheme.headlineSmall),
+        const SizedBox(height: 4),
+        Text(
+          'Connectez-vous pour retrouver vos favoris, messages et annonces.',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        const SizedBox(height: 20),
         AppField(
           controller: _phone,
-          label: 'Téléphone (+221 7X XXX XX XX)',
+          label: 'Téléphone',
+          hint: '7X XXX XX XX',
+          prefix: const Text('🇸🇳 +221  '),
           keyboard: TextInputType.phone,
           autofill: const [AutofillHints.telephoneNumber],
         ),
@@ -164,40 +173,55 @@ class _RegisterScreenState extends State<RegisterScreen> {
     body: ListView(
       padding: const EdgeInsets.all(24),
       children: [
+        SegmentedButton<bool>(
+          segments: const [
+            ButtonSegment(
+              value: false,
+              label: Text('Particulier'),
+              icon: Icon(Icons.person_outline),
+            ),
+            ButtonSegment(
+              value: true,
+              label: Text('Professionnel'),
+              icon: Icon(Icons.business_outlined),
+            ),
+          ],
+          selected: {_agency},
+          onSelectionChanged: (v) => setState(() => _agency = v.first),
+        ),
+        const SizedBox(height: 20),
         AppField(controller: _name, label: 'Nom complet', error: _f('name')),
         const SizedBox(height: 16),
         AppField(
           controller: _phone,
-          label: 'Téléphone (+221 7X XXX XX XX)',
+          label: 'Téléphone',
+          hint: '7X XXX XX XX',
+          prefix: const Text('🇸🇳 +221  '),
           keyboard: TextInputType.phone,
           error: _f('phone'),
         ),
         const SizedBox(height: 16),
         AppField(
           controller: _email,
-          label: 'E-mail (le code de vérification y est envoyé)',
+          label: 'E-mail (code de vérification)',
           keyboard: TextInputType.emailAddress,
           error: _f('email'),
         ),
         const SizedBox(height: 16),
         AppField(
           controller: _password,
-          label: 'Mot de passe (8 caractères minimum)',
+          label: 'Mot de passe (8 caractères min.)',
           obscure: true,
           error: _f('password'),
         ),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: const Text('Je suis une agence'),
-          value: _agency,
-          onChanged: (v) => setState(() => _agency = v),
-        ),
-        if (_agency)
+        if (_agency) ...[
+          const SizedBox(height: 16),
           AppField(
             controller: _agencyName,
             label: "Nom de l'agence",
             error: _f('agency_name'),
           ),
+        ],
         if (_error != null)
           Padding(
             padding: const EdgeInsets.only(top: 12),

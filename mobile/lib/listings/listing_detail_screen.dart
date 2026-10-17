@@ -10,6 +10,7 @@ import 'listing_widgets.dart';
 import 'map_view.dart';
 import 'listings_repository.dart';
 import 'models.dart';
+import 'passport_screen.dart';
 
 class ListingDetailScreen extends StatefulWidget {
   const ListingDetailScreen({
@@ -36,6 +37,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
     widget.reference,
   );
   bool? _favorite;
+  int _page = 0;
 
   /// Signalement : réservé aux comptes connectés (motifs fournis par l'API), traité par la modération.
   Future<void> _report(ListingDetail d) async {
@@ -210,18 +212,6 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
       final d = snap.data!;
       final s = d.summary;
       return Scaffold(
-        appBar: AppBar(
-          title: Text(s.reference),
-          actions: [
-            IconButton(
-              tooltip: 'Favori',
-              icon: Icon(
-                (_favorite ?? false) ? Icons.favorite : Icons.favorite_border,
-              ),
-              onPressed: () => _toggleFavorite(d),
-            ),
-          ],
-        ),
         bottomNavigationBar: SafeArea(
           child: Container(
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
@@ -229,38 +219,134 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
               color: Colors.white,
               border: Border(top: BorderSide(color: AppColors.line)),
             ),
-            child: FilledButton.icon(
-              icon: const Icon(Icons.chat_bubble_outline),
-              label: const Text("Contacter l'annonceur"),
-              onPressed: () => _contact(d),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.chat_bubble_outline),
+                    label: const Text('Message'),
+                    onPressed: () => _contact(d),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // La visite se propose dans la conversation : même point d'entrée que le message.
+                Expanded(
+                  flex: 3,
+                  child: FilledButton.icon(
+                    icon: const Icon(Icons.event_available_outlined),
+                    label: const Text('Proposer une visite'),
+                    onPressed: () => _contact(d),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
         body: ListView(
           children: [
-            if (d.imageUrls.isNotEmpty)
-              SizedBox(
-                height: 270,
-                child: PageView(
-                  children: [for (final u in d.imageUrls) CoverImage(url: u)],
-                ),
+            SizedBox(
+              height: 300,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (d.imageUrls.isNotEmpty)
+                    PageView(
+                      onPageChanged: (i) => setState(() => _page = i),
+                      children: [
+                        for (final u in d.imageUrls) CoverImage(url: u),
+                      ],
+                    )
+                  else
+                    Container(
+                      color: AppColors.sandDeep,
+                      child: const Icon(
+                        Icons.home_work_outlined,
+                        size: 56,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _RoundButton(
+                            tooltip: 'Retour',
+                            icon: Icons.arrow_back,
+                            onTap: () => Navigator.of(context).maybePop(),
+                          ),
+                          const Spacer(),
+                          _RoundButton(
+                            tooltip: (_favorite ?? false)
+                                ? 'Retirer des favoris'
+                                : 'Ajouter aux favoris',
+                            icon: (_favorite ?? false)
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            color: (_favorite ?? false)
+                                ? AppColors.primary
+                                : AppColors.ink,
+                            onTap: () => _toggleFavorite(d),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (d.imageUrls.length > 1)
+                    Positioned(
+                      right: 14,
+                      bottom: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.65),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '${_page + 1} / ${d.imageUrls.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
+            ),
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (s.locality != null)
-                    Text(
-                      s.locality!,
-                      style: Theme.of(context).textTheme.bodySmall
-                          ?.copyWith(fontWeight: FontWeight.w700),
-                    ),
-                  const SizedBox(height: 4),
                   Text(
                     s.title ?? s.reference,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
+                  if (s.locality != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on_outlined,
+                            size: 16,
+                            color: AppColors.muted,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            s.locality!,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
                   const SizedBox(height: 12),
                   Text(
                     formatPrice(s.priceXof, s.transaction) +
@@ -317,7 +403,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                     ),
                   ],
                   if (d.costs.values.any((v) => v != null)) _Costs(detail: d),
-                  _Passport(detail: d),
+                  _PassportCard(detail: d),
                   if (d.location != null) ...[
                     const SizedBox(height: 24),
                     Text(
@@ -487,149 +573,75 @@ class _Costs extends StatelessWidget {
   );
 }
 
-/// Passeport du Bien : contrôles explicites et datés, jamais de note globale.
-class _Passport extends StatelessWidget {
-  const _Passport({required this.detail});
+/// Carte résumée du Passeport : nombre de contrôles réussis et accès au détail daté.
+class _PassportCard extends StatelessWidget {
+  const _PassportCard({required this.detail});
 
   final ListingDetail detail;
 
-  String _date(DateTime d) =>
-      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+  @override
+  Widget build(BuildContext context) {
+    final passed = detail.checks.where((c) => c.status == 'passed').length;
+    return Container(
+      margin: const EdgeInsets.only(top: 24),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFFFF7F0), Colors.white],
+        ),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: const Color(0xFFF2C9A8)),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(16),
+        leading: const CircleAvatar(
+          radius: 22,
+          backgroundColor: AppColors.primary,
+          child: Icon(Icons.verified_user_outlined, color: Colors.white),
+        ),
+        title: const Text(
+          'Passeport du Bien',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
+        subtitle: Text(
+          detail.checks.isEmpty
+              ? 'Aucun contrôle effectué pour le moment.'
+              : '$passed contrôle${passed > 1 ? 's' : ''} effectué${passed > 1 ? 's' : ''} sur ${detail.checks.length}',
+        ),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => PassportScreen(detail: detail),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RoundButton extends StatelessWidget {
+  const _RoundButton({
+    required this.tooltip,
+    required this.icon,
+    required this.onTap,
+    this.color = AppColors.ink,
+  });
+
+  final String tooltip;
+  final IconData icon;
+  final VoidCallback onTap;
+  final Color color;
 
   @override
-  Widget build(BuildContext context) => Container(
-    margin: const EdgeInsets.only(top: 24),
-    padding: const EdgeInsets.all(18),
-    decoration: BoxDecoration(
-      gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFFFFF7F0), Colors.white],
-      ),
-      borderRadius: BorderRadius.circular(AppRadius.md),
-      border: Border.all(color: const Color(0xFFF2C9A8)),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const CircleAvatar(
-              radius: 22,
-              backgroundColor: AppColors.primary,
-              child: Icon(
-                Icons.verified_user_outlined,
-                color: Colors.white,
-                size: 22,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'PASSEPORT DU BIEN',
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 11,
-                      letterSpacing: 1.4,
-                    ),
-                  ),
-                  if (detail.passportReference != null)
-                    Text(
-                      detail.passportReference!,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        if (detail.checks.isEmpty)
-          const Text(
-            'Aucun contrôle effectué pour le moment.',
-            style: TextStyle(color: AppColors.muted),
-          ),
-        for (final c in detail.checks)
-          Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.all(11),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(AppRadius.sm),
-              border: Border.all(color: const Color(0xFFF0DED0)),
-            ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 14,
-                  backgroundColor: c.status == 'passed'
-                      ? AppColors.successSoft
-                      : const Color(0xFFF1ECE6),
-                  child: Icon(
-                    c.status == 'passed' ? Icons.check : Icons.remove,
-                    size: 16,
-                    color: c.status == 'passed'
-                        ? AppColors.success
-                        : AppColors.muted,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        checkLabels[c.type] ?? c.type,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
-                        ),
-                      ),
-                      if (c.performedAt != null)
-                        Text(
-                          'Le ${_date(c.performedAt!)}',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        const SizedBox(height: 6),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppColors.infoSoft,
-            borderRadius: BorderRadius.circular(AppRadius.sm),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Icon(
-                Icons.shield_outlined,
-                size: 18,
-                color: Color(0xFF194B82),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  detail.passportNotice,
-                  style: const TextStyle(
-                    color: Color(0xFF194B82),
-                    fontSize: 12,
-                    height: 1.5,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+  Widget build(BuildContext context) => Material(
+    color: Colors.white,
+    shape: const CircleBorder(),
+    elevation: 2,
+    child: IconButton(
+      tooltip: tooltip,
+      icon: Icon(icon, color: color),
+      onPressed: onTap,
     ),
   );
 }

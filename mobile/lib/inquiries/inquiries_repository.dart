@@ -23,6 +23,9 @@ class InquirySummary {
     required this.unread,
     required this.role,
     required this.lastActivity,
+    this.counterpart,
+    this.lastMessage,
+    this.lastMine = false,
   });
 
   factory InquirySummary.fromJson(Map<String, dynamic> j) {
@@ -35,6 +38,9 @@ class InquirySummary {
       unread: (j['unread'] as num?)?.toInt() ?? 0,
       role: '${j['role'] ?? 'requester'}',
       lastActivity: DateTime.tryParse('${j['last_activity_at']}'),
+      counterpart: j['counterpart'] as String?,
+      lastMessage: _map(j['last_message'])['body'] as String?,
+      lastMine: _map(j['last_message'])['mine'] == true,
     );
   }
 
@@ -45,6 +51,11 @@ class InquirySummary {
   final int unread;
   final String role;
   final DateTime? lastActivity;
+
+  /// Interlocuteur affiché (annonceur ou demandeur) et aperçu du dernier message.
+  final String? counterpart;
+  final String? lastMessage;
+  final bool lastMine;
 }
 
 class ChatMessage {

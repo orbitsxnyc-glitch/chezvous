@@ -5,7 +5,7 @@ import '../core/api_client.dart';
 import 'theme.dart';
 
 /// Composants volontairement sobres : le design final viendra de Figma.
-class AppField extends StatelessWidget {
+class AppField extends StatefulWidget {
   const AppField({
     super.key,
     required this.controller,
@@ -14,6 +14,8 @@ class AppField extends StatelessWidget {
     this.obscure = false,
     this.keyboard,
     this.autofill,
+    this.prefix,
+    this.hint,
   });
 
   final TextEditingController controller;
@@ -22,17 +24,42 @@ class AppField extends StatelessWidget {
   final bool obscure;
   final TextInputType? keyboard;
   final Iterable<String>? autofill;
+  final Widget? prefix;
+  final String? hint;
+
+  @override
+  State<AppField> createState() => _AppFieldState();
+}
+
+class _AppFieldState extends State<AppField> {
+  late bool _hidden = widget.obscure;
 
   @override
   Widget build(BuildContext context) => TextField(
-    controller: controller,
-    obscureText: obscure,
-    keyboardType: keyboard,
-    autofillHints: autofill,
+    controller: widget.controller,
+    obscureText: _hidden,
+    keyboardType: widget.keyboard,
+    autofillHints: widget.autofill,
     decoration: InputDecoration(
-      labelText: label,
-      errorText: error,
+      labelText: widget.label,
+      hintText: widget.hint,
+      errorText: widget.error,
+      prefix: widget.prefix,
       border: const OutlineInputBorder(),
+      // Œil : afficher ou masquer le mot de passe saisi.
+      suffixIcon: widget.obscure
+          ? IconButton(
+              tooltip: _hidden
+                  ? 'Afficher le mot de passe'
+                  : 'Masquer le mot de passe',
+              icon: Icon(
+                _hidden
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
+              ),
+              onPressed: () => setState(() => _hidden = !_hidden),
+            )
+          : null,
     ),
   );
 }

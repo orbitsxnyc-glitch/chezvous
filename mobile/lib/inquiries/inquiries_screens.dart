@@ -100,9 +100,28 @@ class _InquiryListState extends State<_InquiryList> {
           children: [
             for (final i in items)
               ListTile(
-                title: Text(i.listingTitle ?? i.listingRef),
+                leading: CircleAvatar(
+                  backgroundColor: AppColors.primarySoft,
+                  foregroundColor: AppColors.primary,
+                  child: Text(
+                    (i.counterpart ?? i.listingTitle ?? '?').characters.first
+                        .toUpperCase(),
+                  ),
+                ),
+                title: Text(
+                  i.counterpart ?? i.listingTitle ?? i.listingRef,
+                  style: TextStyle(
+                    fontWeight: i.unread > 0
+                        ? FontWeight.w800
+                        : FontWeight.w600,
+                  ),
+                ),
                 subtitle: Text(
-                  '${inquiryStatusLabels[i.status] ?? i.status} · ${i.listingRef}',
+                  i.lastMessage != null
+                      ? '${i.lastMine ? 'Vous : ' : ''}${i.lastMessage}'
+                      : '${inquiryStatusLabels[i.status] ?? i.status} · ${i.listingRef}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 trailing: i.unread > 0
                     ? Badge(label: Text('${i.unread}'))
