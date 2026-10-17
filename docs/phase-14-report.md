@@ -38,10 +38,16 @@ Date : 2026-10-17. Branche `phase-14-identite-visuelle`, locale (non poussée). 
 
 - **0 violation sur 20 pages** (10 pages × bureau et mobile : accueil, recherche, recherche filtrée, page de quartier, connexion, inscription, offres, fiche, plus les écrans protégés dans leur état déconnecté), aucun défilement horizontal. Deux défauts mineurs trouvés puis corrigés : ordre des titres (h1 puis h3) et repère `aside` imbriqué.
 
+## 6. Revue de l'espace d'administration (connecté)
+
+- Contrairement à la phase 12, les 11 écrans d'administration ont été **vus connectés** (administrateur temporaire, 2FA coupée sur un serveur local de test, données de test supprimées ensuite).
+- Corrigé : navigation sur deux lignes sans repère de page active (remplacée par un menu latéral avec page active et nom de l'utilisateur), photos cassées dans la modération, repère `main` manquant, colonnes de tableau sans titre, contraste de l'étiquette « Admin », avertissements de développement sur la navigation instantanée.
+- Audit : **0 violation sur les 11 pages** d'administration (bureau). Le flux de saisie (modération, règlement, contrôle du Passeport) n'a pas été rejoué dans le navigateur ; il l'a été par l'API en phase 12.
+
 ## Limites connues (honnêtes)
 
 - L'audit automatique ne couvre qu'une partie des critères d'accessibilité (en général 30 à 40 %) : pas de test avec lecteur d'écran, de navigation clavier complète, ni de zoom à 200 %.
-- **Les écrans réservés aux comptes connectés (administration, éditeur, messagerie) n'ont été audités que dans leur état de redirection**, pas connectés.
+- L'éditeur d'annonce et la messagerie (comptes connectés non administrateurs) n'ont pas été audités connectés.
 - Le mobile n'a pas été comparé visuellement à un vrai iPhone dans cette phase (images produites par le moteur de test Flutter).
 - Les photos de démonstration n'existent pas (l'état « Photo indisponible » est celui qui a été vérifié) ; la galerie avec plusieurs vraies photos n'a pas été vue.
 - Chromium (≈250 Mo) a été installé hors du dépôt (`/tmp/pw`), pour l'audit uniquement.

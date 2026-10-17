@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SafeImage } from "@/components/SafeImage";
 import { FormMessage } from "@/components/ui";
 import {
   approveListing, fetchModerationQueue, fetchRejectionReasons, labelById, rejectListing,
@@ -58,8 +59,7 @@ function Card({
       {images.length > 0 ? (
         <ul className="flex gap-2 overflow-x-auto">
           {images.map((i) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <li key={i.id}><img src={i.urls.medium ?? i.urls.thumb} alt="" className="h-28 w-40 rounded-md object-cover" /></li>
+            <li key={i.id}><SafeImage src={i.urls.medium ?? i.urls.thumb ?? ""} alt="Photo du bien" className="h-28 w-40 rounded-md object-cover" /></li>
           ))}
         </ul>
       ) : <p className="text-sm text-danger">Aucune photo prête.</p>}
