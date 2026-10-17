@@ -21,6 +21,30 @@ class ListingsRepository {
     );
   }
 
+  /// Points de la zone visible (« ouest,sud,est,nord ») avec les mêmes filtres que la liste.
+  Future<MapResult> mapPoints(
+    String bbox,
+    SearchFilters filters, {
+    int? zoom,
+  }) async {
+    final res = await api.get(
+      '/listings/map',
+      query: {
+        ...filters.toParams(),
+        'bbox': bbox,
+        if (zoom != null) 'zoom': '$zoom',
+      },
+    );
+    final meta = res['meta'];
+    final rows = _list(res['data']);
+    // Zoom faible : l'API renvoie des groupes ; zoom élevé : des annonces une à une.
+    return MapResult(
+      rows.where((r) => r['cluster'] != true).map(MapPoint.fromJson).toList(),
+      rows.where((r) => r['cluster'] == true).map(MapCluster.fromJson).toList(),
+      meta is Map && meta['truncated'] == true,
+    );
+  }
+
   Future<ListingDetail> detail(String reference) async {
     final res = await api.get('/listings/${Uri.encodeComponent(reference)}');
     return ListingDetail.fromJson(res['data'] as Map<String, dynamic>);

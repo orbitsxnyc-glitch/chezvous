@@ -191,3 +191,34 @@ it('la carte donne des liens de vignette utilisables et le quartier, sans coordo
     // La position publique est arrondie à 5 décimales (zone approximative), jamais l'adresse exacte.
     expect(strlen(substr(strrchr((string) $row['lat'], '.') ?: '.', 1)))->toBeLessThanOrEqual(5);
 });
+
+it('dézoomée, la carte regroupe les annonces par cellule ; zoomée, elle donne les annonces une à une', function () {
+    // Trois annonces voisines et une lointaine.
+    publicListing(['price_xof' => 200000], [], 14.7497, -17.4730);
+    publicListing(['price_xof' => 300000], [], 14.7500, -17.4733);
+    publicListing(['price_xof' => 400000], [], 14.7502, -17.4728);
+    publicListing(['price_xof' => 150000], [], 14.7000, -17.4000);
+    $bbox = '-17.6,14.6,-17.3,14.85';
+
+    $far = $this->getJson("/api/v1/listings/map?bbox={$bbox}&zoom=9")->assertOk();
+    expect($far->json('meta.clustered'))->toBeTrue()->and($far->json('meta.count'))->toBe(4);
+    $groups = collect($far->json('data'));
+    expect($groups->every(fn ($g) => $g['cluster'] === true))->toBeTrue()->and($groups->sum('count'))->toBe(4);
+    // Les trois voisines tombent dans la même cellule, avec le prix minimal du groupe.
+    $big = $groups->firstWhere('count', 3);
+    expect($big)->not->toBeNull()->and($big['min_price_xof'])->toBe(200000);
+
+    $near = $this->getJson("/api/v1/listings/map?bbox={$bbox}&zoom=17")->assertOk();
+    expect($near->json('meta.clustered'))->toBeNull()->and($near->json('data'))->toHaveCount(4)->and($near->json('data.0.cluster'))->toBeNull();
+});
+
+it('les groupes de la carte respectent les filtres et ne révèlent jamais une position masquée', function () {
+    publicListing(['price_xof' => 100000], [], 14.7497, -17.4730);
+    publicListing(['price_xof' => 900000], [], 14.7498, -17.4731);
+    publicListing(['price_xof' => 100000], ['location_precision' => 'hidden']);
+
+    $res = $this->getJson('/api/v1/listings/map?bbox=-17.6,14.6,-17.3,14.85&zoom=9&price_max=500000')->assertOk();
+
+    expect($res->json('meta.count'))->toBe(1);
+    $this->getJson('/api/v1/listings/map?bbox=-17.6,14.6,-17.3,14.85&zoom=99')->assertStatus(422);
+});

@@ -91,6 +91,7 @@ class ListingDetail {
     required this.passportNotice,
     required this.costs,
     required this.advertiserName,
+    this.location,
     this.description,
     this.passportReference,
     this.costsDisclaimer,
@@ -155,6 +156,13 @@ class ListingDetail {
             },
       costsDisclaimer: costs?['disclaimer'] as String?,
       advertiserName: '${_map(j['advertiser'])['name'] ?? ''}',
+      location: property['location'] is Map
+          ? (
+              lat: (_map(property['location'])['lat'] as num).toDouble(),
+              lon: (_map(property['location'])['lon'] as num).toDouble(),
+              exact: _map(property['location'])['precision'] == 'exact',
+            )
+          : null,
     );
   }
 
@@ -170,6 +178,9 @@ class ListingDetail {
   final Map<String, int?> costs;
   final String? costsDisclaimer;
   final String advertiserName;
+
+  /// Position publique : zone approximative sauf choix contraire de l'annonceur.
+  final ({double lat, double lon, bool exact})? location;
 }
 
 class Locality {
@@ -223,4 +234,74 @@ class SearchFilters {
     if (priceMax != null) 'price_max': '$priceMax',
     'sort': ?sort,
   };
+}
+
+/// Point de carte : position publique approximative d'une annonce (jamais l'adresse exacte).
+class MapPoint {
+  const MapPoint({
+    required this.id,
+    required this.reference,
+    required this.transaction,
+    required this.lat,
+    required this.lon,
+    this.title,
+    this.priceXof,
+    this.cover,
+    this.locality,
+    this.typeLabel,
+  });
+
+  factory MapPoint.fromJson(Map<String, dynamic> j) => MapPoint(
+    id: '${j['id']}',
+    reference: '${j['reference']}',
+    transaction: '${j['transaction'] ?? 'rent_long'}',
+    title: j['title'] as String?,
+    priceXof: (j['price_xof'] as num?)?.toInt(),
+    lat: (j['lat'] as num).toDouble(),
+    lon: (j['lon'] as num).toDouble(),
+    cover: j['cover'] as String?,
+    locality: j['locality'] as String?,
+    typeLabel: j['property_type_label'] as String?,
+  );
+
+  final String id;
+  final String reference;
+  final String transaction;
+  final String? title;
+  final int? priceXof;
+  final double lat;
+  final double lon;
+  final String? cover;
+  final String? locality;
+  final String? typeLabel;
+}
+
+/// Groupe d'annonces (carte dézoomée) : toucher zoome dessus.
+class MapCluster {
+  const MapCluster({
+    required this.count,
+    required this.lat,
+    required this.lon,
+    this.minPriceXof,
+  });
+
+  factory MapCluster.fromJson(Map<String, dynamic> j) => MapCluster(
+    count: (j['count'] as num).toInt(),
+    lat: (j['lat'] as num).toDouble(),
+    lon: (j['lon'] as num).toDouble(),
+    minPriceXof: (j['min_price_xof'] as num?)?.toInt(),
+  );
+
+  final int count;
+  final double lat;
+  final double lon;
+  final int? minPriceXof;
+}
+
+class MapResult {
+  const MapResult(this.points, this.clusters, this.truncated);
+
+  final List<MapPoint> points;
+  final List<MapCluster> clusters;
+  final bool truncated;
 }

@@ -54,3 +54,25 @@ const checkLabels = {
   'document': 'Document contrôlé',
   'field_visit': 'Visite terrain effectuée',
 };
+
+/// Prix compact pour une pastille de carte : 450 000 -> « 450 k », 1 250 000 -> « 1,25 M ».
+String compactPrice(int? xof) {
+  if (xof == null) return '—';
+  if (xof >= 1000000) {
+    final m = (xof / 1000000)
+        .toStringAsFixed(2)
+        .replaceFirst(RegExp(r'\.?0+$'), '')
+        .replaceFirst('.', ',');
+    return '$m M';
+  }
+  if (xof >= 1000) return '${(xof / 1000).round()} k';
+  return '$xof';
+}
+
+/// Emprise « ouest,sud,est,nord » attendue par l'API.
+String bboxParam(double west, double south, double east, double north) => [
+  west,
+  south,
+  east,
+  north,
+].map((v) => double.parse(v.toStringAsFixed(5)).toString()).join(',');

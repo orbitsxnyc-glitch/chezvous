@@ -4,7 +4,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useEffect, useRef, useState } from "react";
 import { formatPrice, type Transaction } from "@/lib/format";
-import { bboxParam, compactPrice, DAKAR, DEFAULT_ZOOM, fetchMapPoints, MAP_ATTRIBUTION, MAP_TILES, type MapPoint } from "@/lib/map";
+import { bboxParam, compactPrice, DAKAR, DEFAULT_ZOOM, fetchMapPoints, isCluster, MAP_ATTRIBUTION, MAP_TILES, type MapCluster, type MapPoint } from "@/lib/map";
 
 /** Infobulle construite avec le DOM (textContent) : les titres viennent des annonceurs, jamais de HTML injecté. */
 function popup(p: MapPoint): HTMLElement {
@@ -30,6 +30,13 @@ function popup(p: MapPoint): HTMLElement {
   where.textContent = [p.property_type_label, p.locality].filter(Boolean).join(" · ");
   root.append(title, price, where);
   return root;
+}
+
+function clusterIcon(c: MapCluster): L.DivIcon {
+  const el = document.createElement("span");
+  el.className = "cv-cluster";
+  el.textContent = c.count > 999 ? "999+" : String(c.count);
+  return L.divIcon({ html: el, className: "cv-pin-wrap", iconSize: [40, 40], iconAnchor: [20, 20] });
 }
 
 function pill(p: MapPoint): L.DivIcon {
@@ -61,11 +68,18 @@ export default function ListingsMap({ filtersKey, height = "100%" }: { filtersKe
       controller = new AbortController();
       const b = map.getBounds();
       setStatus("loading");
-      fetchMapPoints(bboxParam(b.getWest(), b.getSouth(), b.getEast(), b.getNorth()), filters, controller.signal)
+      fetchMapPoints(bboxParam(b.getWest(), b.getSouth(), b.getEast(), b.getNorth()), map.getZoom(), filters, controller.signal)
         .then((r) => {
           layer.clearLayers();
-          for (const p of r.data) {
-            L.marker([p.lat, p.lon], { icon: pill(p), title: `${p.title ?? "Annonce"} — ${formatPrice(p.price_xof, p.transaction as Transaction)}`, riseOnHover: true }).bindPopup(popup(p)).addTo(layer);
+          for (const item of r.data) {
+            if (isCluster(item)) {
+              // Un groupe : toucher zoome dessus pour voir les annonces qu'il contient.
+              L.marker([item.lat, item.lon], { icon: clusterIcon(item), title: `${item.count} biens, à partir de ${formatPrice(item.min_price_xof, "rent_long")} : zoomer`, riseOnHover: true })
+                .on("click", () => map.setView([item.lat, item.lon], Math.min(map.getZoom() + 2, 17)))
+                .addTo(layer);
+            } else {
+              L.marker([item.lat, item.lon], { icon: pill(item), title: `${item.title ?? "Annonce"} — ${formatPrice(item.price_xof, item.transaction as Transaction)}`, riseOnHover: true }).bindPopup(popup(item)).addTo(layer);
+            }
           }
           setStatus({ count: r.meta.count, truncated: r.meta.truncated });
         })

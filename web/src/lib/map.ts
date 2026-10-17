@@ -12,7 +12,11 @@ export type MapPoint = {
   id: string; reference: string; transaction: string; price_xof: number | null; title: string | null;
   lat: number; lon: number; cover: string | null; locality: string | null; property_type_label: string | null;
 };
-export type MapResult = { data: MapPoint[]; meta: { count: number; limit: number; truncated: boolean } };
+/** Groupe d'annonces (carte dézoomée) : l'API ne renvoie plus d'annonces individuelles à ce niveau de zoom. */
+export type MapCluster = { cluster: true; count: number; lat: number; lon: number; min_price_xof: number | null };
+export type MapItem = MapPoint | MapCluster;
+export const isCluster = (i: MapItem): i is MapCluster => "cluster" in i && i.cluster === true;
+export type MapResult = { data: MapItem[]; meta: { count: number; truncated: boolean; clustered?: boolean } };
 
 /** Prix compact pour une pastille de carte : 450 000 -> « 450 k », 1 250 000 -> « 1,25 M ». */
 export function compactPrice(xof: number | null): string {
@@ -36,9 +40,10 @@ export function mapFilters(params: Record<string, string>): URLSearchParams {
   return out;
 }
 
-export async function fetchMapPoints(bbox: string, params: Record<string, string>, signal?: AbortSignal): Promise<MapResult> {
+export async function fetchMapPoints(bbox: string, zoom: number, params: Record<string, string>, signal?: AbortSignal): Promise<MapResult> {
   const query = mapFilters(params);
   query.set("bbox", bbox);
+  query.set("zoom", String(Math.round(zoom)));
   const res = await fetch(`${API_URL}/api/v1/listings/map?${query}`, { headers: { Accept: "application/json" }, signal });
   if (!res.ok) throw new Error(`carte ${res.status}`);
   return (await res.json()) as MapResult;

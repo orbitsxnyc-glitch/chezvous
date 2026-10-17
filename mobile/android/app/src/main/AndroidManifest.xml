@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Sans cette permission, une version publiée (release) ne peut appeler aucune API. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="chezvous"
         android:name="${applicationName}"

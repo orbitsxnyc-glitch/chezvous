@@ -37,7 +37,19 @@ class PublicListingController extends Controller
             return response()->json(['code' => 'validation_error', 'message' => 'Emprise invalide (ouest,sud,est,nord ; 5° maximum).', 'errors' => ['bbox' => ['Emprise invalide.']]], 422);
         }
 
-        $rows = $this->search->inBounds($bbox, $request->safe()->except('bbox'))
+        // Carte dézoomée : des groupes (nombre, position moyenne, prix minimal) plutôt que des centaines de pastilles superposées.
+        $zoom = $request->query('zoom');
+        if ($zoom !== null && (int) $zoom <= (int) config('chezvous.search.cluster_max_zoom')) {
+            $cell = (float) config('chezvous.search.cluster_cell_degrees_at_zoom0') / (2 ** max(0, (int) $zoom));
+            $clusters = $this->search->clustersInBounds($bbox, $request->safe()->except(['bbox', 'zoom']), $cell);
+
+            return response()->json([
+                'data' => $clusters->map(fn ($c) => ['cluster' => true, 'count' => (int) $c->n, 'lat' => round((float) $c->lat, 5), 'lon' => round((float) $c->lon, 5), 'min_price_xof' => $c->min_price]),
+                'meta' => ['clustered' => true, 'count' => (int) $clusters->sum('n'), 'groups' => $clusters->count(), 'truncated' => false],
+            ]);
+        }
+
+        $rows = $this->search->inBounds($bbox, $request->safe()->except(['bbox', 'zoom']))
             ->with(self::SUMMARY_RELATIONS)->limit(config('chezvous.search.map_limit'))->get();
 
         $disk = Storage::disk(config('chezvous.images.disk'));

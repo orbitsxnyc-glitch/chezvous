@@ -7,6 +7,7 @@ import '../ui/widgets.dart';
 import 'listing_detail_screen.dart';
 import 'listing_widgets.dart';
 import 'listings_repository.dart';
+import 'map_view.dart';
 import 'models.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -37,6 +38,7 @@ class _SearchScreenState extends State<SearchScreen> {
   bool _loading = true;
   String? _error;
   int _generation = 0;
+  bool _showMap = false;
 
   @override
   void initState() {
@@ -143,6 +145,11 @@ class _SearchScreenState extends State<SearchScreen> {
       title: const Text('ChezVous'),
       actions: [
         IconButton(
+          tooltip: _showMap ? 'Afficher la liste' : 'Afficher la carte',
+          icon: Icon(_showMap ? Icons.view_list_outlined : Icons.map_outlined),
+          onPressed: () => setState(() => _showMap = !_showMap),
+        ),
+        IconButton(
           tooltip: 'Créer une alerte',
           icon: const Icon(Icons.notifications_none),
           onPressed: _saveSearch,
@@ -156,8 +163,27 @@ class _SearchScreenState extends State<SearchScreen> {
           localities: _localities,
           onChanged: _apply,
         ),
-        Expanded(child: _results()),
+        Expanded(
+          child: _showMap
+              ? ListingsMapView(
+                  repository: widget.repository,
+                  filters: _filters,
+                  onOpen: _openFromMap,
+                )
+              : _results(),
+        ),
       ],
+    ),
+  );
+
+  void _openFromMap(MapPoint p) => Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (_) => ListingDetailScreen(
+        repository: widget.repository,
+        reference: p.reference,
+        signedIn: widget.signedIn,
+        inquiries: widget.inquiries,
+      ),
     ),
   );
 

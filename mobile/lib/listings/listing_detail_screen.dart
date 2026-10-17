@@ -7,6 +7,7 @@ import '../inquiries/inquiries_repository.dart';
 import '../inquiries/inquiries_screens.dart';
 import '../ui/theme.dart';
 import 'listing_widgets.dart';
+import 'map_view.dart';
 import 'listings_repository.dart';
 import 'models.dart';
 
@@ -220,6 +221,24 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                   ],
                   if (d.costs.values.any((v) => v != null)) _Costs(detail: d),
                   _Passport(detail: d),
+                  if (d.location != null) ...[
+                    const SizedBox(height: 24),
+                    Text(
+                      'Localisation',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 10),
+                    ZoneMap(
+                      lat: d.location!.lat,
+                      lon: d.location!.lon,
+                      exact: d.location!.exact,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      d.location!.exact ? "Position indiquée par l'annonceur." : "Zone approximative : l'adresse exacte est communiquée par l'annonceur lors de votre échange.",
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
                   const SizedBox(height: 20),
                   Row(
                     children: [

@@ -6,6 +6,7 @@ use App\Models\Listing;
 use App\Models\Locality;
 use Illuminate\Contracts\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -124,6 +125,25 @@ class ListingSearch
             ->whereRaw('ST_Intersects(properties.public_location, ST_MakeEnvelope(?, ?, ?, ?, 4326)::geography)', [$w, $s, $e, $n]));
 
         return $this->withPublicCoordinates($q);
+    }
+
+    /**
+     * Annonces regroupées par cellule de grille (carte dézoomée) : nombre, position moyenne et prix minimal de chaque cellule.
+     * Selon la position PUBLIQUE uniquement, avec les mêmes filtres que la liste.
+     *
+     * @param  array<string, mixed>  $filters
+     * @param  array{0: float, 1: float, 2: float, 3: float}  $bbox
+     * @return Collection<int, \stdClass> lignes {n, lat, lon, min_price}
+     */
+    public function clustersInBounds(array $bbox, array $filters, float $cellDegrees): Collection
+    {
+        $inner = $this->inBounds($bbox, $filters);
+        $inner->getQuery()->orders = null; // l'ordre de pertinence ne sert à rien pour compter
+
+        return DB::query()->fromSub($inner, 't')
+            ->selectRaw('count(*) as n, avg(pub_lat) as lat, avg(pub_lon) as lon, min(price_xof) as min_price')
+            ->groupByRaw('floor(pub_lon / ?), floor(pub_lat / ?)', [$cellDegrees, $cellDegrees])
+            ->orderByDesc('n')->limit(config('chezvous.search.map_limit'))->get();
     }
 
     /**

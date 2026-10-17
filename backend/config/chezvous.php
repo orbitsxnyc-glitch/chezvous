@@ -99,6 +99,9 @@ return [
         'similar_price_tolerance' => 0.25,
         'similar_limit' => 6,
         'map_limit' => 300,
+        // Carte : en dessous de ce niveau de zoom (inclus), les annonces sont regroupées par cellule de grille.
+        'cluster_max_zoom' => (int) env('CHEZVOUS_MAP_CLUSTER_MAX_ZOOM', 14),
+        'cluster_cell_degrees_at_zoom0' => 90, // taille de cellule = 90° / 2^zoom (≈ 70 px à l'écran)
         'sitemap_limit' => 5000,
     ],
 
