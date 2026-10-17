@@ -182,7 +182,7 @@ class _ThreadScreenState extends State<ThreadScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: const Color(0xFFF7F5F0),
+    backgroundColor: const Color(0xFFFBF7F0),
     appBar: AppBar(title: const Text('Conversation')),
     body: FutureBuilder<InquiryDetail>(
       future: _future,
@@ -348,7 +348,7 @@ class _VisitCard extends StatelessWidget {
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.sm),
-        side: const BorderSide(color: Color(0xFFBCD2C9)),
+        side: const BorderSide(color: Color(0xFFF2C9A8)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),

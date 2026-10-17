@@ -324,7 +324,7 @@ class _Costs extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(vertical: 10),
               decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(color: Color(0xFFE2D8C8))),
+                border: Border(bottom: BorderSide(color: Color(0xFFEBD9B8))),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -378,10 +378,10 @@ class _Passport extends StatelessWidget {
       gradient: const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [Color(0xFFF3F9F6), Colors.white],
+        colors: [Color(0xFFFFF7F0), Colors.white],
       ),
       borderRadius: BorderRadius.circular(AppRadius.md),
-      border: Border.all(color: const Color(0xFFB9D1C8)),
+      border: Border.all(color: const Color(0xFFF2C9A8)),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -434,7 +434,7 @@ class _Passport extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(AppRadius.sm),
-              border: Border.all(color: const Color(0xFFDBE7E2)),
+              border: Border.all(color: const Color(0xFFF0DED0)),
             ),
             child: Row(
               children: [
@@ -442,7 +442,7 @@ class _Passport extends StatelessWidget {
                   radius: 14,
                   backgroundColor: c.status == 'passed'
                       ? AppColors.successSoft
-                      : const Color(0xFFEDF0EE),
+                      : const Color(0xFFF1ECE6),
                   child: Icon(
                     c.status == 'passed' ? Icons.check : Icons.remove,
                     size: 16,

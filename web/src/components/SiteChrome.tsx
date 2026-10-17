@@ -22,7 +22,7 @@ export function Logo() {
     <Link href="/" className="flex min-h-11 items-center gap-2" aria-label="ChezVous, accueil">
       <Image src="/brand/mark.png" alt="" width={44} height={36} priority />
       <span className="text-xl font-extrabold tracking-tight">
-        Chez<span className="text-accent">Vous</span>
+        Chez<span className="text-brand-red">Vous</span>
       </span>
     </Link>
   );

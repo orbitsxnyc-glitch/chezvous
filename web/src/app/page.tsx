@@ -20,7 +20,7 @@ async function getFeatured(): Promise<ListingSummary[]> {
 
 const BUDGETS = [100000, 200000, 300000, 500000, 1000000];
 const nf = new Intl.NumberFormat("fr-FR");
-const label = "text-xs font-bold text-[#39443f]";
+const label = "text-xs font-bold text-[#3f362f]";
 const control = "min-h-12 w-full rounded-lg border border-line-strong bg-white px-3 text-sm text-ink";
 
 /** Recherche rapide : les critères passent en paramètres d'URL vers /annonces (rendu serveur, sans JavaScript). */
@@ -148,15 +148,15 @@ export default function Home() {
         <Districts />
       </Suspense>
 
-      <section aria-labelledby="confiance" className="mt-20 bg-primary py-16 text-white">
+      <section aria-labelledby="confiance" className="mt-20 bg-primary-hover py-16 text-white">
         <div className="mx-auto w-full max-w-6xl px-5">
-          <p className="text-xs font-extrabold tracking-[0.13em] text-[#a9d4c5] uppercase">Pourquoi ChezVous</p>
+          <p className="text-xs font-extrabold tracking-[0.13em] text-[#ffd9bd] uppercase">Pourquoi ChezVous</p>
           <h2 id="confiance" className="mt-2 max-w-2xl text-3xl font-extrabold">Mieux vaut peu d&apos;annonces, mais fiables.</h2>
           <ul className="mt-8 grid gap-5 md:grid-cols-3">
             {TRUST.map(([title, body], i) => (
-              <li key={title} className={`rounded-xl border p-6 ${i === 1 ? "border-transparent bg-[#fdfbf7] text-ink" : "border-white/15 bg-white/[0.075]"}`}>
+              <li key={title} className={`rounded-xl border p-6 ${i === 1 ? "border-transparent bg-[#fffdf9] text-ink" : "border-white/20 bg-black/10"}`}>
                 <h3 className="text-lg font-extrabold">{title}</h3>
-                <p className={`mt-2 text-sm leading-6 ${i === 1 ? "text-muted" : "text-white/80"}`}>{body}</p>
+                <p className={`mt-2 text-sm leading-6 ${i === 1 ? "text-muted" : "text-[#ffe9da]"}`}>{body}</p>
               </li>
             ))}
           </ul>

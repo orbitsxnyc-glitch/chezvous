@@ -82,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 TextSpan(
                   text: 'Vous',
-                  style: TextStyle(color: AppColors.accent),
+                  style: TextStyle(color: AppColors.brandRed),
                 ),
               ],
             ),
@@ -145,7 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(AppRadius.lg),
-            border: Border.all(color: const Color(0x140D4A3E)),
+            border: Border.all(color: const Color(0x14C2410C)),
             boxShadow: const [
               BoxShadow(
                 color: Color(0x1C182C25),
@@ -335,7 +335,7 @@ class _FeaturedCard extends StatelessWidget {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xDB17201D),
+                          color: const Color(0xDB1F1B16),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: const Text(
@@ -414,7 +414,7 @@ class _Trust extends StatelessWidget {
     ];
     return Container(
       margin: const EdgeInsets.only(top: 32),
-      color: AppColors.primary,
+      color: AppColors.primaryHover,
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -422,7 +422,7 @@ class _Trust extends StatelessWidget {
           const Text(
             'POURQUOI CHEZVOUS',
             style: TextStyle(
-              color: Color(0xFFA9D4C5),
+              color: Color(0xFFFFD9BD),
               fontWeight: FontWeight.w800,
               fontSize: 11,
               letterSpacing: 1.6,
@@ -444,9 +444,9 @@ class _Trust extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: const Color(0x13FFFFFF),
+                color: const Color(0x1A000000),
                 borderRadius: BorderRadius.circular(AppRadius.md),
-                border: Border.all(color: const Color(0x21FFFFFF)),
+                border: Border.all(color: const Color(0x33FFFFFF)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -469,7 +469,7 @@ class _Trust extends StatelessWidget {
                   Text(
                     body,
                     style: const TextStyle(
-                      color: Color(0xC7FFFFFF),
+                      color: Color(0xFFFFE9DA),
                       height: 1.6,
                       fontSize: 13,
                     ),

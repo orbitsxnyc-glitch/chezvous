@@ -4,7 +4,7 @@ const STYLES: Record<FreshnessState, string> = {
   available: "bg-success-soft text-[#0b6240]",
   reserved: "bg-warning-soft text-[#714105]",
   to_reconfirm: "bg-warning-soft text-[#714105]",
-  stale: "bg-[#edf0ee] text-[#53605a]",
+  stale: "bg-[#f1ece6] text-[#5a4f47]",
 };
 
 const ICONS: Record<FreshnessState, string> = { available: "✓", reserved: "◔", to_reconfirm: "◔", stale: "…" };

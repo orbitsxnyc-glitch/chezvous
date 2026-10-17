@@ -5,7 +5,7 @@ import { AvailabilityBadge } from "./AvailabilityBadge";
 /** Passeport du Bien : identité, disponibilité datée et contrôles explicites (jamais de note globale). */
 export function PassportPanel({ passport }: { passport: ListingDetail["passport"] }) {
   return (
-    <section aria-labelledby="passeport" className="rounded-xl border border-[#b9d1c8] bg-gradient-to-br from-[#f3f9f6] to-white p-6">
+    <section aria-labelledby="passeport" className="rounded-xl border border-[#f2c9a8] bg-gradient-to-br from-[#fff7f0] to-white p-6">
       <div className="flex items-center gap-3.5">
         <span className="flex size-12 items-center justify-center rounded-full bg-primary text-lg text-white" aria-hidden>✓</span>
         <div>
@@ -19,7 +19,7 @@ export function PassportPanel({ passport }: { passport: ListingDetail["passport"
       {passport.checks.length > 0 ? (
         <ul className="mt-5 grid gap-2.5 sm:grid-cols-2">
           {passport.checks.map((c) => (
-            <li key={c.type} className="flex items-center gap-3 rounded-lg border border-[#dbe7e2] bg-white p-3">
+            <li key={c.type} className="flex items-center gap-3 rounded-lg border border-[#f0ded0] bg-white p-3">
               <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-success-soft text-sm text-success" aria-hidden>✓</span>
               <span className="flex flex-col">
                 <strong className="text-sm">{CHECK_LABELS[c.type] ?? c.type}</strong>

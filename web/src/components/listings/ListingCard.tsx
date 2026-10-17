@@ -9,7 +9,7 @@ export function ListingCard({ listing, sponsored = false }: { listing: ListingSu
   const image = listing.cover?.medium ?? listing.cover?.thumb;
   const facts = [listing.property_type, listing.surface_m2 ? `${listing.surface_m2} m²` : null, listing.bedrooms ? `${listing.bedrooms} ch.` : null].filter(Boolean).join(" · ");
   return (
-    <article className="overflow-hidden rounded-xl border border-line bg-white shadow-card transition hover:-translate-y-0.5 hover:border-[#b8c8c1] hover:shadow-panel">
+    <article className="overflow-hidden rounded-xl border border-line bg-white shadow-card transition hover:-translate-y-0.5 hover:border-[#e5b999] hover:shadow-panel">
       <Link href={`/annonces/${listing.reference}`} className="flex flex-col">
         <div className="relative aspect-[4/3] overflow-hidden bg-sand-deep">
           {image ? (

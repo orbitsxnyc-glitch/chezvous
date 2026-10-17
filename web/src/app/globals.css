@@ -2,19 +2,24 @@
 
 /* Jetons du design Figma (docs/design-figma/src/index.css). */
 :root {
-  --primary: #0d4a3e;
-  --primary-hover: #083a31;
-  --primary-soft: #e4f0ec;
-  --sand: #f6f1e8;
-  --sand-deep: #ede4d6;
+  /* Couleurs du logo : décor et grands textes uniquement (le blanc dessus est trop peu contrasté pour du texte courant). */
+  --brand-orange: #f66f11;
+  --brand-red: #f13b3a;
+  --brand-yellow: #fbb413;
+  /* Couleurs d'interface dérivées, contrastées AA avec le blanc. */
+  --primary: #c2410c;
+  --primary-hover: #9a3412;
+  --primary-soft: #fff1e6;
+  --sand: #fff7e8;
+  --sand-deep: #fbe8c8;
   --surface: #ffffff;
-  --surface-soft: #faf9f6;
-  --accent: #b84f32;
-  --accent-soft: #f8e9e3;
-  --ink: #17201d;
-  --muted: #5f6b66;
-  --line: #dbe1dd;
-  --line-strong: #cbd4cf;
+  --surface-soft: #faf8f5;
+  --accent: #c62828;
+  --accent-soft: #fde8e8;
+  --ink: #1f1b16;
+  --muted: #6b5e55;
+  --line: #e7ddd3;
+  --line-strong: #d6c9bd;
   --success: #147a52;
   --success-soft: #e6f4ed;
   --warning: #935910;
@@ -23,12 +28,15 @@
   --danger-soft: #feeceb;
   --info: #205ea6;
   --info-soft: #e8f1fb;
-  --shadow-sm: 0 2px 8px rgba(24, 44, 37, 0.06);
-  --shadow-md: 0 14px 40px rgba(24, 44, 37, 0.11);
+  --shadow-sm: 0 2px 8px rgba(60, 30, 10, 0.07);
+  --shadow-md: 0 14px 40px rgba(60, 30, 10, 0.12);
   color-scheme: light;
 }
 
 @theme inline {
+  --color-brand-orange: var(--brand-orange);
+  --color-brand-red: var(--brand-red);
+  --color-brand-yellow: var(--brand-yellow);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-primary-soft: var(--primary-soft);
