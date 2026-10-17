@@ -12,6 +12,11 @@ use RuntimeException;
  */
 class LogOtpSender implements OtpSender
 {
+    public function channel(): string
+    {
+        return 'log';
+    }
+
     public function send(string $phone, ?string $email, string $code, OtpPurpose $purpose): bool
     {
         if (app()->environment('production')) {

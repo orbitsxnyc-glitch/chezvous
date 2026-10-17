@@ -119,6 +119,15 @@ Le porteur du projet a délégué à Claude les décisions recommandées. Elles 
 | Catalogue | Modification réservée au super administrateur ; une formule ne change jamais un abonnement déjà souscrit | Définitif |
 | Référentiels | Désactiver plutôt que supprimer ; codes immuables | Définitif |
 
+## Décisions de la Phase 13 (vérification par e-mail)
+
+| Sujet | Décision | Réversibilité |
+|---|---|---|
+| Canal de vérification | Code par **e-mail** en attendant un fournisseur de SMS (décision du porteur, 2026-10-17) | Facile (le canal est une classe) |
+| E-mail | Obligatoire à l'inscription tant que le canal est l'e-mail | Facile |
+| Numéro de téléphone | **Non prouvé** pour les comptes vérifiés par e-mail : aucun contrôle « téléphone » sur le Passeport, pas d'envoi SMS/WhatsApp | Définitif (règle de confiance) |
+| Comptes antérieurs | Traités comme numéro prouvé (`verified_via` vide) | Facile |
+
 ## Questions ouvertes
 
 | # | Sujet | Recommandation | Impact |

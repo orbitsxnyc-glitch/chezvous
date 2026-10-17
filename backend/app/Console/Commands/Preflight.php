@@ -60,6 +60,7 @@ class Preflight extends Command
         $fail(config('database.default') !== 'pgsql', 'database', 'PostgreSQL (avec PostGIS) est requis.');
 
         $warn(blank(config('sentry.dsn')), 'sentry', 'Suivi d\'erreurs non configuré (SENTRY_LARAVEL_DSN).');
+        $warn(config('chezvous.otp.driver') === 'mail', 'phone_unproven', 'Les codes partent par e-mail : les numéros de téléphone ne sont pas vérifiés (aucun contrôle « téléphone » sur le Passeport). Brancher un fournisseur de SMS avant le lancement public.');
         $warn(config('logging.default') !== 'json' && ! in_array('json', (array) config('logging.channels.stack.channels', []), true), 'log_json', 'Journaux non structurés : préférer LOG_CHANNEL=json.');
         $warn(config('chezvous.images.disk') === 'public' && config('filesystems.disks.public.driver') === 'local', 'media_storage', 'Les médias sont sur le disque local : choisir un stockage compatible S3 avant la production.');
         $warn(config('notifications.drivers.sms') === SmsChannel::class, 'sms_stub', 'Canal SMS factice : aucun SMS n\'est envoyé.');

@@ -69,7 +69,7 @@ export default function ResetForm() {
 
   return (
     <Page title="Nouveau mot de passe">
-      <p>Si le numéro {phone} est inscrit, un code vient d&apos;être envoyé.</p>
+      <p>Si le numéro {phone} est inscrit avec une adresse e-mail, un code vient d&apos;y être envoyé.</p>
       <form onSubmit={submitReset} className="flex flex-col gap-4">
         <Field label="Code" name="code" inputMode="numeric" autoComplete="one-time-code" pattern="\d{6}" maxLength={6} required error={errors.code} />
         <Field label="Nouveau mot de passe" name="password" type="password" autoComplete="new-password" required minLength={8} error={errors.password} />

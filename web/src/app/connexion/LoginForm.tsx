@@ -51,7 +51,7 @@ export default function LoginForm() {
         {error && <FormMessage kind="error">{error}</FormMessage>}
         {needsVerification && (
           <Link href={`/verification?phone=${encodeURIComponent(needsVerification)}`} className="text-sm underline">
-            Vérifier mon numéro
+            Vérifier mon compte
           </Link>
         )}
         <SubmitButton pending={pending}>Se connecter</SubmitButton>

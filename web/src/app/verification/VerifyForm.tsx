@@ -18,7 +18,7 @@ export default function VerifyForm() {
 
   if (!phone) {
     return (
-      <Page title="Vérifier mon numéro">
+      <Page title="Vérifier mon compte">
         <p>Numéro manquant. <Link href="/inscription" className="underline">Recommencer l&apos;inscription</Link></p>
       </Page>
     );
@@ -52,8 +52,8 @@ export default function VerifyForm() {
   }
 
   return (
-    <Page title="Vérifier mon numéro">
-      <p>Saisissez le code à 6 chiffres envoyé au {phone}.</p>
+    <Page title="Vérifier mon compte">
+      <p>Saisissez le code à 6 chiffres envoyé par e-mail pour le compte {phone}. Pensez à vérifier vos courriers indésirables.</p>
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <Field label="Code" name="code" inputMode="numeric" autoComplete="one-time-code" pattern="\d{6}" maxLength={6} required />
         {error && <FormMessage kind="error">{error}</FormMessage>}

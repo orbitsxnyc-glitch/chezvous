@@ -23,6 +23,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property AccountType $account_type
  * @property UserStatus $status
  * @property Carbon|null $phone_verified_at
+ * @property string|null $verified_via
  * @property array<string, mixed>|null $notification_preferences
  * @property list<string>|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
@@ -80,6 +81,15 @@ class User extends Authenticatable
     public function hasTwoFactor(): bool
     {
         return $this->two_factor_confirmed_at !== null;
+    }
+
+    /**
+     * Le NUMÉRO a été prouvé (SMS) : faux quand le compte a été vérifié par un code reçu par e-mail.
+     * À utiliser pour le Passeport et pour tout envoi vers le téléphone.
+     */
+    public function hasProvenPhone(): bool
+    {
+        return $this->phone_verified_at !== null && $this->verified_via !== 'email';
     }
 
     public function hasVerifiedPhone(): bool
