@@ -13,18 +13,22 @@ class SearchScreen extends StatefulWidget {
     required this.repository,
     required this.signedIn,
     this.inquiries,
+    this.initialFilters = const SearchFilters(),
   });
 
   final ListingsRepository repository;
   final bool signedIn;
   final InquiriesRepository? inquiries;
 
+  /// Critères de départ (venant de l'accueil) ; l'écran est reconstruit quand ils changent.
+  final SearchFilters initialFilters;
+
   @override
   State<SearchScreen> createState() => _SearchScreenState();
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  SearchFilters _filters = const SearchFilters();
+  late SearchFilters _filters = widget.initialFilters;
   final List<ListingSummary> _items = [];
   List<Locality> _localities = const [];
   String? _cursor;

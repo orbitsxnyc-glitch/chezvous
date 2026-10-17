@@ -8,10 +8,10 @@ import { formatXof } from "@/lib/format";
 
 function Card({ label, value, note }: { label: string; value: string | number; note?: string }) {
   return (
-    <div className="rounded border border-zinc-300 p-4">
-      <p className="text-sm text-zinc-600">{label}</p>
+    <div className="rounded-lg border border-line p-4">
+      <p className="text-sm text-muted">{label}</p>
       <p className="text-2xl font-semibold">{value}</p>
-      {note && <p className="text-xs text-zinc-600">{note}</p>}
+      {note && <p className="text-xs text-muted">{note}</p>}
     </div>
   );
 }

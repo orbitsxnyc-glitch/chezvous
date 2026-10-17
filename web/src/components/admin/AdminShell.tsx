@@ -47,14 +47,14 @@ function Setup({ onDone }: { onDone: () => void }) {
         <ul className="grid grid-cols-2 gap-1 font-mono">
           {codes.map((c) => <li key={c}>{c}</li>)}
         </ul>
-        <button className="rounded bg-zinc-900 px-4 py-2 text-white" onClick={onDone}>J&apos;ai enregistré mes codes</button>
+        <button className="rounded-lg bg-primary hover:bg-primary-hover px-4 py-2 text-white" onClick={onDone}>J&apos;ai enregistré mes codes</button>
       </Frame>
     );
   }
   return (
     <Frame title="Activer la double authentification">
       <p>Elle est obligatoire pour accéder à l&apos;administration. Ajoutez ce compte dans une application d&apos;authentification (saisie manuelle de la clé), puis entrez le code à 6 chiffres.</p>
-      {secret && <p className="rounded border border-dashed border-zinc-400 p-3 font-mono break-all">{secret.secret}</p>}
+      {secret && <p className="rounded-lg border border-dashed border-line-strong p-3 font-mono break-all">{secret.secret}</p>}
       <form
         className="flex flex-col gap-3"
         onSubmit={async (e) => {
@@ -125,7 +125,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-6">
-      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-300 pb-3">
+      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3">
         <nav aria-label="Administration" className="flex flex-wrap gap-4">
           {NAV.map(([href, label]) => <Link key={href} href={href} className="underline-offset-4 hover:underline">{label}</Link>)}
         </nav>

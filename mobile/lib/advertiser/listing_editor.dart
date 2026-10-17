@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../ui/theme.dart';
 import '../ui/widgets.dart';
 import 'editor_repository.dart';
 
@@ -347,6 +348,7 @@ class _ListingEditorScreenState extends State<ListingEditorScreen> {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                _Stepper(listing: l),
                 if (l.status == 'rejected')
                   Text(
                     'Refusée${l.rejectionComment != null ? ' : ${l.rejectionComment}' : ''}. Corrigez puis soumettez à nouveau.',
@@ -585,4 +587,60 @@ class _ListingEditorScreenState extends State<ListingEditorScreen> {
       ),
     ),
   );
+}
+
+/// Progression en 4 étapes (design) : chaque étape est « faite » selon les champs réellement renseignés.
+class _Stepper extends StatelessWidget {
+  const _Stepper({required this.listing});
+
+  final EditableListing listing;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = listing;
+    final missing = l.missingFields;
+    final done = [
+      !missing.contains('title') &&
+          !missing.contains('description') &&
+          !missing.contains('price_xof'),
+      !missing.contains('locality_id') && !missing.contains('surface_m2'),
+      !missing.contains('cover_image'),
+      !l.canSubmit,
+    ];
+    const labels = ['Annonce', 'Bien', 'Photos', 'Publier'];
+    return Row(
+      children: [
+        for (var i = 0; i < 4; i++)
+          Expanded(
+            child: Column(
+              children: [
+                CircleAvatar(
+                  radius: 15,
+                  backgroundColor: done[i] ? AppColors.primary : Colors.white,
+                  child: done[i]
+                      ? const Icon(Icons.check, size: 16, color: Colors.white)
+                      : Text(
+                          '${i + 1}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.muted,
+                          ),
+                        ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  labels[i],
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: done[i] ? AppColors.primary : AppColors.muted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
 }

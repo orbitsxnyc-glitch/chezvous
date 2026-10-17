@@ -70,7 +70,7 @@ export default function RegisterForm() {
           <label className="flex items-center gap-2">
             <input type="radio" name="account_type" value="agency" checked={accountType === "agency"} onChange={() => setAccountType("agency")} /> Agence
           </label>
-          {errors.account_type && <p role="alert" className="text-sm text-red-700">{errors.account_type}</p>}
+          {errors.account_type && <p role="alert" className="text-sm text-danger">{errors.account_type}</p>}
         </fieldset>
         {accountType === "agency" && <Field label="Nom de l'agence" name="agency_name" required error={errors.agency_name} />}
         {general && <FormMessage kind="error">{general}</FormMessage>}

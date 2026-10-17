@@ -31,7 +31,7 @@ async function Catalog() {
         <h2 id="formules" className="text-xl font-semibold">Formules</h2>
         <ul className="grid gap-3 sm:grid-cols-2">
           {plans.map((p) => (
-            <li key={p.code} className="flex flex-col gap-1 rounded border border-zinc-300 p-4">
+            <li key={p.code} className="flex flex-col gap-1 rounded-lg border border-line p-4">
               <h3 className="font-semibold">{p.name}</h3>
               <p>{p.free ? "Gratuit" : `${fcfa(p.price_xof)} ${PERIOD_LABELS[p.period] ?? ""}`}</p>
               <ul className="text-sm">

@@ -4,8 +4,8 @@ import { TYPE_PAGES } from "@/lib/seo";
 
 /** Formulaire GET : fonctionne sans JavaScript et produit des URL partageables. */
 export function SearchForm({ values, neighborhoods }: { values: SearchParams; neighborhoods: Locality[] }) {
-  const select = "rounded border border-zinc-400 px-2 py-2";
-  const input = "rounded border border-zinc-400 px-2 py-2";
+  const select = "rounded-lg border border-line-strong px-2 py-2";
+  const input = "rounded-lg border border-line-strong px-2 py-2";
   return (
     <form action="/annonces" method="get" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" role="search" aria-label="Rechercher un bien">
       <label className="flex flex-col gap-1 text-sm">
@@ -67,7 +67,7 @@ export function SearchForm({ values, neighborhoods }: { values: SearchParams; ne
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" name="furnished" value="1" defaultChecked={values.furnished === "1"} /> Meublé
       </label>
-      <button type="submit" className="rounded bg-zinc-900 px-4 py-2 text-white sm:col-span-2 lg:col-span-1">
+      <button type="submit" className="rounded-lg bg-primary hover:bg-primary-hover px-4 py-2 text-white sm:col-span-2 lg:col-span-1">
         Rechercher
       </button>
     </form>

@@ -134,4 +134,24 @@ void main() {
       expect(await tokens.read(), isNull);
     },
   );
+
+  test('un trousseau illisible ne bloque pas le démarrage', () async {
+    final c = _controller(
+      (_) async => http.Response('{}', 200),
+      _BrokenStore(),
+    );
+    await c.restore();
+    expect(c.status, AuthStatus.signedOut);
+  });
+}
+
+class _BrokenStore implements TokenStore {
+  @override
+  Future<String?> read() async => throw StateError('trousseau indisponible');
+
+  @override
+  Future<void> write(String token) async {}
+
+  @override
+  Future<void> clear() async {}
 }

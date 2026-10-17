@@ -52,11 +52,11 @@ async function Content({ params }: { params: Props["params"] }) {
   return (
     <>
       <header className="flex items-center gap-4">
-        {agency.logo_url && <Image src={agency.logo_url} alt={`Logo de ${agency.name}`} width={96} height={96} unoptimized className="rounded" />}
+        {agency.logo_url && <Image src={agency.logo_url} alt={`Logo de ${agency.name}`} width={96} height={96} unoptimized className="rounded-lg" />}
         <div>
           <h1 className="text-2xl font-semibold">{agency.name}</h1>
-          {agency.verified && <p className="text-sm text-green-900">✓ Agence vérifiée</p>}
-          <p className="text-sm text-zinc-600">{[agency.address, agency.locality].filter(Boolean).join(" · ")}</p>
+          {agency.verified && <p className="text-sm text-success">✓ Agence vérifiée</p>}
+          <p className="text-sm text-muted">{[agency.address, agency.locality].filter(Boolean).join(" · ")}</p>
         </div>
       </header>
       {agency.description && <p className="whitespace-pre-line">{agency.description}</p>}
@@ -65,7 +65,7 @@ async function Content({ params }: { params: Props["params"] }) {
         {agency.contact.email && <li>{agency.contact.email}</li>}
       </ul>
       {agency.zones.length > 0 && <p className="text-sm">Zones couvertes : {agency.zones.map((z) => z.name).join(", ")}</p>}
-      <p className="text-xs text-zinc-600">{agency.notice}</p>
+      <p className="text-xs text-muted">{agency.notice}</p>
       <h2 className="text-lg font-semibold">Biens de l&apos;agence ({agency.active_listings})</h2>
       {result ? <ResultsList result={result} params={{ agency: agency.slug }} basePath="/annonces" /> : <p role="alert">Annonces momentanément indisponibles.</p>}
     </>

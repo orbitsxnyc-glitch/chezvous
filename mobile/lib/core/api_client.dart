@@ -44,6 +44,15 @@ class ApiClient {
   /// Appelée quand l'API répond 401 avec un jeton présent (jeton révoqué ou expiré).
   void Function()? onUnauthorized;
 
+  /// Un trousseau illisible ne doit jamais bloquer les requêtes publiques (recherche, fiches) : sans jeton, on poursuit anonymement.
+  Future<String?> _token() async {
+    try {
+      return await tokens.read();
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<Map<String, dynamic>> get(String path, {Map<String, String>? query}) =>
       _send('GET', path, query: query);
 
@@ -63,7 +72,7 @@ class ApiClient {
     Map<String, dynamic>? body,
     Map<String, String>? query,
   }) async {
-    final token = await tokens.read();
+    final token = await _token();
     final uri = Uri.parse('$_base$path').replace(queryParameters: query);
     final request = http.Request(method, uri)
       ..headers['Accept'] = 'application/json'
@@ -78,7 +87,7 @@ class ApiClient {
     String path,
     List<http.MultipartFile> files,
   ) async {
-    final token = await tokens.read();
+    final token = await _token();
     final request = http.MultipartRequest('POST', Uri.parse('$_base$path'))
       ..headers['Accept'] = 'application/json'
       ..files.addAll(files);

@@ -99,6 +99,16 @@ Le porteur du projet a délégué à Claude les décisions recommandées. Elles 
 | Push | Non branché tant qu'il n'y a pas de compte Firebase (aucun compte externe sans accord) | Facile |
 | Périmètre annonceur | Suivi et état seulement ; création avec photos à faire (web et mobile) | À planifier |
 
+## Décisions de la Phase 10 (design)
+
+| Sujet | Décision | Réversibilité |
+|---|---|---|
+| Source du design | Export Figma Make copié dans `docs/design-figma/` (code et logo ; pas les fichiers d'outils) | Facile |
+| Navigation mobile | 5 onglets du design (Accueil, Recherche, Publier, Messages, Compte) ; Favoris dans Compte | Facile |
+| Police | Manrope embarquée (OFL), pas de téléchargement à l'exécution | Facile |
+| Couleurs de marque | **À trancher** : le logo (orange, rouge, jaune) et la palette du design (vert, terre cuite) ne s'accordent pas | Décision de marque |
+| Ordre | Mobile d'abord, web ensuite | Facile |
+
 ## Questions ouvertes
 
 | # | Sujet | Recommandation | Impact |

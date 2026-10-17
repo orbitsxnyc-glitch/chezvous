@@ -44,7 +44,7 @@ export default function FavoritesView() {
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((f) => (
             <li key={f.listing.id} className="flex flex-col gap-1">
-              {!f.available && <p className="text-sm text-red-700">Ce bien n&apos;est plus disponible.</p>}
+              {!f.available && <p className="text-sm text-danger">Ce bien n&apos;est plus disponible.</p>}
               <ListingCard listing={f.listing} />
               <button type="button" className="self-start text-sm underline" onClick={() => remove(f)}>Retirer des favoris</button>
             </li>

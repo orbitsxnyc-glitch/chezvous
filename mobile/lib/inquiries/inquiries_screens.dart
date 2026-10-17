@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/format.dart';
+import '../ui/theme.dart';
 import '../ui/widgets.dart';
 import 'inquiries_repository.dart';
 
@@ -181,6 +182,7 @@ class _ThreadScreenState extends State<ThreadScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
+    backgroundColor: const Color(0xFFF7F5F0),
     appBar: AppBar(title: const Text('Conversation')),
     body: FutureBuilder<InquiryDetail>(
       future: _future,
@@ -220,23 +222,52 @@ class _ThreadScreenState extends State<ThreadScreen> {
                       alignment: m.mine
                           ? Alignment.centerRight
                           : Alignment.centerLeft,
-                      child: Card(
-                        color: m.mine
-                            ? Theme.of(context).colorScheme.primaryContainer
-                            : null,
-                        child: Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(m.body),
-                              if (m.createdAt != null)
-                                Text(
-                                  formatDateTime(m.createdAt!),
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                            ],
+                      child: Container(
+                        constraints: BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width * 0.78,
+                        ),
+                        margin: const EdgeInsets.only(bottom: 10),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: m.mine ? AppColors.primary : Colors.white,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(m.mine ? 14 : 4),
+                            topRight: Radius.circular(m.mine ? 4 : 14),
+                            bottomLeft: const Radius.circular(14),
+                            bottomRight: const Radius.circular(14),
                           ),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x0F182C25),
+                              blurRadius: 8,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              m.body,
+                              style: TextStyle(
+                                color: m.mine ? Colors.white : AppColors.ink,
+                                height: 1.5,
+                              ),
+                            ),
+                            if (m.createdAt != null)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Text(
+                                  formatDateTime(m.createdAt!),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: m.mine
+                                        ? const Color(0xB3FFFFFF)
+                                        : AppColors.muted,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ),
@@ -315,14 +346,32 @@ class _VisitCard extends StatelessWidget {
         visit.status == 'rescheduled' ||
         visit.status == 'confirmed';
     return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+        side: const BorderSide(color: Color(0xFFBCD2C9)),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              _visitLabels[visit.status] ?? visit.status,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                const CircleAvatar(
+                  radius: 18,
+                  backgroundColor: AppColors.primarySoft,
+                  child: Icon(
+                    Icons.event_outlined,
+                    size: 18,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  _visitLabels[visit.status] ?? visit.status,
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+              ],
             ),
             if (visit.status == 'confirmed' && visit.scheduledAt != null)
               Text(formatDateTime(visit.scheduledAt!)),

@@ -48,13 +48,13 @@ export default function AlertsView() {
       ) : (
         <ul className="flex flex-col gap-2">
           {items.map((s) => (
-            <li key={s.id} className="flex flex-col gap-1 rounded border border-zinc-300 p-3">
+            <li key={s.id} className="flex flex-col gap-1 rounded-lg border border-line p-3">
               <span className="font-medium">{s.name}</span>
               <span className="text-sm">{Object.entries(s.criteria).map(([k, v]) => `${k}: ${String(v)}`).join(" · ")}</span>
               <span className="flex flex-wrap items-center gap-3 text-sm">
                 <label className="flex items-center gap-1">
                   Fréquence
-                  <select value={s.frequency} onChange={(e) => run(() => updateSavedSearch(s.id, { frequency: e.target.value as SavedSearch["frequency"] }))} className="rounded border border-zinc-400 px-1">
+                  <select value={s.frequency} onChange={(e) => run(() => updateSavedSearch(s.id, { frequency: e.target.value as SavedSearch["frequency"] }))} className="rounded-lg border border-line-strong px-1">
                     {Object.entries(FREQUENCY).map(([v, l]) => (
                       <option key={v} value={v}>{l}</option>
                     ))}

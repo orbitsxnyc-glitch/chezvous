@@ -57,3 +57,20 @@ class PrimaryButton extends StatelessWidget {
 /// Message d'erreur lisible pour toute exception.
 String errorText(Object e) =>
     e is ApiException ? e.message : 'Une erreur est survenue.';
+
+/// Logo de marque (image fournie) pour les écrans d'accueil du compte.
+class BrandHeader extends StatelessWidget {
+  const BrandHeader({super.key});
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 20),
+    child: Center(
+      child: Image.asset(
+        'assets/brand/logo.png',
+        height: 120,
+        semanticLabel: 'ChezVous',
+      ),
+    ),
+  );
+}

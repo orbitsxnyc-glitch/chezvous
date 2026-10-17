@@ -55,15 +55,15 @@ export default function ReportsView() {
       {loading ? <p>Chargement…</p> : items.length === 0 ? <p>Aucun signalement ouvert.</p> : (
         <ul className="flex flex-col gap-3">
           {items.map((r) => (
-            <li key={r.id} className="flex flex-col gap-2 rounded border border-zinc-300 p-4">
-              <p className="font-medium">{r.reason.label} — {r.listing.reference} <span className="text-sm text-zinc-600">({r.listing.status})</span></p>
+            <li key={r.id} className="flex flex-col gap-2 rounded-lg border border-line p-4">
+              <p className="font-medium">{r.reason.label} — {r.listing.reference} <span className="text-sm text-muted">({r.listing.status})</span></p>
               <p className="text-sm">{r.listing.title ?? "Sans titre"} · {r.open_reports_on_listing} signalement(s) ouvert(s) sur cette annonce · par {r.reporter}</p>
               {r.comment && <p className="text-sm italic">« {r.comment} »</p>}
               <label className="text-sm" htmlFor={`note-${r.id}`}>Note (obligatoire, journalisée)</label>
-              <input id={`note-${r.id}`} className="rounded border border-zinc-400 px-3 py-2" value={note[r.id] ?? ""} onChange={(e) => setNote({ ...note, [r.id]: e.target.value })} />
+              <input id={`note-${r.id}`} className="rounded-lg border border-line-strong px-3 py-2" value={note[r.id] ?? ""} onChange={(e) => setNote({ ...note, [r.id]: e.target.value })} />
               <div className="flex flex-wrap gap-2">
                 {ACTIONS.map(([a, label]) => (
-                  <button key={a} className="rounded border border-zinc-500 px-3 py-1 text-sm" onClick={() => act(r, a)}>{label}</button>
+                  <button key={a} className="rounded-lg border border-line-strong px-3 py-1 text-sm" onClick={() => act(r, a)}>{label}</button>
                 ))}
               </div>
             </li>

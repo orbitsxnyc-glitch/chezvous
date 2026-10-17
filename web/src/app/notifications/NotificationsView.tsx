@@ -53,7 +53,7 @@ export default function NotificationsView() {
             const href = notificationHref(n);
             const text = describeNotification(n);
             return (
-              <li key={n.id} className={`rounded border p-3 ${n.read ? "border-zinc-200 text-zinc-600" : "border-zinc-400 font-medium"}`}>
+              <li key={n.id} className={`rounded-lg border p-3 ${n.read ? "border-line text-muted" : "border-line-strong font-medium"}`}>
                 {href ? <Link href={href} className="underline">{text}</Link> : text}
                 <span className="block text-xs">{new Date(n.created_at).toLocaleString("fr-FR")}</span>
               </li>

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../core/format.dart';
+import '../ui/theme.dart';
 import 'models.dart';
 
+/// Carte d'annonce horizontale du design : photo à gauche, prix en vert, badge de fraîcheur daté.
 class ListingCard extends StatelessWidget {
   const ListingCard({
     super.key,
@@ -18,6 +20,7 @@ class ListingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = listing;
+    final text = Theme.of(context).textTheme;
     final facts = [
       if (l.propertyType != null) l.propertyType!,
       if (l.bedrooms != null) '${l.bedrooms} ch.',
@@ -28,45 +31,54 @@ class ListingCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: 110,
-              height: 110,
-              child: CoverImage(url: l.coverUrl),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      formatPrice(l.priceXof, l.transaction) +
-                          (l.negotiable ? ' · négociable' : ''),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      l.title ?? l.reference,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (l.locality != null)
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(width: 118, child: CoverImage(url: l.coverUrl)),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (l.locality != null)
+                        Text(
+                          l.locality!,
+                          style: text.bodySmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      const SizedBox(height: 3),
                       Text(
-                        l.locality!,
-                        style: Theme.of(context).textTheme.bodySmall,
+                        l.title ?? l.reference,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: text.titleMedium?.copyWith(fontSize: 15),
                       ),
-                    if (facts.isNotEmpty)
-                      Text(facts, style: Theme.of(context).textTheme.bodySmall),
-                    const SizedBox(height: 4),
-                    FreshnessBadge(availability: l.availability),
-                  ],
+                      if (facts.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(facts, style: text.bodySmall),
+                      ],
+                      const SizedBox(height: 8),
+                      Text(
+                        formatPrice(l.priceXof, l.transaction) +
+                            (l.negotiable ? ' · négociable' : ''),
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      FreshnessBadge(availability: l.availability),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            ?trailing,
-          ],
+              ?trailing,
+            ],
+          ),
         ),
       ),
     );
@@ -81,9 +93,9 @@ class CoverImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final placeholder = ColoredBox(
-      color: Colors.grey.shade300,
-      child: const Icon(Icons.home_outlined),
+    final placeholder = const ColoredBox(
+      color: AppColors.sandDeep,
+      child: Center(child: Icon(Icons.home_outlined, color: AppColors.muted)),
     );
     if (url == null) return placeholder;
     return Image.network(
@@ -94,6 +106,7 @@ class CoverImage extends StatelessWidget {
   }
 }
 
+/// Fraîcheur toujours datée : vert (disponible), ambre (réservé, à reconfirmer), gris (information ancienne).
 class FreshnessBadge extends StatelessWidget {
   const FreshnessBadge({super.key, required this.availability});
 
@@ -101,13 +114,16 @@ class FreshnessBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final good = availability.state == 'available';
-    return Text(
+    final (tone, icon) = switch (availability.state) {
+      'available' => (BadgeTone.success, Icons.check_circle_outline),
+      'reserved' => (BadgeTone.warning, Icons.bookmark_border),
+      'to_reconfirm' => (BadgeTone.warning, Icons.schedule),
+      _ => (BadgeTone.neutral, Icons.history),
+    };
+    return AppBadge(
       freshnessLabel(availability.state, availability.confirmedAt),
-      style: TextStyle(
-        fontSize: 12,
-        color: good ? Colors.green.shade800 : Colors.orange.shade900,
-      ),
+      tone: tone,
+      icon: icon,
     );
   }
 }

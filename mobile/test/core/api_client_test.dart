@@ -100,4 +100,30 @@ void main() {
     await expectLater(anonymous.get('/me'), throwsA(isA<ApiException>()));
     expect(called, 1);
   });
+
+  test('un trousseau illisible ne bloque pas une requête publique', () async {
+    late http.BaseRequest seen;
+    final api = ApiClient(
+      tokens: _BrokenStore(),
+      baseUrl: 'http://api.test',
+      client: MockClient((r) async {
+        seen = r;
+        return http.Response('{"data":[]}', 200);
+      }),
+    );
+    final res = await api.get('/localities');
+    expect(res['data'], isEmpty);
+    expect(seen.headers.containsKey('Authorization'), isFalse);
+  });
+}
+
+class _BrokenStore implements TokenStore {
+  @override
+  Future<String?> read() async => throw StateError('trousseau indisponible');
+
+  @override
+  Future<void> write(String token) async {}
+
+  @override
+  Future<void> clear() async {}
 }

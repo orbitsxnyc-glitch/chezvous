@@ -4,8 +4,11 @@ import 'auth/auth_controller.dart';
 import 'core/api_client.dart';
 import 'core/token_store.dart';
 import 'shell/app_shell.dart';
+import 'ui/theme.dart';
 
 void main() {
+  // Le trousseau (stockage du jeton) passe par un canal de plateforme : le moteur doit être prêt avant restore().
+  WidgetsFlutterBinding.ensureInitialized();
   final tokens = SecureTokenStore();
   final api = ApiClient(tokens: tokens);
   runApp(
@@ -24,10 +27,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp(
     title: 'ChezVous',
     debugShowCheckedModeBanner: false,
-    theme: ThemeData(
-      colorSchemeSeed: const Color(0xFF1B5E20),
-      useMaterial3: true,
-    ),
+    theme: buildTheme(),
     // La recherche est publique : on n'attend que la restauration de la session, jamais une connexion.
     home: ListenableBuilder(
       listenable: auth,

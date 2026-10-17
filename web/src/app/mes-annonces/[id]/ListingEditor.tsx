@@ -16,7 +16,7 @@ const EDITABLE = ["draft", "rejected", "expired", "paused", "published"];
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="flex flex-col gap-3 rounded border border-zinc-300 p-4">
+    <section className="flex flex-col gap-3 rounded-lg border border-line p-4">
       <h2 className="text-lg font-semibold">{title}</h2>
       {children}
     </section>
@@ -153,8 +153,8 @@ export default function ListingEditor({ params }: { params: Promise<{ id: string
               <Field label="Titre" name="title" defaultValue={listing.title ?? ""} maxLength={150} error={errors.title} />
               <label className="flex flex-col gap-1 text-sm font-medium">
                 Description
-                <textarea name="description" rows={5} maxLength={5000} defaultValue={listing.description ?? ""} className="rounded border border-zinc-400 px-3 py-2" />
-                {errors.description && <span role="alert" className="text-red-700">{errors.description}</span>}
+                <textarea name="description" rows={5} maxLength={5000} defaultValue={listing.description ?? ""} className="rounded-lg border border-line-strong px-3 py-2" />
+                {errors.description && <span role="alert" className="text-danger">{errors.description}</span>}
               </label>
               <Field label={rental ? "Loyer mensuel (FCFA)" : "Prix (FCFA)"} name="price_xof" inputMode="numeric" defaultValue={listing.price_xof ?? ""} error={errors.price_xof} />
               <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="negotiable" defaultChecked={listing.negotiable} /> Prix négociable</label>
@@ -175,11 +175,11 @@ export default function ListingEditor({ params }: { params: Promise<{ id: string
             <form key={propertyKey} onSubmit={saveProperty} className="flex flex-col gap-3">
               <label className="flex flex-col gap-1 text-sm font-medium">
                 Quartier
-                <select name="locality_id" defaultValue={listing.property.locality_id ?? ""} className="rounded border border-zinc-400 px-3 py-2">
+                <select name="locality_id" defaultValue={listing.property.locality_id ?? ""} className="rounded-lg border border-line-strong px-3 py-2">
                   <option value="">Choisir…</option>
                   {neighborhoods.map((n) => <option key={n.id} value={n.id}>{n.name}</option>)}
                 </select>
-                {errors.locality_id && <span role="alert" className="text-red-700">{errors.locality_id}</span>}
+                {errors.locality_id && <span role="alert" className="text-danger">{errors.locality_id}</span>}
               </label>
               <Field label="Adresse (jamais affichée publiquement)" name="address" defaultValue={listing.property.address ?? ""} error={errors.address} />
               <div className="grid grid-cols-2 gap-3">
@@ -207,7 +207,7 @@ export default function ListingEditor({ params }: { params: Promise<{ id: string
             {processing && <p role="status" className="text-sm">Traitement des photos en cours…</p>}
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {listing.property.images.map((img) => (
-                <li key={img.id} className="flex flex-col gap-1 rounded border border-zinc-300 p-2">
+                <li key={img.id} className="flex flex-col gap-1 rounded-lg border border-line p-2">
                   {img.status === "ready" ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={img.urls.thumb ?? img.urls.medium} alt="" className="aspect-[4/3] w-full object-cover" />
@@ -234,7 +234,7 @@ export default function ListingEditor({ params }: { params: Promise<{ id: string
           )}
           <button
             disabled={!ready || pending === "submit"}
-            className="self-start rounded bg-zinc-900 px-4 py-2 text-white disabled:opacity-50"
+            className="self-start rounded-lg bg-primary hover:bg-primary-hover px-4 py-2 text-white disabled:opacity-50"
             onClick={() => run("submit", () => submitListing(id), "Annonce envoyée en modération.")}
           >
             Soumettre à la modération
