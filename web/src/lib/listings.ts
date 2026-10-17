@@ -13,6 +13,8 @@ export type ListingSummary = {
   price_xof: number | null;
   negotiable: boolean;
   property_type: string | null;
+  /** Libellé français du type (« Appartement ») ; `property_type` est le code technique. */
+  property_type_label?: string | null;
   locality: { name: string; slug: string } | null;
   surface_m2: number | null;
   bedrooms: number | null;

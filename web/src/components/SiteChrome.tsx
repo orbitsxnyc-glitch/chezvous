@@ -61,11 +61,12 @@ export function SiteHeader() {
             </Link>
           ) : (
             <>
-              <Link href="/connexion" className="flex min-h-11 items-center rounded-lg px-3.5 text-sm font-bold text-primary hover:bg-primary-soft">
+              <Link href="/connexion" className="flex min-h-11 items-center rounded-lg px-2.5 text-sm font-bold text-primary hover:bg-primary-soft sm:px-3.5">
                 Se connecter
               </Link>
               <Link href="/inscription" className="flex min-h-11 items-center rounded-lg bg-primary px-4 text-sm font-bold text-white hover:bg-primary-hover">
-                Créer un compte
+                <span className="sm:hidden">S&apos;inscrire</span>
+                <span className="hidden sm:inline">Créer un compte</span>
               </Link>
             </>
           )}

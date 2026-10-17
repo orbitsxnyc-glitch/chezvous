@@ -106,7 +106,7 @@ Le porteur du projet a délégué à Claude les décisions recommandées. Elles 
 | Source du design | Export Figma Make copié dans `docs/design-figma/` (code et logo ; pas les fichiers d'outils) | Facile |
 | Navigation mobile | 5 onglets du design (Accueil, Recherche, Publier, Messages, Compte) ; Favoris dans Compte | Facile |
 | Police | Manrope embarquée (OFL), pas de téléchargement à l'exécution | Facile |
-| Couleurs de marque | **À trancher** : le logo (orange, rouge, jaune) et la palette du design (vert, terre cuite) ne s'accordent pas | Décision de marque |
+| Couleurs de marque | Tranché en Phase 14 : palette dérivée du logo | Facile |
 | Ordre | Mobile d'abord, web ensuite | Facile |
 
 ## Décisions de la Phase 12 (administration)
@@ -127,6 +127,14 @@ Le porteur du projet a délégué à Claude les décisions recommandées. Elles 
 | E-mail | Obligatoire à l'inscription tant que le canal est l'e-mail | Facile |
 | Numéro de téléphone | **Non prouvé** pour les comptes vérifiés par e-mail : aucun contrôle « téléphone » sur le Passeport, pas d'envoi SMS/WhatsApp | Définitif (règle de confiance) |
 | Comptes antérieurs | Traités comme numéro prouvé (`verified_via` vide) | Facile |
+
+## Décisions de la Phase 14 (identité visuelle)
+
+| Sujet | Décision | Réversibilité |
+|---|---|---|
+| Palette | Dérivée du logo (orange, rouge, jaune) ; le vert de la maquette Figma est abandonné (décision du porteur, 2026-10-17) | Facile (jetons) |
+| Couleurs du logo | Réservées au décor et aux grands textes ; l'interface utilise des teintes dérivées contrastées AA (testées) | Définitif (accessibilité) |
+| Accessibilité | Cible WCAG 2.1 AA ; audit axe-core réutilisable (`infra/scripts/web-audit.mjs`) | — |
 
 ## Questions ouvertes
 

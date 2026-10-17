@@ -32,6 +32,7 @@ class PublicListingSummaryResource extends JsonResource
             'price_xof' => $this->price_xof,
             'negotiable' => $this->negotiable,
             'property_type' => $property->type?->code,
+            'property_type_label' => $property->type?->label,
             'locality' => $property->locality ? ['name' => $property->locality->name, 'slug' => $property->locality->slug] : null,
             'surface_m2' => $property->surface_m2,
             'bedrooms' => $property->bedrooms,

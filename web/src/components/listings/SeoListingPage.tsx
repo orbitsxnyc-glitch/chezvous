@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import type { SearchParams } from "@/lib/params";
 import { cleanParams } from "@/lib/params";
@@ -33,12 +34,13 @@ export async function seoMetadata(p: SeoParams) {
 }
 
 async function Content({ p }: { p: SeoParams }) {
+  await connection(); // la fraîcheur affichée dépend de l'heure courante : rendu à la demande
   const seo = await resolveSeo(p);
   if (!seo) notFound();
   const result = await searchListings(cleanParams(seo.params));
   return (
     <>
-      <h1 className="text-2xl font-semibold">{seo.title}</h1>
+      <h1 className="text-3xl font-extrabold">{seo.title}</h1>
       {result ? <ResultsList result={result} params={seo.params} basePath="/annonces" /> : <p role="alert">Les annonces sont momentanément indisponibles.</p>}
       <p className="text-sm text-muted">
         Autres recherches : <a className="underline" href={`/${SEO_ROUTES[p.transaction].segment}/appartements/${p.locality}`}>appartements à {seo.neighborhood.name}</a>
@@ -49,7 +51,7 @@ async function Content({ p }: { p: SeoParams }) {
 
 export function SeoListingPage({ p }: { p: SeoParams }) {
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-6">
+    <main className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-5 py-8">
       <Suspense fallback={<p>Chargement…</p>}>
         <Content p={p} />
       </Suspense>

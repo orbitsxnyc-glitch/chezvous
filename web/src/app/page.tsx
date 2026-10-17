@@ -45,7 +45,7 @@ async function SearchPanel() {
       </fieldset>
       <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-[1.2fr_1.2fr_1fr_auto]">
         <label className="flex flex-col gap-1.5">
-          <span className={label}>Quartier ou repère</span>
+          <span className={label}>Repère ou mot-clé</span>
           <input name="q" placeholder="Yoff, Almadies, VDN…" className={control} />
         </label>
         <label className="flex flex-col gap-1.5">

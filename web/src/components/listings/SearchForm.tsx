@@ -1,74 +1,72 @@
+import Link from "next/link";
 import type { SearchParams } from "@/lib/params";
 import type { Locality } from "@/lib/listings";
 import { TYPE_PAGES } from "@/lib/seo";
 
-/** Formulaire GET : fonctionne sans JavaScript et produit des URL partageables. */
+const control = "min-h-11 w-full rounded-lg border border-line-strong bg-white px-3 text-sm text-ink";
+const label = "flex flex-col gap-1.5 text-xs font-bold text-[#3f362f]";
+
+/** Panneau de filtres du design. Formulaire GET : fonctionne sans JavaScript et produit des URL partageables. */
 export function SearchForm({ values, neighborhoods }: { values: SearchParams; neighborhoods: Locality[] }) {
-  const select = "rounded-lg border border-line-strong px-2 py-2";
-  const input = "rounded-lg border border-line-strong px-2 py-2";
+  const active = Object.keys(values).filter((k) => k !== "cursor" && k !== "sort").length;
   return (
-    <form action="/annonces" method="get" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" role="search" aria-label="Rechercher un bien">
-      <label className="flex flex-col gap-1 text-sm">
-        Recherche
-        <input name="q" defaultValue={values.q ?? ""} placeholder="Yoff, Almadies…" className={input} />
+    <form action="/annonces" method="get" role="search" aria-label="Filtres de recherche" className="flex flex-col gap-4 rounded-xl border border-line bg-white p-5 shadow-card">
+      <div className="flex items-center justify-between">
+        <h2 className="text-base font-extrabold">Filtres{active > 0 ? <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-xs text-white">{active}</span> : null}</h2>
+        {active > 0 && <Link href="/annonces" className="text-xs font-bold text-primary underline">Réinitialiser</Link>}
+      </div>
+      <label className={label}>
+        Recherche libre
+        <input name="q" defaultValue={values.q ?? ""} placeholder="Yoff, Almadies, VDN…" className={control} />
       </label>
-      <label className="flex flex-col gap-1 text-sm">
+      <label className={label}>
         Transaction
-        <select name="transaction" defaultValue={values.transaction ?? ""} className={select}>
+        <select name="transaction" defaultValue={values.transaction ?? ""} className={control}>
           <option value="">Toutes</option>
           <option value="rent_long">Location</option>
           <option value="sale">Vente</option>
           <option value="rent_furnished_short">Meublé courte durée</option>
         </select>
       </label>
-      <label className="flex flex-col gap-1 text-sm">
+      <label className={label}>
         Type de bien
-        <select name="type" defaultValue={values.type ?? ""} className={select}>
+        <select name="type" defaultValue={values.type ?? ""} className={control}>
           <option value="">Tous</option>
-          {TYPE_PAGES.map((t) => (
-            <option key={t.code} value={t.code}>
-              {t.plural}
-            </option>
-          ))}
+          {TYPE_PAGES.map((t) => <option key={t.code} value={t.code}>{t.plural}</option>)}
         </select>
       </label>
-      <label className="flex flex-col gap-1 text-sm">
+      <label className={label}>
         Quartier
-        <select name="locality" defaultValue={values.locality ?? ""} className={select}>
+        <select name="locality" defaultValue={values.locality ?? ""} className={control}>
           <option value="">Tous</option>
-          {neighborhoods.map((n) => (
-            <option key={n.id} value={n.slug}>
-              {n.name}
-            </option>
-          ))}
+          {neighborhoods.map((n) => <option key={n.id} value={n.slug}>{n.name}</option>)}
         </select>
       </label>
-      <label className="flex flex-col gap-1 text-sm">
-        Budget min (FCFA)
-        <input name="price_min" type="number" min={0} inputMode="numeric" defaultValue={values.price_min ?? ""} className={input} />
+      <fieldset className="grid grid-cols-2 gap-3">
+        <legend className="mb-1.5 text-xs font-bold text-[#3f362f]">Budget (FCFA)</legend>
+        <label className="sr-only" htmlFor="price_min">Budget minimum</label>
+        <input id="price_min" name="price_min" type="number" min={0} inputMode="numeric" placeholder="Min" defaultValue={values.price_min ?? ""} className={control} />
+        <label className="sr-only" htmlFor="price_max">Budget maximum</label>
+        <input id="price_max" name="price_max" type="number" min={0} inputMode="numeric" placeholder="Max" defaultValue={values.price_max ?? ""} className={control} />
+      </fieldset>
+      <label className={label}>
+        Chambres minimum
+        <input name="bedrooms_min" type="number" min={0} max={50} inputMode="numeric" defaultValue={values.bedrooms_min ?? ""} className={control} />
       </label>
-      <label className="flex flex-col gap-1 text-sm">
-        Budget max (FCFA)
-        <input name="price_max" type="number" min={0} inputMode="numeric" defaultValue={values.price_max ?? ""} className={input} />
+      <label className="flex min-h-11 items-center gap-2 text-sm font-semibold">
+        <input type="checkbox" name="furnished" value="1" defaultChecked={values.furnished === "1"} className="size-5 accent-[#c2410c]" /> Meublé
       </label>
-      <label className="flex flex-col gap-1 text-sm">
-        Chambres min
-        <input name="bedrooms_min" type="number" min={0} max={50} inputMode="numeric" defaultValue={values.bedrooms_min ?? ""} className={input} />
-      </label>
-      <label className="flex flex-col gap-1 text-sm">
+      <label className={label}>
         Trier par
-        <select name="sort" defaultValue={values.sort ?? "relevance"} className={select}>
-          <option value="relevance">Pertinence (disponibilité récente)</option>
+        <select name="sort" defaultValue={values.sort ?? "relevance"} className={control}>
+          <option value="relevance">Pertinence</option>
           <option value="newest">Plus récentes</option>
           <option value="price_asc">Prix croissant</option>
           <option value="price_desc">Prix décroissant</option>
         </select>
       </label>
-      <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" name="furnished" value="1" defaultChecked={values.furnished === "1"} /> Meublé
-      </label>
-      <button type="submit" className="rounded-lg bg-primary hover:bg-primary-hover px-4 py-2 text-white sm:col-span-2 lg:col-span-1">
-        Rechercher
+      <button type="submit" className="min-h-12 rounded-lg bg-primary px-4 text-sm font-bold text-white shadow-card hover:bg-primary-hover">
+        Appliquer les filtres
       </button>
     </form>
   );
