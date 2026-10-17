@@ -16,10 +16,12 @@ const NAV = [
   ["/admin/passeports", "Passeports"],
   ["/admin/abonnements", "Abonnements"],
   ["/admin/catalogue", "Offres et tarifs"],
+  ["/admin/referentiels", "Référentiels"],
   ["/admin/verifications", "Agences"],
   ["/admin/signalements", "Signalements"],
   ["/admin/utilisateurs", "Utilisateurs"],
-  ["/admin/notifications", "Notifications"],
+  ["/admin/notifications", "Envois"],
+  ["/admin/modeles", "Modèles"],
 ] as const;
 
 const message = (e: unknown) => (e instanceof ApiError ? e.message : "Une erreur est survenue.");

@@ -38,3 +38,30 @@ describe("catalogue", () => {
     expect(parseLimit("1,5")).toBeUndefined();
   });
 });
+
+import { isValidCode, parseCoordinate } from "./adminReferentials";
+
+describe("référentiels", () => {
+  it("valide les codes techniques", () => {
+    expect(isValidCode("parking_prive")).toBe(true);
+    expect(isValidCode("Parking")).toBe(false);
+    expect(isValidCode("a")).toBe(false);
+    expect(isValidCode("avec espace")).toBe(false);
+  });
+  it("lit les coordonnées décimales", () => {
+    expect(parseCoordinate("14,7167")).toBe(14.7167);
+    expect(parseCoordinate("-17.4677")).toBe(-17.4677);
+    expect(parseCoordinate("")).toBeUndefined();
+    expect(Number.isNaN(parseCoordinate("abc"))).toBe(true);
+  });
+});
+
+import { placeholders, unknownVariables } from "./admin";
+
+describe("modèles de notification", () => {
+  it("repère les variables non autorisées avant l'envoi", () => {
+    expect(placeholders("Annonce {listing} : {reason} {listing}")).toEqual(["listing", "reason"]);
+    expect(unknownVariables("Bonjour {phone}, annonce {listing}", ["listing"])).toEqual(["phone"]);
+    expect(unknownVariables("Sans variable", [])).toEqual([]);
+  });
+});

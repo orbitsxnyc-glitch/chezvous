@@ -119,3 +119,16 @@ export const CHECK_TYPE_LABELS: Record<string, string> = {
 export const fetchPassportAdmin = (reference: string) => apiFetch<Data<PassportAdminView>>(`/admin/passports/${encodeURIComponent(reference.trim())}/checks`);
 export const recordPassportCheck = (reference: string, body: { type: string; status: "passed" | "failed"; note?: string; valid_until?: string }) =>
   apiFetch<Data<PassportAdminView>>(`/admin/passports/${encodeURIComponent(reference)}/checks`, { method: "POST", body });
+
+// ---- Modèles de notification (versionnés) ----
+export type TemplateRow = { type: string; channel: string; locale: string; version: number; subject: string | null; body: string; variables: string[] };
+export const CHANNEL_LABELS: Record<string, string> = { in_app: "Dans l'application", email: "E-mail", push: "Notification push", whatsapp: "WhatsApp", sms: "SMS" };
+export const fetchTemplates = () => apiFetch<Data<TemplateRow[]>>("/admin/notification-templates");
+export const saveTemplate = (type: string, channel: string, body: { subject?: string; body: string }) =>
+  apiFetch<Data<{ version: number }>>(`/admin/notification-templates/${encodeURIComponent(type)}/${encodeURIComponent(channel)}`, { method: "PUT", body });
+
+/** Variables {nom} utilisées dans un texte (pour signaler celles que le modèle n'autorise pas avant l'envoi). */
+export function placeholders(text: string): string[] {
+  return [...new Set([...text.matchAll(/\{([a-z_]+)\}/g)].map((m) => m[1]))];
+}
+export const unknownVariables = (text: string, allowed: string[]) => placeholders(text).filter((v) => !allowed.includes(v));
