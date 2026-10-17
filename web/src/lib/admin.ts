@@ -104,3 +104,18 @@ export const fetchVerifications = () => apiFetch<Data<VerificationSummary[]>>("/
 export const fetchVerification = (id: string) => apiFetch<Data<VerificationDetail>>(`/admin/verifications/${id}`);
 export const approveVerification = (id: string) => apiFetch<Data<{ status: string }>>(`/admin/verifications/${id}/approve`, { method: "POST" });
 export const rejectVerification = (id: string, note: string) => apiFetch<Data<{ status: string }>>(`/admin/verifications/${id}/reject`, { method: "POST", body: { note } });
+
+// ---- Contrôles du Passeport du Bien ----
+export type PassportCheckRow = { type: string; status: "passed" | "failed" | "pending" | "expired"; performed_at: string; valid_until: string | null; note: string | null; by: string | null };
+export type PassportAdminView = {
+  listing: { id: string; reference: string; title: string | null; status: string };
+  manual_types: string[];
+  history: PassportCheckRow[];
+};
+export const CHECK_TYPE_LABELS: Record<string, string> = {
+  phone: "Téléphone vérifié", identity: "Identité vérifiée", professional: "Professionnel vérifié", location: "Localisation vérifiée",
+  document: "Document contrôlé", field_visit: "Visite terrain effectuée",
+};
+export const fetchPassportAdmin = (reference: string) => apiFetch<Data<PassportAdminView>>(`/admin/passports/${encodeURIComponent(reference.trim())}/checks`);
+export const recordPassportCheck = (reference: string, body: { type: string; status: "passed" | "failed"; note?: string; valid_until?: string }) =>
+  apiFetch<Data<PassportAdminView>>(`/admin/passports/${encodeURIComponent(reference)}/checks`, { method: "POST", body });

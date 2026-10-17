@@ -64,6 +64,7 @@ function Card({
         </ul>
       ) : <p className="text-sm text-danger">Aucune photo prête.</p>}
       {listing.description && <p className="max-h-40 overflow-auto text-sm whitespace-pre-line">{listing.description}</p>}
+      <a href={`/admin/passeports?ref=${encodeURIComponent(listing.reference)}`} className="text-sm font-bold text-primary underline">Saisir ou consulter les contrôles du Passeport</a>
       <p className="text-xs text-muted">Adresse (privée) : {p.address ?? "non renseignée"}</p>
 
       {rejecting ? (
