@@ -2,7 +2,9 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Agency;
 use App\Models\Subscription;
+use App\Models\User;
 use App\Services\Commercial\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -32,6 +34,8 @@ class SubscriptionResource extends JsonResource
             'plan' => ['code' => $this->plan_snapshot['code'], 'name' => $this->plan_snapshot['name'], 'price_xof' => $this->plan_snapshot['price_xof'], 'period' => $this->plan_snapshot['period']],
             'limits' => $this->plan_snapshot['limits'],
             'payment_reference' => $this->payment_reference,
+            // Qui a demandé : indispensable à l'administrateur pour rapprocher un règlement reçu hors ligne.
+            'subscriber' => $this->when($this->admin, fn () => $this->subscriberSummary()),
             'settlement' => $payments->settlementStatus($this->resource),
             'starts_at' => $this->starts_at,
             'ends_at' => $this->ends_at,
@@ -45,5 +49,15 @@ class SubscriptionResource extends JsonResource
                 'proof_url' => $this->admin ? $payments->proofUrl($p) : null,
             ])->values(),
         ];
+    }
+
+    /** @return array{type: string, name: string, requested_by: string} */
+    private function subscriberSummary(): array
+    {
+        $name = $this->subscriber_type === 'agency'
+            ? Agency::find($this->subscriber_id)?->name
+            : User::find($this->subscriber_id)?->name;
+
+        return ['type' => $this->subscriber_type, 'name' => $name ?? 'Compte supprimé', 'requested_by' => User::find($this->requested_by)->name ?? 'Compte supprimé'];
     }
 }
