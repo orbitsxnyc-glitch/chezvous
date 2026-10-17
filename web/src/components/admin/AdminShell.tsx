@@ -15,6 +15,7 @@ const NAV = [
   ["/admin/annonces", "Annonces à modérer"],
   ["/admin/passeports", "Passeports"],
   ["/admin/abonnements", "Abonnements"],
+  ["/admin/catalogue", "Offres et tarifs"],
   ["/admin/verifications", "Agences"],
   ["/admin/signalements", "Signalements"],
   ["/admin/utilisateurs", "Utilisateurs"],

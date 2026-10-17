@@ -26,3 +26,15 @@ describe("modération", () => {
     expect(labelById(types, null)).toBeNull();
   });
 });
+
+import { parseLimit } from "./adminCatalog";
+
+describe("catalogue", () => {
+  it("lit les quotas : vide = à fixer, texte invalide ignoré", () => {
+    expect(parseLimit("")).toBeNull();
+    expect(parseLimit(" 12 ")).toBe(12);
+    expect(parseLimit("0")).toBe(0);
+    expect(parseLimit("-1")).toBeUndefined();
+    expect(parseLimit("1,5")).toBeUndefined();
+  });
+});
