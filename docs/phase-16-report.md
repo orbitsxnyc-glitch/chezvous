@@ -29,3 +29,12 @@ Branche `phase-16-refonte`. Base : charte graphique et maquettes mobiles fournie
 - Fichiers d'origine du logo (SVG / PNG HD) pour remplacer la vectorisation manuelle.
 - Refonte web des pages résultats, fiche et authentification à la même finesse que le mobile ; audit axe à relancer sur serveur démarré.
 - Mot de passe oublié sur mobile, partage.
+
+## Mise à jour du 18 octobre 2026 (nouvelles maquettes)
+- Logo : fichiers fournis (PNG transparent) intégrés web et mobile, variantes claire/foncée, pictogramme seul ; originaux dans `brand/originals/`. La vectorisation manuelle n'est plus utilisée dans l'interface.
+- Photos fournies (crépuscule sur Dakar, villa de nuit) : bienvenue, bandeau d'accueil, en-têtes de connexion (mobile) et bandeau d'accueil web.
+- Maquettes de référence : `docs/design-refs/` (13 images).
+- Mobile : composants communs (bouton à dégradé, titres à ligne orange, champs à intitulé, barre du bas flottante), bienvenue, accueil (bandeau, puces de type, quartiers, biens à la une en 2 colonnes), recherche (en-tête, compteur, tri, liste/carte), fiche (miniatures, onglets, résumé du Passeport en 3 contrôles), Passeport (3 onglets), connexion avec mot de passe oublié, inscription en 2 étapes, publication (grille de types), messages (recherche, filtres, avatars), Mon espace (en-tête sombre, compteurs).
+- API : `bathrooms` et `photos_count` dans les résumés d'annonces.
+- Inchangés par choix : libellés « Contrôles effectués » (règle 6), pas de Google/Apple (comptes externes, à configurer par vos soins), « Courte durée » reporté à la phase 17 (`docs/phase-17-plan-sejours.md`).
+- Non repris : curseur de budget et filtres d'équipements (pas de support API), aperçu de carte en bas d'écran, bouton partager.

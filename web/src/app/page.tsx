@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { cacheLife } from "next/cache";
@@ -136,13 +137,15 @@ const TRUST = [
 export default function Home() {
   return (
     <main>
-      <section className="relative overflow-hidden border-b border-sand-deep bg-sand">
-        <div className="mx-auto flex w-full max-w-4xl flex-col items-center px-5 pt-14 pb-16 text-center sm:pt-[70px]">
-          <p className="text-xs font-extrabold tracking-[0.13em] text-primary uppercase">Location résidentielle à Dakar</p>
-          <h1 className="mt-4 max-w-3xl text-4xl leading-[1.05] font-extrabold sm:text-6xl">
-            Trouvez un logement <span className="text-primary">réellement disponible</span>
+      <section className="relative isolate overflow-hidden bg-[#0e1726]">
+        <Image src="/images/dakar-crepuscule.jpg" alt="" fill priority sizes="100vw" className="-z-20 object-cover object-[60%_center]" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black/75 via-black/45 to-black/25" aria-hidden />
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-start px-5 pt-16 pb-14 sm:pt-24">
+          <p className="text-xs font-extrabold tracking-[0.2em] text-brand-amber uppercase">Location résidentielle à Dakar</p>
+          <h1 className="mt-4 max-w-3xl text-4xl leading-[1.05] font-black tracking-tight text-white sm:text-6xl">
+            Trouvez le bien <span className="text-brand-orange">qui vous ressemble</span>
           </h1>
-          <p className="mt-5 max-w-xl text-base leading-7 text-muted sm:text-lg">
+          <p className="mt-5 max-w-xl text-base leading-7 text-white/90 sm:text-lg">
             Trouvez. Vivez. Avancez. Des biens dont la disponibilité est datée, avec leur Passeport.
           </p>
           <div className="mt-9 w-full">

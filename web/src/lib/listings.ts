@@ -18,6 +18,8 @@ export type ListingSummary = {
   locality: { name: string; slug: string } | null;
   surface_m2: number | null;
   bedrooms: number | null;
+  bathrooms?: number | null;
+  photos_count?: number | null;
   furnished: boolean;
   agency: { name: string; slug: string; verified: boolean } | null;
   cover: Images | null;
