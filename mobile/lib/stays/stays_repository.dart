@@ -30,6 +30,8 @@ const bookingLabels = {
   'cancelled_by_guest': 'Annulée par le voyageur',
   'cancelled_by_host': 'Annulée par l\'hôte',
   'disputed': 'Litige en cours',
+  'refunded_partially': 'Partiellement remboursé',
+  'refunded_fully': 'Remboursé',
 };
 
 class PriceLine {
@@ -317,6 +319,12 @@ class StaysRepository {
       _list((await api.get('/host/bookings', query: {'state': ?state}))['data'])
           .map(StayBooking.fromJson)
           .toList();
+  Future<void> hostStep(String id, String step) =>
+      api.post('/host/bookings/$id/$step');
+  Future<void> dispute(String id, String description, {bool host = false}) =>
+      api.post('/${host ? 'host' : 'my'}/bookings/$id/dispute', {
+        'description': description,
+      });
   Future<void> hostAction(String id, String action, {String? reason}) =>
       api.post('/host/bookings/$id/$action', {'reason': ?reason});
 }

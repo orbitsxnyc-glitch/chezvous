@@ -120,6 +120,11 @@ return [
             'strict' => [['days_before' => 14, 'refund_bps' => 10000], ['days_before' => 7, 'refund_bps' => 5000]],
         ],
         'outbox_max_attempts' => 5,
+        // Contrôles exigés avant la validation d'une unité (valeur de repli, vide : aucun). Le réglage en base `stay_required_checks`
+        // prime. Les exigences légales (agrément d'hébergement touristique…) restent à confirmer par un conseil juridique.
+        'required_checks' => [],
+        'auto_complete_days' => 2, // séjours terminés automatiquement N jours après le départ, sauf litige
+        'support_severities' => ['low', 'normal', 'high'],
         'quote_ttl_minutes' => (int) env('CHEZVOUS_STAY_QUOTE_TTL_MINUTES', 30),
         'max_guests_per_search' => 60,
         // Frais et taxes : valeurs de repli ; les réglages en base (clé `stay_fees`) priment. Points de base : 100 = 1 %.

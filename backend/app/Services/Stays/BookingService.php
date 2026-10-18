@@ -31,9 +31,11 @@ class BookingService
         'requested' => ['accepted', 'declined', 'expired', 'cancelled_by_guest'],
         'accepted' => ['awaiting_payment', 'confirmed', 'expired', 'cancelled_by_guest', 'cancelled_by_host'],
         'awaiting_payment' => ['confirmed', 'payment_failed', 'expired', 'cancelled_by_guest', 'cancelled_by_host'],
-        'confirmed' => ['checked_in', 'cancelled_by_guest', 'cancelled_by_host', 'disputed'],
+        'confirmed' => ['checked_in', 'completed', 'cancelled_by_guest', 'cancelled_by_host', 'disputed'],
         'checked_in' => ['completed', 'disputed'],
-        'disputed' => ['completed'],
+        'disputed' => ['completed', 'refunded_partially', 'refunded_fully'],
+        'refunded_partially' => [],
+        'refunded_fully' => [],
         'completed' => [],
         'declined' => [],
         'expired' => [],
@@ -48,6 +50,7 @@ class BookingService
         private readonly OutboxService $outbox,
         private readonly AuditLogger $audit,
         private readonly RefundService $refunds,
+        private readonly PayoutService $payouts,
     ) {}
 
     /** Demande du voyageur à partir d'un devis valide. Rejouable : même clé d'idempotence, même demande. */
@@ -208,6 +211,82 @@ class BookingService
 
             return $booking;
         });
+    }
+
+    /** Arrivée du voyageur : possible à partir de la date d'arrivée, par l'hôte. */
+    public function checkIn(Booking $booking, User $host): Booking
+    {
+        return DB::transaction(function () use ($booking, $host) {
+            $booking = $this->fresh($booking);
+            $this->assertCan($booking, S::CheckedIn);
+            if ($booking->check_in->isFuture()) {
+                throw new StayRuleException('too_early', 'L\'arrivée ne peut être enregistrée qu\'à partir de la date d\'arrivée.');
+            }
+            UnitOccupancy::where('booking_id', $booking->id)->where('status', 'confirmed')->update(['status' => 'checked_in']);
+            $this->transition($booking, S::CheckedIn, $host, null);
+
+            return $booking;
+        });
+    }
+
+    /** Fin du séjour (hôte, ou tâche planifiée) : à partir de la date de départ. Crée le reversement dû à l'hôte. */
+    public function complete(Booking $booking, ?User $actor): Booking
+    {
+        return DB::transaction(function () use ($booking, $actor) {
+            $booking = $this->fresh($booking);
+            $this->assertCan($booking, S::Completed);
+            if ($booking->check_out->isFuture()) {
+                throw new StayRuleException('too_early', 'Le séjour ne peut pas être terminé avant la date de départ.');
+            }
+            UnitOccupancy::where('booking_id', $booking->id)->whereIn('status', ['confirmed', 'checked_in'])->update(['status' => 'released']);
+            $this->transition($booking, S::Completed, $actor, null);
+            $this->payouts->createFor($booking);
+            $this->notify('booking.completed', $booking, [$booking->guest_user_id]);
+
+            return $booking;
+        });
+    }
+
+    /** Ouverture d'un litige (appelée par SupportService, dans sa transaction). */
+    public function markDisputed(Booking $booking, User $by, string $reason): Booking
+    {
+        $booking = $this->fresh($booking);
+        $this->assertCan($booking, S::Disputed);
+        $this->transition($booking, S::Disputed, $by, mb_substr($reason, 0, 300));
+        $other = $by->id === $booking->guest_user_id ? $this->hostRecipients($booking->unit) : [$booking->guest_user_id];
+        $this->notify('booking.disputed', $booking, $other);
+
+        return $booking;
+    }
+
+    /** Décision de l'administrateur sur un litige (appelée par SupportService). */
+    public function resolveDisputed(Booking $booking, User $admin, string $to, string $note): Booking
+    {
+        $booking = $this->fresh($booking);
+        $state = S::from($to);
+        $this->assertCan($booking, $state);
+        UnitOccupancy::where('booking_id', $booking->id)->whereIn('status', ['confirmed', 'checked_in', 'held'])->update(['status' => 'released']);
+        $this->transition($booking, $state, $admin, mb_substr($note, 0, 300));
+        $this->notify('booking.resolved', $booking, [$booking->guest_user_id, ...$this->hostRecipients($booking->unit)]);
+
+        return $booking;
+    }
+
+    /** Tâche planifiée : séjours confirmés ou en cours dont le départ date de plus de N jours, sauf litige. */
+    public function completeDue(): int
+    {
+        $limit = now()->subDays((int) config('chezvous.stays.auto_complete_days'))->toDateString();
+        $count = 0;
+        foreach (Booking::whereIn('state', ['confirmed', 'checked_in'])->where('check_out', '<=', $limit)->pluck('id') as $id) {
+            try {
+                $this->complete(Booking::findOrFail($id), null);
+                $count++;
+            } catch (StayRuleException) {
+                // Verrou ou état changé entre-temps : repris à la prochaine exécution.
+            }
+        }
+
+        return $count;
     }
 
     /** Tâche planifiée : demandes sans réponse et verrous échus. Chaque séjour est traité dans sa propre transaction. */

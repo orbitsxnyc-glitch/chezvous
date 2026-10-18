@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Unit;
+use App\Services\Stays\UnitCheckService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
@@ -38,6 +39,8 @@ class PublicUnitResource extends JsonResource
                 'amenities' => $property->amenities->map(fn ($a) => $a->label)->values(),
                 'photos' => $property->images->where('status.value', 'ready')->map(fn ($i) => collect($i->sizes ?? [])->map(fn (string $p) => $disk->url($p))->all())->values(),
             ],
+            // Contrôles réellement effectués et valides, datés : jamais de note globale. Un contrôle ne garantit pas la propriété juridique du bien.
+            'checks' => app(UnitCheckService::class)->publicChecks($this->resource),
             'rate' => $this->ratePlan ? [
                 'currency' => 'XOF',
                 'from_nightly_xof' => $this->ratePlan->base_nightly_xof,

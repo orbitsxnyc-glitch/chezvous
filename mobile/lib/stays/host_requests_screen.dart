@@ -30,6 +30,7 @@ class _HostRequestsScreenState extends State<HostRequestsScreen> {
     ('requested', 'À traiter'),
     ('accepted', 'À régler'),
     ('confirmed', 'Confirmées'),
+    ('checked_in', 'En cours'),
   ];
 
   void _reload() => setState(() {
@@ -63,6 +64,20 @@ class _HostRequestsScreenState extends State<HostRequestsScreen> {
     );
     c.dispose();
     return (r == null || r.isEmpty) ? null : r;
+  }
+
+  Future<void> _step(StayBooking b, String step) async {
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await widget.repository.hostStep(b.id, step);
+      _reload();
+    } catch (e) {
+      _error = errorText(e);
+    }
+    if (mounted) setState(() => _busy = false);
   }
 
   Future<void> _act(StayBooking b, String action) async {
@@ -202,6 +217,23 @@ class _HostRequestsScreenState extends State<HostRequestsScreen> {
                                     child: const Text('Refuser'),
                                   ),
                                 ],
+                                if (b.state == 'confirmed')
+                                  OutlinedButton(
+                                    onPressed: _busy
+                                        ? null
+                                        : () => _step(b, 'check-in'),
+                                    child: const Text('Arrivée du voyageur'),
+                                  ),
+                                if (const [
+                                  'confirmed',
+                                  'checked_in',
+                                ].contains(b.state))
+                                  FilledButton(
+                                    onPressed: _busy
+                                        ? null
+                                        : () => _step(b, 'complete'),
+                                    child: const Text('Séjour terminé'),
+                                  ),
                                 if (const [
                                   'accepted',
                                   'awaiting_payment',

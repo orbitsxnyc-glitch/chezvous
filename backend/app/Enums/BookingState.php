@@ -16,6 +16,8 @@ enum BookingState: string
     case CancelledByGuest = 'cancelled_by_guest';
     case CancelledByHost = 'cancelled_by_host';
     case Disputed = 'disputed';
+    case RefundedPartially = 'refunded_partially';
+    case RefundedFully = 'refunded_fully';
 
     /** Le séjour bloque-t-il les dates (verrou ou séjour confirmé) ? */
     public function holdsDates(): bool
@@ -25,6 +27,6 @@ enum BookingState: string
 
     public function isFinal(): bool
     {
-        return in_array($this, [self::Completed, self::Declined, self::Expired, self::PaymentFailed, self::CancelledByGuest, self::CancelledByHost], true);
+        return in_array($this, [self::Completed, self::Declined, self::Expired, self::PaymentFailed, self::CancelledByGuest, self::CancelledByHost, self::RefundedPartially, self::RefundedFully], true);
     }
 }

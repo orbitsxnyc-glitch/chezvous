@@ -24,12 +24,13 @@ export type PublicUnit = {
     photos: Record<string, string>[];
   };
   rate: { currency: "XOF"; from_nightly_xof: number; min_nights: number; max_nights: number | null } | null;
+  checks?: { type: string; performed_at: string; valid_until: string | null }[];
   pricing?: { lines: PriceLine[]; total_xof: number } | Pricing;
 };
 
 export type BookingState =
   | "requested" | "accepted" | "awaiting_payment" | "confirmed" | "checked_in" | "completed"
-  | "declined" | "expired" | "payment_failed" | "cancelled_by_guest" | "cancelled_by_host" | "disputed";
+  | "declined" | "expired" | "payment_failed" | "cancelled_by_guest" | "cancelled_by_host" | "disputed" | "refunded_partially" | "refunded_fully";
 
 export const BOOKING_LABELS: Record<BookingState, string> = {
   requested: "Demande envoyée",
@@ -44,6 +45,8 @@ export const BOOKING_LABELS: Record<BookingState, string> = {
   cancelled_by_guest: "Annulée par le voyageur",
   cancelled_by_host: "Annulée par l'hôte",
   disputed: "Litige en cours",
+  refunded_partially: "Partiellement remboursé",
+  refunded_fully: "Remboursé",
 };
 
 export type BookingPayment = { id: string; status: string; method: string; reference: string } | null;
@@ -131,6 +134,15 @@ export const fetchHostBookings = (state?: string) => apiFetch<Page<Booking>>(`/h
 export const hostBookingAction = (id: string, action: "accept" | "decline" | "cancel", reason?: string) =>
   apiFetch<Data<Booking>>(`/host/bookings/${id}/${action}`, { method: "POST", body: reason ? { reason } : {} });
 
+export const hostBookingStep = (id: string, step: "check-in" | "complete") => apiFetch<Data<Booking>>(`/host/bookings/${id}/${step}`, { method: "POST" });
+export const openDispute = (id: string, who: "my" | "host", description: string) => apiFetch<unknown>(`/${who}/bookings/${id}/dispute`, { method: "POST", body: { description } });
+export const fetchHostPayouts = () => apiFetch<{ data: AdminPayout[] }>("/host/payouts");
+
+export const CHECK_LABELS: Record<string, string> = {
+  identity: "Identité de l'hôte contrôlée", location: "Localisation contrôlée", document: "Document contrôlé",
+  field_visit: "Visite terrain effectuée", tourism_license: "Agrément d'hébergement touristique contrôlé",
+};
+
 export const fetchHostUnits = () => apiFetch<Page<HostUnit>>("/host/units");
 export const fetchHostUnit = (id: string) => apiFetch<Data<HostUnit>>(`/host/units/${id}`);
 export const createHostUnit = (body: { name: string; capacity_guests: number; beds?: number; property_type_id: number; locality_id?: number }) => apiFetch<Data<HostUnit>>("/host/units", { method: "POST", body });
@@ -148,6 +160,15 @@ export const blockDates = (id: string, body: { starts_on: string; ends_on: strin
 export const unblockDates = (id: string, blockId: number) => apiFetch<void>(`/host/units/${id}/calendar-blocks/${blockId}`, { method: "DELETE" });
 
 export type AdminIntent = { id: string; booking: string; guest_first_name: string; method: string; amount_xof: number; reference: string; declared_reference: string | null; declared_at: string | null; status: string };
+export type AdminCase = { id: string; booking: string; unit: string; opened_by: string; severity: string; description: string; total_xof: number; status: string };
+export type AdminPayout = { id: string; booking: string; unit: string; amount_xof: number; status: string; reference: string | null };
+export type Reconciliation = { period: { from: string; to: string }; totals: Record<string, number>; anomalies: { code: string; booking: string | null; detail: string }[] };
+export const fetchCases = () => apiFetch<{ data: AdminCase[] }>("/admin/support-cases");
+export const resolveCase = (id: string, body: { resolution: string; refund_xof?: number; note: string }) => apiFetch<unknown>(`/admin/support-cases/${id}/resolve`, { method: "POST", body });
+export const fetchAdminPayouts = (status = "pending") => apiFetch<{ data: AdminPayout[] }>(`/admin/payouts?status=${status}`);
+export const payPayout = (id: string, reference: string) => apiFetch<unknown>(`/admin/payouts/${id}/paid`, { method: "POST", body: { reference } });
+export const fetchReconciliation = (from: string, to: string) => apiFetch<{ data: Reconciliation }>(`/admin/reconciliation?from=${from}&to=${to}`);
+export const recordUnitCheck = (unitId: string, body: { type: string; status: "passed" | "failed"; note?: string; valid_until?: string }) => apiFetch<unknown>(`/admin/units/${unitId}/checks`, { method: "POST", body });
 export type AdminRefund = { id: string; booking: string; reason: string; amount_xof: number; status: string; method: string; payment_reference: string };
 export const fetchAdminIntents = (status = "pending") => apiFetch<{ data: AdminIntent[] }>(`/admin/payment-intents?status=${status}`);
 export const confirmIntent = (id: string, amount_xof: number) => apiFetch<unknown>(`/admin/payment-intents/${id}/confirm`, { method: "POST", body: { amount_xof } });

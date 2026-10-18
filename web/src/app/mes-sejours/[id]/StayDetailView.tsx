@@ -7,7 +7,7 @@ import { BookingBadge } from "@/components/stays/BookingBadge";
 import { money } from "@/components/stays/StayCard";
 import { useRequireAuth } from "@/components/useRequireAuth";
 import { generalError } from "@/lib/forms";
-import { cancelMyBooking, createPaymentIntent, declarePayment, fetchMyBooking, formatDay, needsPayment, type Booking, type PaymentIntent } from "@/lib/stays";
+import { cancelMyBooking, createPaymentIntent, declarePayment, fetchMyBooking, formatDay, needsPayment, openDispute, type Booking, type PaymentIntent } from "@/lib/stays";
 
 const METHODS = [["wave", "Wave"], ["orange_money", "Orange Money"], ["transfer", "Virement"], ["cash", "Espèces"]] as const;
 const when = (iso: string) => new Date(iso).toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" });
@@ -122,6 +122,13 @@ export default function StayDetailView({ id }: { id: string }) {
         </section>
       )}
 
+      {(booking.state === "confirmed" || booking.state === "checked_in") && (
+        <button type="button" disabled={pending} onClick={() => {
+          const d = window.prompt("Décrivez le problème rencontré (10 caractères minimum). Notre équipe examinera la situation.")?.trim();
+          if (d) void run(() => openDispute(id, "my", d), "Litige ouvert : notre équipe vous répondra.");
+        }} className="self-start text-sm text-danger underline">Signaler un problème</button>
+      )}
+      {booking.state === "disputed" && <p className="rounded-lg bg-[#fdecea] p-4 text-sm text-[#8b1c1c]">Un litige est ouvert sur ce séjour : notre équipe l&apos;examine et vous informera de sa décision.</p>}
       {canCancel && (
         <button type="button" disabled={pending} onClick={() => { if (window.confirm("Annuler ce séjour ? Le remboursement éventuel suit la politique d'annulation ci-dessus.")) void run(() => cancelMyBooking(id), "Séjour annulé."); }} className="self-start text-sm text-danger underline">Annuler ce séjour</button>
       )}

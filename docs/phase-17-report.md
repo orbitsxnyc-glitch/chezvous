@@ -45,6 +45,15 @@ Branche `phase-17-sejours`. Plan et écarts : `docs/phase-17-plan-sejours.md`. D
 - **Qualité** : audit axe-core sur 26 pages (dont séjours et fiche d'unité) : 0 violation ; contraste du texte « Pas de photo » corrigé. Vitest 79.
 - **Mobile (Flutter)** : recherche de séjours (calendrier en français, voyageurs, prix total) depuis une carte de l'accueil ; fiche du logement avec prix détaillé et demande sans débit (clé d'idempotence par intention) ; « Mes séjours » (liste et détail : échéances, règlement avec référence et consignes, « J'ai payé » qui ne confirme rien, annulation) ; « Demandes de séjour » côté hôte (accepter, refuser, annuler avec motif), le tout dans « Mon espace ». La gestion des logements (tarifs, photos, calendrier) reste sur le site. 6 tests Flutter ajoutés (63 au total).
 
+## Lot 6 — Contrôles, fin de séjour, litiges, reversements, rapprochement (livré)
+- **Contrôles par catégorie** : un logement peut recevoir des contrôles datés (identité de l'hôte, localisation, document, visite, **agrément d'hébergement touristique**) ; le dernier de chaque type fait foi et peut expirer. Les contrôles exigés avant validation se règlent dans `stay_required_checks` (**aucun par défaut** : les exigences légales sont à confirmer par un conseil juridique). Un contrôle exigé échu retire automatiquement le logement de la publication (tâche horaire) et prévient l'hôte. La fiche publique n'affiche que les contrôles réussis et valides, datés, sans note ni justificatif, et jamais de note globale.
+- **Cycle du séjour** : arrivée enregistrée par l'hôte (à partir de la date d'arrivée), fin du séjour (à partir de la date de départ, ou automatique N jours après, configurable, sauf litige), nouveaux états `refunded_partially` / `refunded_fully`.
+- **Litiges** : ouverts par le voyageur ou l'hôte (un seul ouvert par séjour), ils suspendent le reversement et préviennent l'autre partie ; un administrateur tranche : séjour conforme, remboursement partiel ou intégral (jamais supposé payé), avec justification.
+- **Reversements aux hôtes** : hébergement + ménage du devis figé, moins les remboursements ; jamais les frais de service ni les taxes. Payés hors plateforme, « payé » seulement après confirmation d'un administrateur, avec référence. Répartition à valider commercialement ; l'annulation tardive par le voyageur (montant conservé) est signalée pour décision manuelle.
+- **Rapprochement** : encaissements, remboursements, frais de service, taxes, reversements dus et payés sur une période, export CSV, et détection d'écarts (séjour confirmé sans règlement, montant différent, remboursement excessif ou en retard, verrou résiduel).
+- **Écrans** : administration (contrôles, litiges, reversements, rapprochement), hôte (arrivée, séjour terminé, signaler un problème), voyageur (signaler un problème), fiche publique (contrôles effectués) ; mobile : mêmes actions hôte et voyageur.
+- **Tests** : 18 nouveaux.
+
 ## À venir
 5. Écrans voyageur / hôte (web puis mobile).
 6. Contrôles par catégorie, administration, rapprochement.

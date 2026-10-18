@@ -7,7 +7,7 @@ import { SafeImage } from "@/components/SafeImage";
 import { StayBooking } from "@/components/stays/StayBooking";
 import { formatPrice } from "@/lib/format";
 import { publicGet } from "@/lib/server-api";
-import type { PublicUnit } from "@/lib/stays";
+import { CHECK_LABELS, formatDay, type PublicUnit } from "@/lib/stays";
 
 type Props = PageProps<"/sejours/[unit]">;
 
@@ -53,6 +53,13 @@ async function Detail({ params, searchParams }: { params: Props["params"]; searc
               <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm">{p.amenities.map((a) => <li key={a}><span className="text-success" aria-hidden>✓</span> {a}</li>)}</ul>
             </section>
           )}
+          <section aria-labelledby="controles">
+            <h2 id="controles" className="text-lg font-extrabold">Contrôles effectués</h2>
+            {u.checks && u.checks.length > 0 ? (
+              <ul className="mt-3 flex flex-col gap-2 text-sm">{u.checks.map((c) => <li key={c.type} className="flex flex-wrap justify-between gap-2 rounded-lg border border-line bg-white p-3"><span><span className="text-success" aria-hidden>✓</span> {CHECK_LABELS[c.type] ?? c.type}</span><span className="text-muted">le {formatDay(c.performed_at.slice(0, 10))}{c.valid_until ? ` · valable jusqu'au ${formatDay(c.valid_until.slice(0, 10))}` : ""}</span></li>)}</ul>
+            ) : <p className="mt-2 text-sm text-muted">Aucun contrôle publié pour le moment.</p>}
+            <p className="mt-2 text-xs text-muted">Un contrôle atteste d&apos;une vérification datée ; il ne garantit pas la propriété juridique du bien.</p>
+          </section>
           <p className="rounded-lg bg-info-soft p-4 text-xs leading-relaxed text-[#194b82]">L&apos;adresse exacte est communiquée après confirmation du séjour. Les échanges se font par ChezVous : aucun numéro n&apos;est partagé avant.</p>
         </div>
         <StayBooking unitId={u.id} capacity={u.capacity_guests} minNights={u.rate?.min_nights ?? 1} initial={{ check_in: first(sp.check_in), check_out: first(sp.check_out), guests: first(sp.guests) || "2" }} nightly={u.rate?.from_nightly_xof ?? null} />

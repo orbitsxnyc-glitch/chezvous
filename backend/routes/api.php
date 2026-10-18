@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\Admin\PassportCheckController;
 use App\Http\Controllers\Api\V1\Admin\PaymentAdminController;
 use App\Http\Controllers\Api\V1\Admin\ReferentialController;
 use App\Http\Controllers\Api\V1\Admin\ReportAdminController;
+use App\Http\Controllers\Api\V1\Admin\StayOpsController;
 use App\Http\Controllers\Api\V1\Admin\UnitAdminController;
 use App\Http\Controllers\Api\V1\Admin\UserAdminController;
 use App\Http\Controllers\Api\V1\Admin\VerificationController;
@@ -170,6 +171,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('my/bookings', [MyBookingController::class, 'index']);
     Route::get('my/bookings/{booking}', [MyBookingController::class, 'show']);
     Route::post('my/bookings/{booking}/cancel', [MyBookingController::class, 'cancel']);
+    Route::post('my/bookings/{booking}/dispute', [MyBookingController::class, 'dispute']);
 
     Route::post('my/bookings/{booking}/payment-intents', [MyPaymentController::class, 'store'])->middleware('throttle:inquiries');
     Route::post('my/payment-intents/{intent}/declare', [MyPaymentController::class, 'declare'])->middleware('throttle:inquiries');
@@ -180,6 +182,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('host/bookings/{booking}/accept', [HostBookingController::class, 'accept']);
     Route::post('host/bookings/{booking}/decline', [HostBookingController::class, 'decline']);
     Route::post('host/bookings/{booking}/cancel', [HostBookingController::class, 'cancel']);
+    Route::post('host/bookings/{booking}/check-in', [HostBookingController::class, 'checkIn']);
+    Route::post('host/bookings/{booking}/complete', [HostBookingController::class, 'complete']);
+    Route::post('host/bookings/{booking}/dispute', [HostBookingController::class, 'dispute']);
+    Route::get('host/payouts', [HostBookingController::class, 'payouts']);
 
     // Espace hôte (phase 17) : unités réservables, tarifs, calendrier. La Policy renvoie 404 pour l'unité d'autrui.
     Route::prefix('host/units')->group(function () {
@@ -223,6 +229,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Modération (ADM-01) : réservée aux rôles admin et super_admin.
     Route::prefix('admin')->middleware('two-factor')->group(function () {
+        Route::get('units/{unit}/checks', [StayOpsController::class, 'checks']);
+        Route::post('units/{unit}/checks', [StayOpsController::class, 'recordCheck']);
+        Route::get('settings/stay-required-checks', [StayOpsController::class, 'requiredChecks']);
+        Route::put('settings/stay-required-checks', [StayOpsController::class, 'updateRequiredChecks']);
+        Route::get('support-cases', [StayOpsController::class, 'cases']);
+        Route::post('support-cases/{case}/resolve', [StayOpsController::class, 'resolveCase']);
+        Route::get('payouts', [StayOpsController::class, 'payoutList']);
+        Route::post('payouts/{payout}/paid', [StayOpsController::class, 'payPayout']);
+        Route::get('reconciliation', [StayOpsController::class, 'reconciliation']);
         Route::get('payment-intents', [PaymentAdminController::class, 'intents']);
         Route::post('payment-intents/{intent}/confirm', [PaymentAdminController::class, 'confirm']);
         Route::post('payment-intents/{intent}/reject', [PaymentAdminController::class, 'reject']);

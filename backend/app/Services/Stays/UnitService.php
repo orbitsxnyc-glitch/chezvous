@@ -23,7 +23,7 @@ class UnitService
         'archived' => [],
     ];
 
-    public function __construct(private readonly AuditLogger $audit) {}
+    public function __construct(private readonly AuditLogger $audit, private readonly UnitCheckService $checks, private readonly OutboxService $outbox) {}
 
     /**
      * @param  array{name: string, capacity_guests: int, beds?: int|null}  $data
@@ -106,6 +106,10 @@ class UnitService
         if (! $property->images()->where('status', 'ready')->exists()) {
             $missing[] = 'photo';
         }
+        // Contrôles exigés par le réglage de la plateforme (aucun par défaut) : réussis ET encore valides.
+        foreach ($this->checks->missingRequired($unit) as $type) {
+            $missing[] = "contrôle « {$type} »";
+        }
         if ($missing !== []) {
             throw new StayRuleException('incomplete', 'Fiche incomplète : '.implode(', ', $missing).'.', ['missing' => $missing]);
         }
@@ -114,6 +118,24 @@ class UnitService
         $this->audit->record('unit.approved', $unit, null, null, $moderator->id);
 
         return $unit;
+    }
+
+    /** Tâche planifiée : une unité dont un contrôle exigé a expiré cesse d'être publique, et son hôte est prévenu. */
+    public function revokeForExpiredChecks(): int
+    {
+        $count = 0;
+        foreach (Unit::where('status', UnitStatus::Active->value)->whereNotNull('approved_at')->get() as $unit) {
+            $missing = $this->checks->missingRequired($unit);
+            if ($missing === []) {
+                continue;
+            }
+            $unit->forceFill(['approved_at' => null, 'approved_by' => null])->save();
+            $this->audit->record('unit.approval_revoked', $unit, null, ['reason' => 'Contrôle expiré ou non valide : '.implode(', ', $missing)], null);
+            $this->outbox->publish('unit.approval_revoked', $unit, ['recipients' => [$unit->owner_user_id], 'unit' => $unit->name, 'booking' => $unit->ulid]);
+            $count++;
+        }
+
+        return $count;
     }
 
     public function revokeApproval(Unit $unit, User $moderator, string $reason): Unit

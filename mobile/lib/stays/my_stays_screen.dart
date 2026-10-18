@@ -11,6 +11,7 @@ Color _tone(String state) => switch (state) {
   'requested' => AppColors.warning,
   'accepted' || 'awaiting_payment' => AppColors.info,
   'declined' || 'payment_failed' || 'disputed' => AppColors.danger,
+  'refunded_partially' || 'refunded_fully' => AppColors.info,
   _ => AppColors.muted,
 };
 
@@ -207,6 +208,42 @@ class _MyStayDetailScreenState extends State<MyStayDetailScreen> {
     if (mounted) setState(() => _busy = false);
   }
 
+  Future<void> _dispute() async {
+    final c = TextEditingController();
+    final text = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Signaler un problème'),
+        content: TextField(
+          controller: c,
+          maxLines: 4,
+          maxLength: 2000,
+          decoration: const InputDecoration(
+            labelText: 'Décrivez le problème (10 caractères minimum)',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Retour'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, c.text.trim()),
+            child: const Text('Envoyer'),
+          ),
+        ],
+      ),
+    );
+    c.dispose();
+    if (text == null || text.isEmpty) {
+      return;
+    }
+    await _run(
+      () => widget.repository.dispute(widget.id, text),
+      done: 'Litige ouvert : notre équipe vous répondra.',
+    );
+  }
+
   Future<void> _cancel() async {
     final ok = await showDialog<bool>(
       context: context,
@@ -338,6 +375,18 @@ class _MyStayDetailScreenState extends State<MyStayDetailScreen> {
             if (b.state == 'confirmed')
               _note(
                 'Séjour confirmé. L\'adresse exacte et les consignes d\'arrivée vous sont communiquées par l\'hôte via ChezVous.',
+              ),
+            if (const ['confirmed', 'checked_in'].contains(b.state))
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: TextButton(
+                  onPressed: _busy ? null : _dispute,
+                  child: const Text('Signaler un problème'),
+                ),
+              ),
+            if (b.state == 'disputed')
+              _note(
+                'Un litige est ouvert sur ce séjour : notre équipe l\'examine et vous informera de sa décision.',
               ),
             if (b.cancellable)
               Padding(

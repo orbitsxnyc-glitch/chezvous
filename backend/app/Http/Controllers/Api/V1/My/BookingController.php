@@ -7,6 +7,7 @@ use App\Http\Resources\BookingResource;
 use App\Models\Booking;
 use App\Models\Quote;
 use App\Services\Stays\BookingService;
+use App\Services\Stays\SupportService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -44,6 +45,15 @@ class BookingController extends Controller
         Gate::authorize('asGuest', $booking);
 
         return new BookingResource($booking->load(self::RELATIONS));
+    }
+
+    public function dispute(Request $request, Booking $booking, SupportService $support): JsonResponse
+    {
+        Gate::authorize('asGuest', $booking);
+        $data = $request->validate(['description' => ['required', 'string', 'min:10', 'max:2000'], 'severity' => ['nullable', 'in:low,normal,high']]);
+        $case = $support->open($booking, $request->user(), 'guest', $data['description'], $data['severity'] ?? 'normal');
+
+        return response()->json(['data' => ['id' => $case->ulid, 'status' => $case->status]], 201);
     }
 
     public function cancel(Request $request, Booking $booking): BookingResource
