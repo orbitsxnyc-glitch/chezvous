@@ -169,3 +169,11 @@ it("les quartiers peuvent donner leur nombre d'annonces publiques", function () 
     expect($rows->sum('listings_count'))->toBe(2)->and($rows->firstWhere('slug', 'yoff')['listings_count'])->toBe(2);
     expect($this->getJson('/api/v1/localities?level=neighborhood')->json('data.0'))->not->toHaveKey('listings_count');
 });
+
+it('expose salles de bain et nombre de photos prêtes dans le résumé', function () {
+    publicListing([], ['bathrooms' => 2]);
+
+    $item = $this->getJson('/api/v1/listings')->assertOk()->json('data.0');
+
+    expect($item['bathrooms'])->toBe(2)->and($item)->toHaveKey('photos_count');
+});

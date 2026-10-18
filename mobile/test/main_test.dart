@@ -23,7 +23,7 @@ void main() {
       await tester.pumpWidget(MainApp(auth: auth));
       await tester.pumpAndSettle();
       // Accueil : promesse du produit, sans connexion.
-      expect(find.textContaining('Où souhaitez-vous vivre'), findsOneWidget);
+      expect(find.textContaining('qui vous ressemble'), findsOneWidget);
 
       await tester.tap(find.text('Recherche'));
       await tester.pumpAndSettle();
@@ -32,7 +32,7 @@ void main() {
       await tester.tap(find.text('Compte'));
       await tester.pumpAndSettle();
       expect(find.text('Se connecter'), findsOneWidget);
-      expect(find.text('Créer un compte'), findsOneWidget);
+      expect(find.text('Créer un compte', skipOffstage: false), findsOneWidget);
     },
   );
 

@@ -38,6 +38,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
   );
   bool? _favorite;
   int _page = 0;
+  int _tab = 0;
+  final _pages = PageController();
 
   /// Signalement : réservé aux comptes connectés (motifs fournis par l'API), traité par la modération.
   Future<void> _report(ListingDetail d) async {
@@ -252,6 +254,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                 children: [
                   if (d.imageUrls.isNotEmpty)
                     PageView(
+                      controller: _pages,
                       onPageChanged: (i) => setState(() => _page = i),
                       children: [
                         for (final u in d.imageUrls) CoverImage(url: u),
@@ -294,6 +297,12 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                       ),
                     ),
                   ),
+                  if (d.imageUrls.isNotEmpty)
+                    Positioned(
+                      left: 14,
+                      bottom: 12,
+                      child: PhotoCount(d.imageUrls.length),
+                    ),
                   if (d.imageUrls.length > 1)
                     Positioned(
                       right: 14,
@@ -320,6 +329,39 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                 ],
               ),
             ),
+            if (d.imageUrls.length > 1)
+              SizedBox(
+                height: 72,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                  itemCount: d.imageUrls.length.clamp(0, 6),
+                  separatorBuilder: (_, _) => const SizedBox(width: 8),
+                  itemBuilder: (_, i) => GestureDetector(
+                    onTap: () => _pages.animateToPage(
+                      i,
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeOut,
+                    ),
+                    child: Container(
+                      width: 84,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(AppRadius.sm),
+                        border: Border.all(
+                          color: i == _page
+                              ? AppColors.primary
+                              : Colors.transparent,
+                          width: 2,
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(AppRadius.sm - 2),
+                        child: CoverImage(url: d.imageUrls[i]),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -360,7 +402,12 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                   const SizedBox(height: 10),
                   FreshnessBadge(availability: s.availability),
                   _KeyFacts(summary: s),
-                  if (d.description != null) ...[
+                  const SizedBox(height: 12),
+                  _DetailTabs(
+                    current: _tab,
+                    onSelect: (i) => setState(() => _tab = i),
+                  ),
+                  if (_tab == 0 && d.description != null) ...[
                     const SizedBox(height: 20),
                     Text(
                       'Description',
@@ -375,7 +422,15 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                       ),
                     ),
                   ],
-                  if (d.amenities.isNotEmpty) ...[
+                  if (_tab == 1 && d.amenities.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 16),
+                      child: Text(
+                        'Aucun équipement renseigné.',
+                        style: TextStyle(color: AppColors.muted),
+                      ),
+                    ),
+                  if (_tab == 1 && d.amenities.isNotEmpty) ...[
                     const SizedBox(height: 20),
                     Text(
                       'Équipements',
@@ -402,9 +457,10 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                       ],
                     ),
                   ],
-                  if (d.costs.values.any((v) => v != null)) _Costs(detail: d),
+                  if (_tab == 0 && d.costs.values.any((v) => v != null))
+                    _Costs(detail: d),
                   _PassportCard(detail: d),
-                  if (d.location != null) ...[
+                  if (_tab == 2 && d.location != null) ...[
                     const SizedBox(height: 24),
                     Text(
                       'Localisation',
@@ -473,6 +529,7 @@ class _KeyFacts extends StatelessWidget {
     final items = <(String, String)>[
       if (summary.propertyType != null) (summary.propertyType!, 'Type'),
       if (summary.bedrooms != null) ('${summary.bedrooms}', 'Chambres'),
+      if (summary.bathrooms != null) ('${summary.bathrooms}', 'Salles de bain'),
       if (summary.surfaceM2 != null) ('${summary.surfaceM2} m²', 'Surface'),
       (summary.furnished ? 'Oui' : 'Non', 'Meublé'),
     ];
@@ -573,46 +630,142 @@ class _Costs extends StatelessWidget {
   );
 }
 
-/// Carte résumée du Passeport : nombre de contrôles réussis et accès au détail daté.
+/// Onglets de la fiche : Description, Équipements, Localisation (soulignement orange sur l'actif).
+class _DetailTabs extends StatelessWidget {
+  const _DetailTabs({required this.current, required this.onSelect});
+
+  final int current;
+  final ValueChanged<int> onSelect;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      for (final (i, label) in const [
+        'Description',
+        'Équipements',
+        'Localisation',
+      ].indexed)
+        Expanded(
+          child: InkWell(
+            onTap: () => onSelect(i),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: i == current ? AppColors.primary : AppColors.line,
+                    width: i == current ? 3 : 1,
+                  ),
+                ),
+              ),
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  color: i == current ? AppColors.primary : AppColors.muted,
+                ),
+              ),
+            ),
+          ),
+        ),
+    ],
+  );
+}
+
+/// Carte résumée du Passeport : trois contrôles datés et accès au détail.
 class _PassportCard extends StatelessWidget {
   const _PassportCard({required this.detail});
 
   final ListingDetail detail;
 
+  String _date(DateTime d) =>
+      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+
   @override
   Widget build(BuildContext context) {
-    final passed = detail.checks.where((c) => c.status == 'passed').length;
+    final shown = detail.checks.take(3).toList();
     return Container(
       margin: const EdgeInsets.only(top: 24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFFFF7F0), Colors.white],
-        ),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(color: const Color(0xFFF2C9A8)),
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-        leading: const CircleAvatar(
-          radius: 22,
-          backgroundColor: AppColors.primary,
-          child: Icon(Icons.verified_user_outlined, color: Colors.white),
-        ),
-        title: const Text(
-          'Passeport du Bien',
-          style: TextStyle(fontWeight: FontWeight.w800),
-        ),
-        subtitle: Text(
-          detail.checks.isEmpty
-              ? 'Aucun contrôle effectué pour le moment.'
-              : '$passed contrôle${passed > 1 ? 's' : ''} effectué${passed > 1 ? 's' : ''} sur ${detail.checks.length}',
-        ),
-        trailing: const Icon(Icons.chevron_right),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadius.md),
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute<void>(
             builder: (_) => PassportScreen(detail: detail),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.verified_user_outlined, color: AppColors.primary),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Passeport du Bien',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 17,
+                      ),
+                    ),
+                  ),
+                  Icon(Icons.chevron_right),
+                ],
+              ),
+              const SizedBox(height: 12),
+              if (shown.isEmpty)
+                const Text(
+                  'Aucun contrôle effectué pour le moment.',
+                  style: TextStyle(color: AppColors.muted),
+                )
+              else
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (final c in shown)
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(
+                                c.status == 'passed'
+                                    ? Icons.check_circle_outline
+                                    : Icons.remove_circle_outline,
+                                size: 22,
+                                color: c.status == 'passed'
+                                    ? AppColors.success
+                                    : AppColors.muted,
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                checkLabels[c.type] ?? c.type,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              if (c.performedAt != null)
+                                Text(
+                                  'Le ${_date(c.performedAt!)}',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+            ],
           ),
         ),
       ),

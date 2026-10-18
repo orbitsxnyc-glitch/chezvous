@@ -2,7 +2,7 @@ import '../core/api_client.dart';
 import 'models.dart';
 
 class ListingsRepository {
-  const ListingsRepository(this.api);
+  ListingsRepository(this.api);
 
   final ApiClient api;
 
@@ -112,11 +112,33 @@ class ListingsRepository {
         .toList();
   }
 
-  Future<void> addFavorite(String listingId) =>
-      api.post('/my/favorites', {'listing': listingId});
+  /// Identifiants des annonces favorites du compte courant (cache de session, pour les cœurs des listes).
+  final Set<String> favoriteIds = {};
+  bool _favoritesLoaded = false;
 
-  Future<void> removeFavorite(String listingId) =>
-      api.delete('/my/favorites/${Uri.encodeComponent(listingId)}');
+  Future<void> ensureFavoriteIds() async {
+    if (_favoritesLoaded) return;
+    final list = await favorites();
+    favoriteIds
+      ..clear()
+      ..addAll(list.map((l) => l.id));
+    _favoritesLoaded = true;
+  }
+
+  void forgetFavorites() {
+    favoriteIds.clear();
+    _favoritesLoaded = false;
+  }
+
+  Future<void> addFavorite(String listingId) async {
+    await api.post('/my/favorites', {'listing': listingId});
+    favoriteIds.add(listingId);
+  }
+
+  Future<void> removeFavorite(String listingId) async {
+    await api.delete('/my/favorites/${Uri.encodeComponent(listingId)}');
+    favoriteIds.remove(listingId);
+  }
 
   Future<List<SavedSearch>> savedSearches() async {
     final res = await api.get('/my/saved-searches');

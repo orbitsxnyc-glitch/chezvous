@@ -30,12 +30,12 @@ abstract final class AppColors {
 }
 
 abstract final class AppRadius {
-  static const sm = 8.0;
-  static const md = 12.0;
-  static const lg = 18.0;
+  static const sm = 12.0;
+  static const md = 16.0;
+  static const lg = 24.0;
 }
 
-const _field = BorderSide(color: Color(0xFFD6D0CA));
+const _field = BorderSide(color: Color(0xFFE6E2DE));
 
 ThemeData buildTheme() {
   const scheme = ColorScheme.light(
@@ -96,7 +96,7 @@ ThemeData buildTheme() {
       .apply(fontFamily: 'Inter');
 
   final shape = RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(AppRadius.sm),
+    borderRadius: BorderRadius.circular(AppRadius.md),
   );
   return base.copyWith(
     textTheme: text,
@@ -118,12 +118,12 @@ ThemeData buildTheme() {
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        minimumSize: const Size(48, 48),
+        minimumSize: const Size(48, 54),
         shape: shape,
         textStyle: const TextStyle(
           fontFamily: 'Inter',
           fontWeight: FontWeight.w700,
-          fontSize: 14,
+          fontSize: 15,
         ),
         disabledBackgroundColor: const Color(0xFFF1ECE6),
         disabledForegroundColor: const Color(0xFFA39A92),
@@ -156,7 +156,7 @@ ThemeData buildTheme() {
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadius.sm),
         borderSide: _field,
@@ -204,10 +204,14 @@ ThemeData buildTheme() {
       shape: shape,
     ),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
+      elevation: 0,
       indicatorColor: AppColors.primarySoft,
-      height: 68,
+      indicatorShape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
+      height: 72,
       labelTextStyle: WidgetStateProperty.resolveWith(
         (s) => TextStyle(
           fontFamily: 'Inter',

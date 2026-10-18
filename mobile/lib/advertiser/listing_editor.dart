@@ -48,71 +48,223 @@ class _NewListingScreenState extends State<NewListingScreen> {
     if (mounted) setState(() => _pending = false);
   }
 
+  static IconData _icon(String label) {
+    final l = label.toLowerCase();
+    if (l.contains('appart')) return Icons.apartment_outlined;
+    if (l.contains('maison') || l.contains('villa')) return Icons.home_outlined;
+    if (l.contains('studio')) return Icons.single_bed_outlined;
+    if (l.contains('chambre')) return Icons.bed_outlined;
+    if (l.contains('terrain')) return Icons.landscape_outlined;
+    if (l.contains('bureau')) return Icons.business_center_outlined;
+    if (l.contains('local')) return Icons.storefront_outlined;
+    if (l.contains('entrep')) return Icons.warehouse_outlined;
+    return Icons.domain_outlined;
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Nouvelle annonce')),
-    body: FutureBuilder<List<Option>>(
-      future: _types,
-      builder: (context, snap) {
-        if (snap.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snap.hasError) {
-          return ErrorRetry(
-            message: errorText(snap.error!),
-            onRetry: () => setState(() {
-              _types = widget.repository.propertyTypes();
-            }),
-          );
-        }
-        return ListView(
-          padding: const EdgeInsets.all(24),
-          children: [
-            DropdownButtonFormField<String>(
-              initialValue: _transaction,
-              decoration: const InputDecoration(
-                labelText: 'Je propose',
-                border: OutlineInputBorder(),
-              ),
-              items: const [
-                DropdownMenuItem(
-                  value: 'rent_long',
-                  child: Text('Une location'),
+    body: SafeArea(
+      child: FutureBuilder<List<Option>>(
+        future: _types,
+        builder: (context, snap) {
+          if (snap.connectionState != ConnectionState.done) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snap.hasError) {
+            return ErrorRetry(
+              message: errorText(snap.error!),
+              onRetry: () => setState(() {
+                _types = widget.repository.propertyTypes();
+              }),
+            );
+          }
+          return Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                  children: [
+                    Row(
+                      children: [
+                        IconButton.outlined(
+                          tooltip: 'Retour',
+                          onPressed: () => Navigator.of(context).maybePop(),
+                          icon: const Icon(Icons.arrow_back),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'Publier une annonce',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 18,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        for (final (i, label) in const [
+                          'Infos',
+                          'Détails',
+                          'Photos',
+                          'Aperçu',
+                        ].indexed)
+                          Expanded(
+                            child: Column(
+                              children: [
+                                CircleAvatar(
+                                  radius: 16,
+                                  backgroundColor: i == 0
+                                      ? AppColors.primary
+                                      : const Color(0xFFEDE8E3),
+                                  child: Text(
+                                    '${i + 1}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 13,
+                                      color: i == 0
+                                          ? Colors.white
+                                          : AppColors.muted,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  label,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.muted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 22),
+                    const Eyebrow('Commençons par l\'essentiel'),
+                    const SizedBox(height: 6),
+                    const AccentHeadline(
+                      'Quel bien souhaitez-vous ',
+                      'publier ?',
+                      size: 30,
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Type d\'opération',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 8),
+                    SegmentedButton<String>(
+                      showSelectedIcon: false,
+                      segments: const [
+                        ButtonSegment(
+                          value: 'rent_long',
+                          label: Text('Location'),
+                        ),
+                        ButtonSegment(value: 'sale', label: Text('Vente')),
+                      ],
+                      selected: {_transaction},
+                      onSelectionChanged: (v) =>
+                          setState(() => _transaction = v.first),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Type de bien',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 8),
+                    GridView.count(
+                      crossAxisCount: 3,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 10,
+                      childAspectRatio: 1.05,
+                      children: [
+                        for (final t in snap.data!)
+                          InkWell(
+                            borderRadius: BorderRadius.circular(AppRadius.md),
+                            onTap: () => setState(() => _type = t.id),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: _type == t.id
+                                    ? AppColors.primarySoft
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(
+                                  AppRadius.md,
+                                ),
+                                border: Border.all(
+                                  color: _type == t.id
+                                      ? AppColors.primary
+                                      : AppColors.line,
+                                  width: _type == t.id ? 2 : 1,
+                                ),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    _icon(t.label),
+                                    size: 30,
+                                    color: _type == t.id
+                                        ? AppColors.primary
+                                        : AppColors.ink,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                    child: Text(
+                                      t.label,
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: _type == t.id
+                                            ? FontWeight.w800
+                                            : FontWeight.w500,
+                                        color: _type == t.id
+                                            ? AppColors.primary
+                                            : AppColors.ink,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    if (_error != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Text(
+                          _error!,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-                DropdownMenuItem(value: 'sale', child: Text('Une vente')),
-              ],
-              onChanged: (v) => setState(() => _transaction = v ?? 'rent_long'),
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<int>(
-              initialValue: _type,
-              decoration: const InputDecoration(
-                labelText: 'Type de bien',
-                border: OutlineInputBorder(),
               ),
-              items: [
-                for (final t in snap.data!)
-                  DropdownMenuItem(value: t.id, child: Text(t.label)),
-              ],
-              onChanged: (v) => setState(() => _type = v),
-            ),
-            if (_error != null)
               Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Text(
-                  _error!,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                child: PrimaryButton(
+                  label: 'Continuer vers les détails',
+                  pending: _pending,
+                  arrow: true,
+                  onPressed: _create,
                 ),
               ),
-            const SizedBox(height: 24),
-            PrimaryButton(
-              label: 'Créer le brouillon',
-              pending: _pending,
-              onPressed: _create,
-            ),
-          ],
-        );
-      },
+            ],
+          );
+        },
+      ),
     ),
   );
 }

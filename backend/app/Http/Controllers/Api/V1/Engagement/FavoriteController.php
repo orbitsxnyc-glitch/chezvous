@@ -17,7 +17,7 @@ class FavoriteController extends Controller
     /** Favoris avec l'état de chaque annonce : une annonce retirée reste listée, marquée indisponible. */
     public function index(Request $request, ListingSearch $search): JsonResponse
     {
-        $favorites = Favorite::with(['listing.property.type', 'listing.property.locality', 'listing.property.coverImage', 'listing.agency'])
+        $favorites = Favorite::with(['listing.property.type', 'listing.property.locality', 'listing.property.coverImage', 'listing.property.images', 'listing.agency'])
             ->where('user_id', $request->user()->id)->latest('id')->get();
         $visible = $search->visible()->whereIn('id', $favorites->pluck('listing_id'))->pluck('id')->flip();
 

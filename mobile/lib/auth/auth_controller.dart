@@ -110,6 +110,17 @@ class AuthController extends ChangeNotifier {
   Future<void> resendCode(String phone) =>
       api.post('/auth/otp/send', {'phone': phone, 'purpose': 'verify_phone'});
 
+  /// Mot de passe oublié : le code part par le canal configuré (e-mail ou SMS), comme à l'inscription.
+  Future<void> sendResetCode(String phone) =>
+      api.post('/auth/otp/send', {'phone': phone, 'purpose': 'password_reset'});
+
+  Future<void> resetPassword(String phone, String code, String password) =>
+      api.post('/auth/password/reset', {
+        'phone': phone,
+        'code': code,
+        'password': password,
+      });
+
   Future<void> logout() async {
     try {
       await api.post('/auth/logout');

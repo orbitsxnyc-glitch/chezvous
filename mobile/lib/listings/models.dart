@@ -29,6 +29,8 @@ class ListingSummary {
     this.locality,
     this.surfaceM2,
     this.bedrooms,
+    this.bathrooms,
+    this.photosCount,
     this.agencyName,
     this.agencyVerified = false,
     this.coverUrl,
@@ -48,6 +50,8 @@ class ListingSummary {
       locality: _map(j['locality'])['name'] as String?,
       surfaceM2: (j['surface_m2'] as num?)?.toInt(),
       bedrooms: (j['bedrooms'] as num?)?.toInt(),
+      bathrooms: (j['bathrooms'] as num?)?.toInt(),
+      photosCount: (j['photos_count'] as num?)?.toInt(),
       furnished: j['furnished'] == true,
       agencyName: agency?['name'] as String?,
       agencyVerified: agency?['verified'] == true,
@@ -67,6 +71,8 @@ class ListingSummary {
   final String? locality;
   final int? surfaceM2;
   final int? bedrooms;
+  final int? bathrooms;
+  final int? photosCount;
   final bool furnished;
   final String? agencyName;
   final bool agencyVerified;
@@ -121,6 +127,8 @@ class ListingDetail {
       locality: _map(property['locality'])['name'] as String?,
       surfaceM2: (property['surface_m2'] as num?)?.toInt(),
       bedrooms: (property['bedrooms'] as num?)?.toInt(),
+      bathrooms: (property['bathrooms'] as num?)?.toInt(),
+      photosCount: images.length,
       furnished: property['furnished'] == true,
       agencyName: null,
       availability: Availability.fromJson(_map(passport['availability'])),

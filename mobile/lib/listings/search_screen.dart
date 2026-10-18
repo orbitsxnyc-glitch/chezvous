@@ -40,6 +40,7 @@ class _SearchScreenState extends State<SearchScreen> {
   String? _error;
   int _generation = 0;
   bool _showMap = false;
+  late final _q = TextEditingController(text: widget.initialFilters.q);
   int? _total;
 
   @override
@@ -54,6 +55,12 @@ class _SearchScreenState extends State<SearchScreen> {
         .catchError((_) {
           // Les quartiers sont un confort : la recherche fonctionne sans eux.
         });
+  }
+
+  @override
+  void dispose() {
+    _q.dispose();
+    super.dispose();
   }
 
   Future<void> _load({bool more = false}) async {
@@ -194,64 +201,150 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('Recherche'),
-      actions: [
-        IconButton(
-          tooltip: _showMap ? 'Afficher la liste' : 'Afficher la carte',
-          icon: Icon(_showMap ? Icons.view_list_outlined : Icons.map_outlined),
-          onPressed: () => setState(() => _showMap = !_showMap),
-        ),
-        IconButton(
-          tooltip: 'Créer une alerte',
-          icon: const Icon(Icons.notifications_none),
-          onPressed: _saveSearch,
-        ),
-      ],
-    ),
-    body: Column(
-      children: [
-        _FilterBar(
-          filters: _filters,
-          localities: _localities,
-          onChanged: _apply,
-          onMore: _openFilters,
-        ),
-        if (!_showMap)
+    body: SafeArea(
+      bottom: false,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
+            padding: const EdgeInsets.fromLTRB(16, 12, 8, 0),
             child: Row(
               children: [
-                Expanded(
-                  child: Text(
-                    _loading && _items.isEmpty
-                        ? 'Recherche…'
-                        : _total != null
-                        ? '$_total bien${_total! > 1 ? 's' : ''} trouvé${_total! > 1 ? 's' : ''}'
-                        : '',
-                    style: const TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                ),
-                TextButton.icon(
-                  onPressed: _openSort,
-                  icon: const Icon(Icons.swap_vert, size: 20),
-                  label: const Text('Trier'),
+                const BrandLogo(size: 15),
+                const Spacer(),
+                IconButton(
+                  tooltip: 'Créer une alerte',
+                  icon: const Icon(Icons.notifications_none),
+                  onPressed: _saveSearch,
                 ),
               ],
             ),
           ),
-        Expanded(
-          child: _showMap
-              ? ListingsMapView(
-                  repository: widget.repository,
-                  filters: _filters,
-                  onOpen: _openFromMap,
-                )
-              : _results(),
-        ),
-      ],
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _showMap ? 'Carte des annonces' : 'Explorer les annonces',
+                  style: Theme.of(context).textTheme.headlineSmall
+                      ?.copyWith(fontSize: 26),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Des logements à Dakar, avec leur disponibilité datée.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _q,
+                  textInputAction: TextInputAction.search,
+                  onSubmitted: (_) => _submitQuery(),
+                  decoration: InputDecoration(
+                    hintText: 'Rechercher un quartier, une ville, un bien…',
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: Padding(
+                      padding: const EdgeInsets.all(6),
+                      child: IconButton.filled(
+                        style: IconButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                        ),
+                        tooltip: 'Rechercher',
+                        onPressed: _submitQuery,
+                        icon: const Icon(Icons.search),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          _FilterBar(
+            filters: _filters,
+            localities: _localities,
+            onChanged: _apply,
+            onMore: _openFilters,
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 12, 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _showMap
+                      ? const SizedBox.shrink()
+                      : Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: _loading && _items.isEmpty
+                                    ? '…'
+                                    : '${_total ?? _items.length}',
+                                style: const TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              TextSpan(
+                                text:
+                                    ' annonce${(_total ?? _items.length) > 1 ? 's' : ''} trouvée${(_total ?? _items.length) > 1 ? 's' : ''}',
+                                style: const TextStyle(color: AppColors.muted),
+                              ),
+                            ],
+                          ),
+                        ),
+                ),
+                if (!_showMap)
+                  TextButton.icon(
+                    onPressed: _openSort,
+                    icon: const Icon(Icons.swap_vert, size: 20),
+                    label: const Text('Trier'),
+                  ),
+                IconButton.filled(
+                  tooltip: 'Afficher la liste',
+                  isSelected: !_showMap,
+                  style: IconButton.styleFrom(
+                    backgroundColor: _showMap
+                        ? Colors.white
+                        : AppColors.primary,
+                    foregroundColor: _showMap ? AppColors.muted : Colors.white,
+                  ),
+                  onPressed: () => setState(() => _showMap = false),
+                  icon: const Icon(Icons.view_list_outlined),
+                ),
+                IconButton.filled(
+                  tooltip: 'Afficher la carte',
+                  style: IconButton.styleFrom(
+                    backgroundColor: _showMap
+                        ? AppColors.primary
+                        : Colors.white,
+                    foregroundColor: _showMap ? Colors.white : AppColors.muted,
+                  ),
+                  onPressed: () => setState(() => _showMap = true),
+                  icon: const Icon(Icons.map_outlined),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: _showMap
+                ? ListingsMapView(
+                    repository: widget.repository,
+                    filters: _filters,
+                    onOpen: _openFromMap,
+                  )
+                : _results(),
+          ),
+        ],
+      ),
     ),
   );
+
+  void _submitQuery() {
+    final q = _q.text.trim();
+    _apply(_filters.copyWith(q: () => q.isEmpty ? null : q));
+  }
 
   void _openFromMap(MapPoint p) => Navigator.of(context).push(
     MaterialPageRoute<void>(
@@ -309,6 +402,8 @@ class _SearchScreenState extends State<SearchScreen> {
         final l = _items[i];
         return ListingCard(
           listing: l,
+          repository: widget.repository,
+          signedIn: widget.signedIn,
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(
               builder: (_) => ListingDetailScreen(

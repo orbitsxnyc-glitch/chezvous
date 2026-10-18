@@ -36,6 +36,8 @@ class PublicListingSummaryResource extends JsonResource
             'locality' => $property->locality ? ['name' => $property->locality->name, 'slug' => $property->locality->slug] : null,
             'surface_m2' => $property->surface_m2,
             'bedrooms' => $property->bedrooms,
+            'bathrooms' => $property->bathrooms,
+            'photos_count' => $property->relationLoaded('images') ? $property->images->where('status.value', 'ready')->count() : null,
             'furnished' => $property->furnished,
             'agency' => $this->agency ? ['name' => $this->agency->name, 'slug' => $this->agency->slug, 'verified' => $this->agency->isVerified()] : null,
             'cover' => $cover ? collect($cover->sizes ?? [])->map(fn (string $p) => $disk->url($p))->all() : null,

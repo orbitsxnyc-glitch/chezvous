@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Storage;
 
 class PublicListingController extends Controller
 {
-    private const SUMMARY_RELATIONS = ['property.type', 'property.locality', 'property.coverImage', 'agency'];
+    private const SUMMARY_RELATIONS = ['property.type', 'property.locality', 'property.coverImage', 'property.images', 'agency'];
 
     public function __construct(private readonly ListingSearch $search) {}
 

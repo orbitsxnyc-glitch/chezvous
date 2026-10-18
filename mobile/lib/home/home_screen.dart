@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../core/format.dart';
 import '../inquiries/inquiries_repository.dart';
 import '../listings/filters_screen.dart';
 import '../listings/listing_detail_screen.dart';
@@ -38,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final _query = TextEditingController();
   List<Locality> _localities = const [];
   List<ListingSummary> _featured = const [];
+  List<PropertyKind> _types = const [];
 
   @override
   void initState() {
@@ -56,6 +56,14 @@ class _HomeScreenState extends State<HomeScreen> {
         })
         .catchError((_) {
           // Confort : l'accueil reste utilisable sans les quartiers.
+        });
+    widget.repository
+        .propertyTypes()
+        .then((v) {
+          if (mounted) setState(() => _types = v.take(6).toList());
+        })
+        .catchError((_) {
+          // Les puces de type sont un raccourci : sans elles, les filtres restent accessibles.
         });
     widget.repository
         .featured()
@@ -99,133 +107,232 @@ class _HomeScreenState extends State<HomeScreen> {
     if (result != null) widget.onSearch(result);
   }
 
-  String? _chipLabel(String empty, String? value) => value ?? empty;
+  static const _typeIcons = {
+    'apartment': Icons.apartment_outlined,
+    'house': Icons.home_outlined,
+    'studio': Icons.single_bed_outlined,
+    'room': Icons.bed_outlined,
+    'land': Icons.landscape_outlined,
+    'office': Icons.business_center_outlined,
+    'shop': Icons.storefront_outlined,
+    'warehouse': Icons.warehouse_outlined,
+    'building': Icons.domain_outlined,
+  };
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final name = widget.userName?.trim().split(' ').first;
     return Scaffold(
-      appBar: AppBar(
-        titleSpacing: 16,
-        title: const BrandLogo(),
-        actions: [
-          IconButton(
-            tooltip: 'Notifications',
-            icon: const Icon(Icons.notifications_none),
-            onPressed: widget.onNotifications,
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
-        children: [
-          Text(
-            name == null || name.isEmpty ? 'Bonjour 👋' : 'Bonjour $name 👋',
-            style: text.bodyMedium?.copyWith(color: AppColors.muted),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Où souhaitez-vous vivre ?',
-            style: text.headlineSmall?.copyWith(fontSize: 28, height: 1.1),
-          ),
-          const SizedBox(height: 18),
-          _TransactionTabs(
-            value: _filters.transaction,
-            onChanged: (v) =>
-                setState(() => _filters = _filters.copyWith(transaction: v)),
-          ),
-          const SizedBox(height: 14),
-          TextField(
-            controller: _query,
-            textInputAction: TextInputAction.search,
-            onSubmitted: (_) => widget.onSearch(_withQuery),
-            decoration: InputDecoration(
-              hintText: 'Quartier, ville, résidence…',
-              prefixIcon: const Icon(Icons.search),
-              suffixIcon: IconButton(
-                tooltip: 'Rechercher',
-                icon: const Icon(Icons.arrow_forward),
-                onPressed: () => widget.onSearch(_withQuery),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _FilterChipButton(
-                  icon: Icons.payments_outlined,
-                  label: _filters.priceMax == null
-                      ? 'Budget'
-                      : '≤ ${groupThousands(_filters.priceMax!)}',
-                  onTap: _openFilters,
-                ),
-                const SizedBox(width: 8),
-                _FilterChipButton(
-                  icon: Icons.bed_outlined,
-                  label: _filters.bedroomsMin == null
-                      ? 'Chambres'
-                      : '${_filters.bedroomsMin}+ ch.',
-                  onTap: _openFilters,
-                ),
-                const SizedBox(width: 8),
-                _FilterChipButton(
-                  icon: Icons.apartment_outlined,
-                  label: _chipLabel('Type', _filters.type)!,
-                  onTap: _openFilters,
-                ),
-                const SizedBox(width: 8),
-                _FilterChipButton(
-                  icon: Icons.tune,
-                  label: 'Filtres',
-                  onTap: _openFilters,
-                ),
-              ],
-            ),
-          ),
-          if (_localities.isNotEmpty) ...[
-            const SizedBox(height: 28),
+      body: SafeArea(
+        bottom: false,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Quartiers populaires', style: text.titleLarge),
-                TextButton(
-                  onPressed: () => widget.onSearch(_withQuery),
-                  child: const Text('Voir tout'),
+                const BrandLogo(size: 15),
+                const Spacer(),
+                const Chip(
+                  avatar: Icon(Icons.location_on_outlined, size: 18),
+                  label: Text('Dakar'),
+                ),
+                IconButton(
+                  tooltip: 'Notifications',
+                  icon: const Icon(Icons.notifications_none),
+                  onPressed: widget.onNotifications,
                 ),
               ],
             ),
             const SizedBox(height: 8),
-            SizedBox(
-              height: 132,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: _localities.length.clamp(0, 8),
-                separatorBuilder: (_, _) => const SizedBox(width: 12),
-                itemBuilder: (_, i) => _DistrictCard(
-                  locality: _localities[i],
-                  index: i,
-                  onTap: () => widget.onSearch(
-                    _filters.copyWith(locality: () => _localities[i].slug),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              child: SizedBox(
+                height: 230,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.asset(
+                      'assets/images/dakar-crepuscule.jpg',
+                      fit: BoxFit.cover,
+                      alignment: const Alignment(0.6, 0),
+                      excludeFromSemantics: true,
+                    ),
+                    const DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: [Color(0xCC000000), Color(0x33000000)],
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            name == null || name.isEmpty
+                                ? 'Bonjour 👋'
+                                : 'Bonjour $name 👋',
+                            style: const TextStyle(color: Colors.white70),
+                          ),
+                          const SizedBox(height: 6),
+                          const AccentHeadline(
+                            'Trouvez le bien ',
+                            'qui vous ressemble',
+                            size: 30,
+                            light: true,
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Appartements, maisons, studios, bureaux et terrains à Dakar.',
+                            style: TextStyle(color: Colors.white, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            _TransactionTabs(
+              value: _filters.transaction,
+              onChanged: (v) =>
+                  setState(() => _filters = _filters.copyWith(transaction: v)),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _query,
+              textInputAction: TextInputAction.search,
+              onSubmitted: (_) => widget.onSearch(_withQuery),
+              decoration: InputDecoration(
+                hintText: 'Quartier, ville, résidence…',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: IconButton.filled(
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                    ),
+                    tooltip: 'Rechercher',
+                    icon: const Icon(Icons.arrow_forward),
+                    onPressed: () => widget.onSearch(_withQuery),
                   ),
                 ),
               ),
             ),
-          ],
-          if (_featured.isNotEmpty) ...[
-            const SizedBox(height: 28),
-            Text('À la une', style: text.titleLarge),
-            const SizedBox(height: 4),
-            Text('Mises en avant par leurs annonceurs', style: text.bodySmall),
             const SizedBox(height: 12),
-            for (final l in _featured)
-              ListingCard(listing: l, onTap: () => _open(l)),
+            SizedBox(
+              height: 48,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  for (final t in _types)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ActionChip(
+                        avatar: Icon(
+                          _typeIcons[t.code] ?? Icons.home_outlined,
+                          size: 18,
+                          color: AppColors.primary,
+                        ),
+                        label: Text(t.label),
+                        onPressed: () => widget.onSearch(
+                          _withQuery.copyWith(type: () => t.code),
+                        ),
+                      ),
+                    ),
+                  ActionChip(
+                    avatar: const Icon(
+                      Icons.tune,
+                      size: 18,
+                      color: AppColors.primary,
+                    ),
+                    label: const Text('Filtres'),
+                    onPressed: _openFilters,
+                  ),
+                ],
+              ),
+            ),
+            if (_localities.isNotEmpty) ...[
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Quartiers populaires', style: text.titleLarge),
+                  TextButton(
+                    onPressed: () => widget.onSearch(_withQuery),
+                    child: const Text('Voir tout'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              SizedBox(
+                height: 132,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _localities.length.clamp(0, 8),
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
+                  itemBuilder: (_, i) => _DistrictCard(
+                    locality: _localities[i],
+                    index: i,
+                    onTap: () => widget.onSearch(
+                      _filters.copyWith(locality: () => _localities[i].slug),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            if (_featured.isNotEmpty) ...[
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Biens à la une', style: text.titleLarge),
+                  TextButton(
+                    onPressed: () => widget.onSearch(_withQuery),
+                    child: const Text('Voir tout'),
+                  ),
+                ],
+              ),
+              Text('Mis en avant par leurs annonceurs', style: text.bodySmall),
+              const SizedBox(height: 12),
+              // Deux colonnes dont la hauteur suit le contenu (polices agrandies comprises), jamais un rapport fixe.
+              for (var i = 0; i < _featured.length; i += 2)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        for (var j = i; j < i + 2; j++) ...[
+                          if (j > i) const SizedBox(width: 12),
+                          Expanded(
+                            child: j < _featured.length
+                                ? ListingTile(
+                                    listing: _featured[j],
+                                    repository: widget.repository,
+                                    signedIn: widget.signedIn,
+                                    onNeedSignIn: widget.onNotifications,
+                                    onTap: () => _open(_featured[j]),
+                                  )
+                                : const SizedBox.shrink(),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+            const SizedBox(height: 20),
+            const _TrustNote(),
           ],
-          const SizedBox(height: 16),
-          const _TrustNote(),
-        ],
+        ),
       ),
     );
   }
@@ -260,25 +367,6 @@ class _TransactionTabs extends StatelessWidget {
           ),
         ),
     ],
-  );
-}
-
-class _FilterChipButton extends StatelessWidget {
-  const _FilterChipButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => ActionChip(
-    avatar: Icon(icon, size: 18, color: AppColors.primary),
-    label: Text(label),
-    onPressed: onTap,
   );
 }
 
