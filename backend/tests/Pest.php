@@ -16,6 +16,7 @@ use App\Models\Property;
 use App\Models\PropertyImage;
 use App\Models\PropertyType;
 use App\Models\Subscription;
+use App\Models\Unit;
 use App\Models\User;
 use App\Services\Agencies\AgencyService;
 use App\Services\Commercial\EntitlementService;
@@ -233,4 +234,20 @@ function notify(User $u, string $type, array $data = [])
 function deliveries(?string $channel = null)
 {
     return NotificationDelivery::query()->when($channel, fn ($q) => $q->where('channel', $channel))->get();
+}
+
+/** Unité de séjour (brouillon) d'un hôte, avec son bien. */
+function stayUnit(?User $owner = null, array $over = [], ?int $nightly = 40000): Unit
+{
+    $owner ??= particulier();
+    if (! PropertyType::exists()) {
+        test()->seed(ReferenceDataSeeder::class);
+    }
+    $property = Property::factory()->create(['created_by' => $owner->id, 'furnished' => true]);
+    $unit = Unit::create(array_merge(['property_id' => $property->id, 'owner_user_id' => $owner->id, 'name' => 'Appartement F3', 'capacity_guests' => 4, 'beds' => 2], $over));
+    if ($nightly !== null) {
+        $unit->ratePlan()->create(['base_nightly_xof' => $nightly]);
+    }
+
+    return $unit->load('ratePlan');
 }

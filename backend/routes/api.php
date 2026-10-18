@@ -30,6 +30,7 @@ use App\Http\Controllers\Api\V1\Engagement\NotificationPreferenceController;
 use App\Http\Controllers\Api\V1\Engagement\PushDeviceController;
 use App\Http\Controllers\Api\V1\Engagement\SavedSearchController;
 use App\Http\Controllers\Api\V1\Engagement\VisitController;
+use App\Http\Controllers\Api\V1\Host\UnitController;
 use App\Http\Controllers\Api\V1\ListingReportController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\My\ListingAvailabilityController;
@@ -148,6 +149,20 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('{listing}/images/order', [ListingImageController::class, 'order']);
         Route::patch('{listing}/images/{image}/cover', [ListingImageController::class, 'cover']);
         Route::delete('{listing}/images/{image}', [ListingImageController::class, 'destroy']);
+    });
+
+    // Espace hôte (phase 17) : unités réservables, tarifs, calendrier. La Policy renvoie 404 pour l'unité d'autrui.
+    Route::prefix('host/units')->group(function () {
+        Route::get('/', [UnitController::class, 'index']);
+        Route::post('/', [UnitController::class, 'store']);
+        Route::get('{unit}', [UnitController::class, 'show']);
+        Route::patch('{unit}', [UnitController::class, 'update']);
+        Route::put('{unit}/rate-plan', [UnitController::class, 'ratePlan']);
+        Route::post('{unit}/rate-overrides', [UnitController::class, 'override']);
+        Route::post('{unit}/status', [UnitController::class, 'transition']);
+        Route::post('{unit}/calendar-blocks', [UnitController::class, 'block']);
+        Route::delete('{unit}/calendar-blocks/{block}', [UnitController::class, 'unblock']);
+        Route::get('{unit}/preview', [UnitController::class, 'preview']);
     });
 
     // Espace agence (AGC-01 à AGC-07). L'appartenance est relue à chaque requête : une suspension coupe l'accès immédiatement.

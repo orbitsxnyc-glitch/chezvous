@@ -105,6 +105,13 @@ return [
         'sitemap_limit' => 5000,
     ],
 
+    // Séjours (phase 17) : bornes configurables, jamais en dur dans le code.
+    'stays' => [
+        'max_stay_nights' => (int) env('CHEZVOUS_STAY_MAX_NIGHTS', 90),
+        'max_advance_days' => (int) env('CHEZVOUS_STAY_MAX_ADVANCE_DAYS', 548),
+        'max_block_days' => (int) env('CHEZVOUS_STAY_MAX_BLOCK_DAYS', 366),
+    ],
+
     'counters' => [
         'dedupe_ttl_hours' => 36,
     ],
