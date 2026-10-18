@@ -12,6 +12,10 @@ import '../inquiries/inquiries_screens.dart';
 import '../listings/listings_repository.dart';
 import '../listings/models.dart';
 import '../listings/search_screen.dart';
+import '../stays/host_requests_screen.dart';
+import '../stays/my_stays_screen.dart';
+import '../stays/stay_search_screen.dart';
+import '../stays/stays_repository.dart';
 import '../ui/theme.dart';
 import '../ui/widgets.dart';
 
@@ -34,6 +38,7 @@ class _AppShellState extends State<AppShell> {
   SearchFilters _filters = const SearchFilters();
   int _searchSeed = 0;
   late final ListingsRepository _listings = ListingsRepository(widget.auth.api);
+  late final StaysRepository _stays = StaysRepository(widget.auth.api);
   late final InquiriesRepository _inquiries = InquiriesRepository(
     widget.auth.api,
   );
@@ -63,6 +68,21 @@ class _AppShellState extends State<AppShell> {
     );
   }
 
+  void _openStays(bool signedIn) => Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (_) => StaySearchScreen(
+        repository: _stays,
+        signedIn: signedIn,
+        onNeedSignIn: () => setState(() => _tab = 4),
+        onOpenBooking: (id) => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => MyStaysScreen(repository: _stays, openId: id),
+          ),
+        ),
+      ),
+    ),
+  );
+
   void _goSearch(SearchFilters f) => setState(() {
     _filters = f;
     _searchSeed++;
@@ -83,6 +103,7 @@ class _AppShellState extends State<AppShell> {
           signedIn: signedIn,
           inquiries: signedIn ? _inquiries : null,
           onSearch: _goSearch,
+          onStays: () => _openStays(signedIn),
           userName: widget.auth.user?.name,
           onNotifications: signedIn
               ? () => Navigator.of(context).push(
@@ -114,6 +135,7 @@ class _AppShellState extends State<AppShell> {
                 auth: widget.auth,
                 listings: _listings,
                 inquiries: _inquiries,
+                stays: _stays,
               )
             : LoginScreen(auth: widget.auth),
       ];
@@ -209,11 +231,13 @@ class _Account extends StatelessWidget {
     required this.auth,
     required this.listings,
     required this.inquiries,
+    required this.stays,
   });
 
   final AuthController auth;
   final ListingsRepository listings;
   final InquiriesRepository inquiries;
+  final StaysRepository stays;
 
   Future<void> _confirmDelete(BuildContext context) async {
     final password = TextEditingController();
@@ -432,6 +456,20 @@ class _Account extends StatelessWidget {
                   'Mes alertes',
                   'Disponibilités et nouveautés',
                   () => _push(context, AlertsScreen(repository: listings)),
+                ),
+                const Divider(),
+                _menu(
+                  Icons.luggage_outlined,
+                  'Mes séjours',
+                  'Demandes, règlements et réservations',
+                  () => _push(context, MyStaysScreen(repository: stays)),
+                ),
+                const Divider(),
+                _menu(
+                  Icons.key_outlined,
+                  'Demandes de séjour',
+                  'Espace hôte : accepter ou refuser',
+                  () => _push(context, HostRequestsScreen(repository: stays)),
                 ),
                 const Divider(),
                 _menu(

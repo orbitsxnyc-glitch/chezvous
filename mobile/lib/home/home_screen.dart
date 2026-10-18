@@ -16,6 +16,7 @@ class HomeScreen extends StatefulWidget {
     required this.repository,
     required this.signedIn,
     required this.onSearch,
+    this.onStays,
     this.inquiries,
     this.userName,
     this.onNotifications,
@@ -25,6 +26,9 @@ class HomeScreen extends StatefulWidget {
   final bool signedIn;
   final InquiriesRepository? inquiries;
   final ValueChanged<SearchFilters> onSearch;
+
+  /// Ouvre la recherche de séjours meublés.
+  final VoidCallback? onStays;
   final String? userName;
   final VoidCallback? onNotifications;
 
@@ -259,6 +263,50 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
+            if (widget.onStays != null) ...[
+              const SizedBox(height: 16),
+              InkWell(
+                onTap: widget.onStays,
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.primarySoft,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                    border: Border.all(color: AppColors.sandDeep),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(
+                        Icons.luggage_outlined,
+                        color: AppColors.primary,
+                        size: 28,
+                      ),
+                      SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Séjours meublés',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 16,
+                              ),
+                            ),
+                            Text(
+                              'Prix total avant toute demande, dates contrôlées.',
+                              style: TextStyle(fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.chevron_right),
+                    ],
+                  ),
+                ),
+              ),
+            ],
             if (_localities.isNotEmpty) ...[
               const SizedBox(height: 20),
               Row(
