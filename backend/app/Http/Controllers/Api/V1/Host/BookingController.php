@@ -16,7 +16,7 @@ use Illuminate\Validation\Rule;
 /** Demandes et séjours côté hôte : liste limitée à ses unités, décisions via les droits de l'unité. */
 class BookingController extends Controller
 {
-    private const RELATIONS = ['unit.property.locality', 'guest', 'quote', 'events'];
+    private const RELATIONS = ['unit.property.locality', 'guest', 'quote', 'events', 'paymentIntents'];
 
     public function __construct(private readonly BookingService $bookings) {}
 

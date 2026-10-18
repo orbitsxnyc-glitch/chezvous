@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Gate;
 /** Séjours du voyageur : demande à partir d'un devis, consultation, annulation. */
 class BookingController extends Controller
 {
-    private const RELATIONS = ['unit.property.locality', 'guest', 'quote', 'events'];
+    private const RELATIONS = ['unit.property.locality', 'guest', 'quote', 'events', 'paymentIntents'];
 
     public function __construct(private readonly BookingService $bookings) {}
 

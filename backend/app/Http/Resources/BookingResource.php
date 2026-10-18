@@ -34,6 +34,7 @@ class BookingResource extends JsonResource
             'respond_by' => $this->respond_by?->toIso8601String(),
             'payment_due_at' => $this->payment_due_at?->toIso8601String(),
             'reason' => $this->state_reason,
+            'payment' => $this->whenLoaded('paymentIntents', fn () => ($p = $this->paymentIntents->sortByDesc('id')->first()) ? ['id' => $p->ulid, 'status' => $p->status, 'method' => $p->method->value, 'reference' => $p->provider_ref] : null),
             'timeline' => $this->whenLoaded('events', fn () => $this->events->map(fn ($e) => ['to' => $e->to_state, 'at' => $e->created_at->toIso8601String()])->values()),
         ];
     }

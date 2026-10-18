@@ -6,11 +6,13 @@ use App\Enums\BookingState as S;
 use App\Exceptions\StayRuleException;
 use App\Models\Booking;
 use App\Models\BookingEvent;
+use App\Models\PaymentIntent;
 use App\Models\Quote;
 use App\Models\Unit;
 use App\Models\UnitOccupancy;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
+use App\Services\Payments\RefundService;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
@@ -45,6 +47,7 @@ class BookingService
         private readonly CalendarService $calendar,
         private readonly OutboxService $outbox,
         private readonly AuditLogger $audit,
+        private readonly RefundService $refunds,
     ) {}
 
     /** Demande du voyageur à partir d'un devis valide. Rejouable : même clé d'idempotence, même demande. */
@@ -127,6 +130,18 @@ class BookingService
         });
     }
 
+    /** Un règlement vient d'être préparé : le séjour attend le paiement (le verrou reste valable jusqu'à l'échéance). */
+    public function markAwaitingPayment(Booking $booking, User $guest): Booking
+    {
+        if ($booking->state === S::AwaitingPayment) {
+            return $booking;
+        }
+        $this->assertCan($booking, S::AwaitingPayment);
+        $this->transition($booking, S::AwaitingPayment, $guest, null);
+
+        return $booking;
+    }
+
     public function decline(Booking $booking, User $host, string $reason): Booking
     {
         return DB::transaction(function () use ($booking, $host, $reason) {
@@ -144,8 +159,12 @@ class BookingService
         return DB::transaction(function () use ($booking, $guest, $reason) {
             $booking = $this->fresh($booking);
             $this->assertCan($booking, S::CancelledByGuest);
+            $wasConfirmed = $booking->state === S::Confirmed;
             $this->release($booking);
             $this->transition($booking, S::CancelledByGuest, $guest, $reason);
+            if ($wasConfirmed) {
+                $this->refunds->requestForCancellation($booking, false, $guest);
+            }
             $this->notify('booking.cancelled', $booking, $this->hostRecipients($booking->unit));
 
             return $booking;
@@ -157,8 +176,12 @@ class BookingService
         return DB::transaction(function () use ($booking, $host, $reason) {
             $booking = $this->fresh($booking);
             $this->assertCan($booking, S::CancelledByHost);
+            $wasConfirmed = $booking->state === S::Confirmed;
             $this->release($booking);
             $this->transition($booking, S::CancelledByHost, $host, $reason);
+            if ($wasConfirmed) {
+                $this->refunds->requestForCancellation($booking, true, $host);
+            }
             $this->notify('booking.cancelled', $booking, [$booking->guest_user_id]);
 
             return $booking;
@@ -231,6 +254,10 @@ class BookingService
     {
         $from = $booking->state;
         $booking->forceFill(['state' => $to, 'state_reason' => $reason])->save();
+        // Séjour terminé sans paiement : le règlement en attente est abandonné (un règlement réussi suit son propre cycle : remboursement).
+        if (in_array($to, [S::Declined, S::Expired, S::CancelledByGuest, S::CancelledByHost, S::PaymentFailed], true)) {
+            PaymentIntent::where('booking_id', $booking->id)->whereIn('status', ['created', 'pending'])->update(['status' => $to === S::Expired ? 'expired' : 'cancelled']);
+        }
         $this->record($booking, $from, $to, $actor, $reason);
     }
 

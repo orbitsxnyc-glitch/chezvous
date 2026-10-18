@@ -28,7 +28,15 @@ Branche `phase-17-sejours`. Plan et écarts : `docs/phase-17-plan-sejours.md`. D
 - **Politique d'annulation** : figée dans la réservation à la demande (valeurs de repli `flexible` / `moderate` / `strict` dans la configuration, à valider commercialement) ; le calcul de remboursement viendra avec les paiements.
 - **Tests** : 43 nouveaux (flux, bornes de dates, contrainte SQL, expirations, outbox, droits inter-comptes, agence). **Contrôle de concurrence réel** : `php artisan stays:concurrency-check --n=50` lance 50 processus qui acceptent en parallèle 50 demandes sur les mêmes nuits : 1 acceptée, 49 refusées (409), 1 seul verrou (outil de développement, refuse de tourner en production).
 
+## Lot 4 — Paiements et remboursements (livré)
+- **Interface** `PaymentGateway` (règle 4) + `PaymentGatewayManager` (config `payments.php`). Seul adaptateur actif : `ManualGateway` (encaissement manuel confirmé par un administrateur). Aucun appel à un tiers. Wave et Orange Money = un adaptateur de plus quand le compte marchand existera (signature et relecture auprès du prestataire à écrire à ce moment-là).
+- **Tables** : `payment_intents` (un règlement en cours et un seul règlement réussi par séjour, garantis par index uniques), `payment_events` (**unique `(prestataire, identifiant externe)`** : un événement rejoué ne fait rien), `refunds`.
+- **Flux** : séjour accepté → le voyageur prépare le règlement (référence `CV-…` et consignes tirées des réglages `payment_instructions`) → il paie hors plateforme et **déclare** (information seulement) → un administrateur confirme le montant reçu → le séjour devient confirmé (verrou → confirmé) via l'unique chemin `applyVerifiedEvent`, aussi destiné aux futurs webhooks.
+- **Garde-fous** : le retour du voyageur ne confirme jamais ; montant ou devise différents = événement mis en quarantaine, règlement inchangé, confirmation correcte toujours possible ensuite ; paiement reçu après expiration = règlement marqué réussi mais séjour non confirmé et remboursement intégral ouvert ; règlement rejeté = le voyageur peut en préparer un autre tant que le délai court.
+- **Remboursements** : annulation par l'hôte = 100 % ; par le voyageur = palier de la politique **figée à la demande** (jamais la politique courante) ; ils restent `requested` jusqu'à confirmation d'un administrateur (jamais supposés payés), partiel possible, échec possible. Toutes les actions sont auditées.
+- **Webhooks** : route `POST /api/v1/webhooks/payments/{provider}` présente mais refusée (404) tant qu'aucun adaptateur ne la prend en charge.
+- **Tests** : 21 nouveaux.
+
 ## À venir
-4. `PaymentGateway`, adaptateur manuel, journal d'événements idempotent, remboursements.
 5. Écrans voyageur / hôte (web puis mobile).
 6. Contrôles par catégorie, administration, rapprochement.

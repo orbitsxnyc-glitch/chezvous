@@ -78,6 +78,12 @@ class Booking extends Model
         return $this->hasOne(UnitOccupancy::class);
     }
 
+    /** @return HasMany<PaymentIntent, $this> */
+    public function paymentIntents(): HasMany
+    {
+        return $this->hasMany(PaymentIntent::class);
+    }
+
     /** @return HasMany<BookingEvent, $this> */
     public function events(): HasMany
     {

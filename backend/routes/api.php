@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\Admin\DashboardController;
 use App\Http\Controllers\Api\V1\Admin\ModerationController;
 use App\Http\Controllers\Api\V1\Admin\NotificationAdminController;
 use App\Http\Controllers\Api\V1\Admin\PassportCheckController;
+use App\Http\Controllers\Api\V1\Admin\PaymentAdminController;
 use App\Http\Controllers\Api\V1\Admin\ReferentialController;
 use App\Http\Controllers\Api\V1\Admin\ReportAdminController;
 use App\Http\Controllers\Api\V1\Admin\UnitAdminController;
@@ -39,7 +40,9 @@ use App\Http\Controllers\Api\V1\My\BookingController as MyBookingController;
 use App\Http\Controllers\Api\V1\My\ListingAvailabilityController;
 use App\Http\Controllers\Api\V1\My\ListingController;
 use App\Http\Controllers\Api\V1\My\ListingImageController;
+use App\Http\Controllers\Api\V1\My\PaymentController as MyPaymentController;
 use App\Http\Controllers\Api\V1\PassportController;
+use App\Http\Controllers\Api\V1\PaymentWebhookController;
 use App\Http\Controllers\Api\V1\PublicAgencyController;
 use App\Http\Controllers\Api\V1\PublicListingController;
 use App\Http\Controllers\Api\V1\PublicStayController;
@@ -93,6 +96,8 @@ Route::middleware('throttle:search')->group(function () {
     Route::get('agencies/{slug}', [PublicAgencyController::class, 'show'])->where('slug', '[a-z0-9-]+');
     Route::get('passports/{reference}', [PassportController::class, 'show'])->where('reference', '[A-Za-z0-9-]+');
 });
+
+Route::post('webhooks/payments/{provider}', PaymentWebhookController::class)->middleware('throttle:search')->where('provider', '[a-z_]+');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('quotes', [QuoteController::class, 'store'])->middleware('throttle:inquiries');
@@ -166,6 +171,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('my/bookings/{booking}', [MyBookingController::class, 'show']);
     Route::post('my/bookings/{booking}/cancel', [MyBookingController::class, 'cancel']);
 
+    Route::post('my/bookings/{booking}/payment-intents', [MyPaymentController::class, 'store'])->middleware('throttle:inquiries');
+    Route::post('my/payment-intents/{intent}/declare', [MyPaymentController::class, 'declare'])->middleware('throttle:inquiries');
+
     // Demandes et séjours côté hôte.
     Route::get('host/bookings', [HostBookingController::class, 'index']);
     Route::get('host/bookings/{booking}', [HostBookingController::class, 'show']);
@@ -212,6 +220,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Modération (ADM-01) : réservée aux rôles admin et super_admin.
     Route::prefix('admin')->middleware('two-factor')->group(function () {
+        Route::get('payment-intents', [PaymentAdminController::class, 'intents']);
+        Route::post('payment-intents/{intent}/confirm', [PaymentAdminController::class, 'confirm']);
+        Route::post('payment-intents/{intent}/reject', [PaymentAdminController::class, 'reject']);
+        Route::get('refunds', [PaymentAdminController::class, 'refunds']);
+        Route::post('refunds/{refund}/confirm', [PaymentAdminController::class, 'confirmRefund']);
+        Route::post('refunds/{refund}/fail', [PaymentAdminController::class, 'failRefund']);
         Route::get('units/pending', [UnitAdminController::class, 'pending']);
         Route::post('units/{unit}/approve', [UnitAdminController::class, 'approve']);
         Route::post('units/{unit}/revoke', [UnitAdminController::class, 'revoke']);

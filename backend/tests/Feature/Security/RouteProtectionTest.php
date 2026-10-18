@@ -11,7 +11,7 @@ use Laravel\Sanctum\Sanctum;
 const PUBLIC_ROUTES = [
     'POST api/v1/auth/register', 'POST api/v1/auth/otp/send', 'POST api/v1/auth/otp/verify', 'POST api/v1/auth/password/reset', 'POST api/v1/auth/login',
     'GET api/v1/localities', 'GET api/v1/property-types', 'GET api/v1/amenities', 'GET api/v1/report-reasons',
-    'GET api/v1/stays', 'GET api/v1/stays/{unit}', 'GET api/v1/listings', 'GET api/v1/listings/map', 'GET api/v1/listings/{identifier}', 'GET api/v1/listings/{identifier}/similar',
+    'GET api/v1/stays', 'GET api/v1/stays/{unit}', 'POST api/v1/webhooks/payments/{provider}', 'GET api/v1/listings', 'GET api/v1/listings/map', 'GET api/v1/listings/{identifier}', 'GET api/v1/listings/{identifier}/similar',
     'GET api/v1/passports/{reference}', 'GET api/v1/seo/sitemap', 'GET api/v1/agencies/{slug}', 'GET api/v1/plans', 'GET api/v1/premium-products', 'GET api/v1/featured',
 ];
 
