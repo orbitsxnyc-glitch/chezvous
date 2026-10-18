@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'auth/auth_controller.dart';
@@ -68,6 +69,10 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) => MaterialApp(
     title: 'ChezVous',
     debugShowCheckedModeBanner: false,
+    // Calendriers et sélecteurs de date en français.
+    locale: const Locale('fr'),
+    supportedLocales: const [Locale('fr')],
+    localizationsDelegates: GlobalMaterialLocalizations.delegates,
     theme: buildTheme(),
     // La recherche est publique : on n'attend que la restauration de la session, jamais une connexion.
     home: ListenableBuilder(

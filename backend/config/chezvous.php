@@ -105,6 +105,32 @@ return [
         'sitemap_limit' => 5000,
     ],
 
+    // Séjours (phase 17) : bornes configurables, jamais en dur dans le code.
+    'stays' => [
+        'max_stay_nights' => (int) env('CHEZVOUS_STAY_MAX_NIGHTS', 90),
+        'max_advance_days' => (int) env('CHEZVOUS_STAY_MAX_ADVANCE_DAYS', 548),
+        'max_block_days' => (int) env('CHEZVOUS_STAY_MAX_BLOCK_DAYS', 366),
+        'host_response_hours' => (int) env('CHEZVOUS_STAY_HOST_RESPONSE_HOURS', 24),
+        'payment_hold_minutes' => (int) env('CHEZVOUS_STAY_PAYMENT_HOLD_MINUTES', 120),
+        // Politiques d'annulation (valeurs de repli, à valider commercialement et juridiquement) :
+        // remboursement en points de base selon le nombre de jours restants avant l'arrivée, du plus long au plus court.
+        'cancellation_policies' => [
+            'flexible' => [['days_before' => 1, 'refund_bps' => 10000]],
+            'moderate' => [['days_before' => 5, 'refund_bps' => 10000], ['days_before' => 1, 'refund_bps' => 5000]],
+            'strict' => [['days_before' => 14, 'refund_bps' => 10000], ['days_before' => 7, 'refund_bps' => 5000]],
+        ],
+        'outbox_max_attempts' => 5,
+        // Contrôles exigés avant la validation d'une unité (valeur de repli, vide : aucun). Le réglage en base `stay_required_checks`
+        // prime. Les exigences légales (agrément d'hébergement touristique…) restent à confirmer par un conseil juridique.
+        'required_checks' => [],
+        'auto_complete_days' => 2, // séjours terminés automatiquement N jours après le départ, sauf litige
+        'support_severities' => ['low', 'normal', 'high'],
+        'quote_ttl_minutes' => (int) env('CHEZVOUS_STAY_QUOTE_TTL_MINUTES', 30),
+        'max_guests_per_search' => 60,
+        // Frais et taxes : valeurs de repli ; les réglages en base (clé `stay_fees`) priment. Points de base : 100 = 1 %.
+        'service_fee_bps' => (int) env('CHEZVOUS_STAY_SERVICE_FEE_BPS', 0),
+    ],
+
     'counters' => [
         'dedupe_ttl_hours' => 36,
     ],

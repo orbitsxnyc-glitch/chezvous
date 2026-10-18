@@ -6,6 +6,7 @@ use App\Enums\OtpPurpose;
 use App\Enums\PreferredChannel;
 use App\Models\Agency;
 use App\Models\AgencyMember;
+use App\Models\Booking;
 use App\Models\Inquiry;
 use App\Models\Listing;
 use App\Models\Locality;
@@ -16,16 +17,20 @@ use App\Models\Property;
 use App\Models\PropertyImage;
 use App\Models\PropertyType;
 use App\Models\Subscription;
+use App\Models\Unit;
 use App\Models\User;
 use App\Services\Agencies\AgencyService;
 use App\Services\Commercial\EntitlementService;
 use App\Services\Engagement\NotificationService;
 use App\Services\Inquiries\InquiryService;
 use App\Services\Search\PublicLocationService;
+use App\Services\Stays\BookingService;
+use App\Services\Stays\QuoteService;
 use Database\Seeders\ReferenceDataSeeder;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 pest()->extend(TestCase::class)->use(RefreshDatabase::class)->beforeEach(function () {
@@ -233,4 +238,50 @@ function notify(User $u, string $type, array $data = [])
 function deliveries(?string $channel = null)
 {
     return NotificationDelivery::query()->when($channel, fn ($q) => $q->where('channel', $channel))->get();
+}
+
+/** Unité de séjour (brouillon) d'un hôte, avec son bien. */
+function stayUnit(?User $owner = null, array $over = [], ?int $nightly = 40000): Unit
+{
+    $owner ??= particulier();
+    if (! PropertyType::exists()) {
+        test()->seed(ReferenceDataSeeder::class);
+    }
+    $property = Property::factory()->create(['created_by' => $owner->id, 'furnished' => true]);
+    $unit = Unit::create(array_merge(['property_id' => $property->id, 'owner_user_id' => $owner->id, 'name' => 'Appartement F3', 'capacity_guests' => 4, 'beds' => 2], $over));
+    if ($nightly !== null) {
+        $unit->ratePlan()->create(['base_nightly_xof' => $nightly]);
+    }
+
+    return $unit->load('ratePlan');
+}
+
+/** Unité de séjour publique : active, validée, tarifée, localisée et illustrée. */
+function publicStayUnit(array $over = [], int $nightly = 40000, ?User $owner = null): Unit
+{
+    $owner ??= particulier();
+    $unit = stayUnit($owner, $over, $nightly);
+    $property = $unit->property;
+    $property->forceFill(['locality_id' => $property->locality_id ?? Locality::where('level', 'neighborhood')->firstOrFail()->id])->save();
+    PropertyImage::create(['property_id' => $property->id, 'path' => 'x.webp', 'sizes' => ['thumb' => 'x.webp'], 'is_cover' => true, 'status' => 'ready']);
+    $unit->forceFill(['status' => 'active', 'approved_at' => now()])->save();
+
+    return $unit->fresh(['ratePlan', 'property']);
+}
+
+/** Demande de séjour sur une unité publique : devis puis demande, dans 20 à 23 jours par défaut. */
+function requestedBooking(?Unit $unit = null, ?User $guest = null, int $inDays = 20, int $nights = 3, ?string $key = null): Booking
+{
+    $unit ??= publicStayUnit();
+    $guest ??= particulier();
+    $in = now()->addDays($inDays)->toDateString();
+    $out = now()->addDays($inDays + $nights)->toDateString();
+    $quote = app(QuoteService::class)->create($unit, $guest, $in, $out, 2);
+
+    return app(BookingService::class)->request($quote, $guest, $key ?? Str::random(16));
+}
+
+function hostOf(Unit $unit): User
+{
+    return User::findOrFail($unit->owner_user_id);
 }

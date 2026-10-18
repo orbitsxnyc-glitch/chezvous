@@ -7,7 +7,7 @@ export function SafeImage({ src, alt, className = "", fallbackLabel = "Photo ind
   const [failed, setFailed] = useState(false);
   if (failed || !src) {
     return (
-      <div role="img" aria-label={alt} className={`flex items-center justify-center bg-sand-deep px-3 text-center text-xs text-muted ${className}`}>
+      <div role="img" aria-label={alt} className={`flex items-center justify-center bg-sand-deep px-3 text-center text-xs text-[#52483f] ${className}`}>
         {fallbackLabel}
       </div>
     );

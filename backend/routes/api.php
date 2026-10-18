@@ -7,8 +7,11 @@ use App\Http\Controllers\Api\V1\Admin\DashboardController;
 use App\Http\Controllers\Api\V1\Admin\ModerationController;
 use App\Http\Controllers\Api\V1\Admin\NotificationAdminController;
 use App\Http\Controllers\Api\V1\Admin\PassportCheckController;
+use App\Http\Controllers\Api\V1\Admin\PaymentAdminController;
 use App\Http\Controllers\Api\V1\Admin\ReferentialController;
 use App\Http\Controllers\Api\V1\Admin\ReportAdminController;
+use App\Http\Controllers\Api\V1\Admin\StayOpsController;
+use App\Http\Controllers\Api\V1\Admin\UnitAdminController;
 use App\Http\Controllers\Api\V1\Admin\UserAdminController;
 use App\Http\Controllers\Api\V1\Admin\VerificationController;
 use App\Http\Controllers\Api\V1\AgencyController;
@@ -30,14 +33,21 @@ use App\Http\Controllers\Api\V1\Engagement\NotificationPreferenceController;
 use App\Http\Controllers\Api\V1\Engagement\PushDeviceController;
 use App\Http\Controllers\Api\V1\Engagement\SavedSearchController;
 use App\Http\Controllers\Api\V1\Engagement\VisitController;
+use App\Http\Controllers\Api\V1\Host\BookingController as HostBookingController;
+use App\Http\Controllers\Api\V1\Host\UnitController;
 use App\Http\Controllers\Api\V1\ListingReportController;
 use App\Http\Controllers\Api\V1\MeController;
+use App\Http\Controllers\Api\V1\My\BookingController as MyBookingController;
 use App\Http\Controllers\Api\V1\My\ListingAvailabilityController;
 use App\Http\Controllers\Api\V1\My\ListingController;
 use App\Http\Controllers\Api\V1\My\ListingImageController;
+use App\Http\Controllers\Api\V1\My\PaymentController as MyPaymentController;
 use App\Http\Controllers\Api\V1\PassportController;
+use App\Http\Controllers\Api\V1\PaymentWebhookController;
 use App\Http\Controllers\Api\V1\PublicAgencyController;
 use App\Http\Controllers\Api\V1\PublicListingController;
+use App\Http\Controllers\Api\V1\PublicStayController;
+use App\Http\Controllers\Api\V1\QuoteController;
 use App\Http\Controllers\Api\V1\ReferenceController;
 use App\Http\Controllers\Api\V1\SitemapController;
 use Illuminate\Support\Facades\Route;
@@ -78,6 +88,8 @@ Route::middleware('throttle:search')->group(function () {
     Route::get('listings/map', [PublicListingController::class, 'map']);
     Route::get('listings/{identifier}', [PublicListingController::class, 'show'])->where('identifier', '[A-Za-z0-9-]+');
     Route::get('listings/{identifier}/similar', [PublicListingController::class, 'similar'])->where('identifier', '[A-Za-z0-9-]+');
+    Route::get('stays', [PublicStayController::class, 'index']);
+    Route::get('stays/{unit}', [PublicStayController::class, 'show'])->where('unit', '[A-Za-z0-9]+');
     Route::get('seo/sitemap', SitemapController::class);
     Route::get('plans', [CatalogController::class, 'plans']);
     Route::get('premium-products', [CatalogController::class, 'products']);
@@ -86,7 +98,11 @@ Route::middleware('throttle:search')->group(function () {
     Route::get('passports/{reference}', [PassportController::class, 'show'])->where('reference', '[A-Za-z0-9-]+');
 });
 
+Route::post('webhooks/payments/{provider}', PaymentWebhookController::class)->middleware('throttle:search')->where('provider', '[a-z_]+');
+
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('quotes', [QuoteController::class, 'store'])->middleware('throttle:inquiries');
+    Route::get('quotes/{quote}', [QuoteController::class, 'show']);
     Route::post('listings/{listing}/reports', [ListingReportController::class, 'store'])->middleware('throttle:reports');
 
     // Demandes, messagerie, visites (DEM-01 à DEM-06). {inquiry} et {visit} se résolvent par ULID ; la Policy répond 404 aux tiers.
@@ -150,6 +166,44 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('{listing}/images/{image}', [ListingImageController::class, 'destroy']);
     });
 
+    // Séjours du voyageur (phase 17) : la demande part d'un devis ; {booking} se résout par ULID, la Policy répond 404 aux tiers.
+    Route::post('booking-requests', [MyBookingController::class, 'store'])->middleware('throttle:inquiries');
+    Route::get('my/bookings', [MyBookingController::class, 'index']);
+    Route::get('my/bookings/{booking}', [MyBookingController::class, 'show']);
+    Route::post('my/bookings/{booking}/cancel', [MyBookingController::class, 'cancel']);
+    Route::post('my/bookings/{booking}/dispute', [MyBookingController::class, 'dispute']);
+
+    Route::post('my/bookings/{booking}/payment-intents', [MyPaymentController::class, 'store'])->middleware('throttle:inquiries');
+    Route::post('my/payment-intents/{intent}/declare', [MyPaymentController::class, 'declare'])->middleware('throttle:inquiries');
+
+    // Demandes et séjours côté hôte.
+    Route::get('host/bookings', [HostBookingController::class, 'index']);
+    Route::get('host/bookings/{booking}', [HostBookingController::class, 'show']);
+    Route::post('host/bookings/{booking}/accept', [HostBookingController::class, 'accept']);
+    Route::post('host/bookings/{booking}/decline', [HostBookingController::class, 'decline']);
+    Route::post('host/bookings/{booking}/cancel', [HostBookingController::class, 'cancel']);
+    Route::post('host/bookings/{booking}/check-in', [HostBookingController::class, 'checkIn']);
+    Route::post('host/bookings/{booking}/complete', [HostBookingController::class, 'complete']);
+    Route::post('host/bookings/{booking}/dispute', [HostBookingController::class, 'dispute']);
+    Route::get('host/payouts', [HostBookingController::class, 'payouts']);
+
+    // Espace hôte (phase 17) : unités réservables, tarifs, calendrier. La Policy renvoie 404 pour l'unité d'autrui.
+    Route::prefix('host/units')->group(function () {
+        Route::get('/', [UnitController::class, 'index']);
+        Route::post('/', [UnitController::class, 'store']);
+        Route::get('{unit}', [UnitController::class, 'show']);
+        Route::patch('{unit}', [UnitController::class, 'update']);
+        Route::put('{unit}/rate-plan', [UnitController::class, 'ratePlan']);
+        Route::post('{unit}/rate-overrides', [UnitController::class, 'override']);
+        Route::post('{unit}/status', [UnitController::class, 'transition']);
+        Route::post('{unit}/calendar-blocks', [UnitController::class, 'block']);
+        Route::delete('{unit}/calendar-blocks/{block}', [UnitController::class, 'unblock']);
+        Route::get('{unit}/preview', [UnitController::class, 'preview']);
+        Route::post('{unit}/images', [UnitController::class, 'addImages'])->middleware('throttle:uploads');
+        Route::patch('{unit}/images/{image}/cover', [UnitController::class, 'coverImage']);
+        Route::delete('{unit}/images/{image}', [UnitController::class, 'removeImage']);
+    });
+
     // Espace agence (AGC-01 à AGC-07). L'appartenance est relue à chaque requête : une suspension coupe l'accès immédiatement.
     Route::prefix('agency')->group(function () {
         Route::get('/', [AgencyController::class, 'show']);
@@ -175,6 +229,24 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Modération (ADM-01) : réservée aux rôles admin et super_admin.
     Route::prefix('admin')->middleware('two-factor')->group(function () {
+        Route::get('units/{unit}/checks', [StayOpsController::class, 'checks']);
+        Route::post('units/{unit}/checks', [StayOpsController::class, 'recordCheck']);
+        Route::get('settings/stay-required-checks', [StayOpsController::class, 'requiredChecks']);
+        Route::put('settings/stay-required-checks', [StayOpsController::class, 'updateRequiredChecks']);
+        Route::get('support-cases', [StayOpsController::class, 'cases']);
+        Route::post('support-cases/{case}/resolve', [StayOpsController::class, 'resolveCase']);
+        Route::get('payouts', [StayOpsController::class, 'payoutList']);
+        Route::post('payouts/{payout}/paid', [StayOpsController::class, 'payPayout']);
+        Route::get('reconciliation', [StayOpsController::class, 'reconciliation']);
+        Route::get('payment-intents', [PaymentAdminController::class, 'intents']);
+        Route::post('payment-intents/{intent}/confirm', [PaymentAdminController::class, 'confirm']);
+        Route::post('payment-intents/{intent}/reject', [PaymentAdminController::class, 'reject']);
+        Route::get('refunds', [PaymentAdminController::class, 'refunds']);
+        Route::post('refunds/{refund}/confirm', [PaymentAdminController::class, 'confirmRefund']);
+        Route::post('refunds/{refund}/fail', [PaymentAdminController::class, 'failRefund']);
+        Route::get('units/pending', [UnitAdminController::class, 'pending']);
+        Route::post('units/{unit}/approve', [UnitAdminController::class, 'approve']);
+        Route::post('units/{unit}/revoke', [UnitAdminController::class, 'revoke']);
         Route::get('moderation', [ModerationController::class, 'index']);
         Route::get('moderation/reasons', [ModerationController::class, 'reasons']);
         Route::get('dashboard', DashboardController::class);

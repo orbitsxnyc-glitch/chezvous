@@ -6,11 +6,15 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "./AuthProvider";
 
 const PUBLIC_LINKS = [
+  ["/sejours", "Séjours"],
   ["/annonces", "Rechercher"],
   ["/offres", "Offres"],
 ] as const;
 
 const MEMBER_LINKS = [
+  ["/sejours", "Séjours"],
+  ["/mes-sejours", "Mes séjours"],
+  ["/hote", "Espace hôte"],
   ["/annonces", "Rechercher"],
   ["/mes-annonces", "Mes annonces"],
   ["/demandes", "Messages"],
