@@ -17,8 +17,18 @@ Branche `phase-17-sejours`. Plan et écarts : `docs/phase-17-plan-sejours.md`. D
 - **Frais et taxes** : réglage en base `stay_fees` (`service_fee_bps`, taxes en % ou par nuit) ; repli sur la configuration (0 par défaut). Les taux légaux restent à valider par un conseil juridique avant activation.
 - **Tests** : 18 nouveaux (recherche, fuite de données, devis figé, arrondis, expiration, 409 sur dates fermées, droits, validation).
 
+## Lot 3 — Demande, acceptation, verrou, confirmation (livré)
+- **Tables** : `bookings` (un devis = une demande), `unit_occupancies` (**contrainte d'exclusion GiST** `unit_id` + `daterange(check_in, check_out, '[)')` pour les occupations `held` / `confirmed` / `checked_in`), `booking_events` (historique des transitions avec acteur et raison), `outbox_events`.
+- **Principe** : une demande ne bloque aucune date ; l'acceptation pose un verrou temporaire (durée configurable) dans une transaction qui verrouille l'unité ; en cas de conflit, la base refuse et l'API répond 409 `unavailable`. Départ et arrivée le même jour sont compatibles.
+- **Machine à états** (`BookingService`, tableau de transitions) : `requested → accepted → (awaiting_payment) → confirmed`, plus `declined`, `expired`, `cancelled_by_guest`, `cancelled_by_host`. La confirmation (`confirm()`) n'est appelable que par le futur service de paiement : aucune route API ne la propose.
+- **Expiration** : `stays:run --expire` (chaque minute) ; en plus, un verrou échu mais pas encore nettoyé ne bloque jamais une nouvelle acceptation (contrôle sur `expires_at`).
+- **Idempotence** : même clé = même demande (200), jamais de doublon ; un devis ne sert qu'une fois ; pas de demande en double sur des dates qui se chevauchent pour la même unité.
+- **Notifications** : événements écrits dans la même transaction (outbox), diffusés par `stays:run --outbox` avec reprises (plafond configurable) ; aucune coordonnée personnelle. Six types ajoutés au catalogue et aux modèles.
+- **Vie privée** : l'hôte ne voit que le prénom du voyageur.
+- **Politique d'annulation** : figée dans la réservation à la demande (valeurs de repli `flexible` / `moderate` / `strict` dans la configuration, à valider commercialement) ; le calcul de remboursement viendra avec les paiements.
+- **Tests** : 43 nouveaux (flux, bornes de dates, contrainte SQL, expirations, outbox, droits inter-comptes, agence). **Contrôle de concurrence réel** : `php artisan stays:concurrency-check --n=50` lance 50 processus qui acceptent en parallèle 50 demandes sur les mêmes nuits : 1 acceptée, 49 refusées (409), 1 seul verrou (outil de développement, refuse de tourner en production).
+
 ## À venir
-3. Demande de réservation → acceptation → verrou temporaire → confirmation (contrainte d'exclusion GiST sur les occupations), outbox.
 4. `PaymentGateway`, adaptateur manuel, journal d'événements idempotent, remboursements.
 5. Écrans voyageur / hôte (web puis mobile).
 6. Contrôles par catégorie, administration, rapprochement.

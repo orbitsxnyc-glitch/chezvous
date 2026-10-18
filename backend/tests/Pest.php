@@ -6,6 +6,7 @@ use App\Enums\OtpPurpose;
 use App\Enums\PreferredChannel;
 use App\Models\Agency;
 use App\Models\AgencyMember;
+use App\Models\Booking;
 use App\Models\Inquiry;
 use App\Models\Listing;
 use App\Models\Locality;
@@ -23,10 +24,13 @@ use App\Services\Commercial\EntitlementService;
 use App\Services\Engagement\NotificationService;
 use App\Services\Inquiries\InquiryService;
 use App\Services\Search\PublicLocationService;
+use App\Services\Stays\BookingService;
+use App\Services\Stays\QuoteService;
 use Database\Seeders\ReferenceDataSeeder;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 pest()->extend(TestCase::class)->use(RefreshDatabase::class)->beforeEach(function () {
@@ -263,4 +267,21 @@ function publicStayUnit(array $over = [], int $nightly = 40000, ?User $owner = n
     $unit->forceFill(['status' => 'active', 'approved_at' => now()])->save();
 
     return $unit->fresh(['ratePlan', 'property']);
+}
+
+/** Demande de séjour sur une unité publique : devis puis demande, dans 20 à 23 jours par défaut. */
+function requestedBooking(?Unit $unit = null, ?User $guest = null, int $inDays = 20, int $nights = 3, ?string $key = null): Booking
+{
+    $unit ??= publicStayUnit();
+    $guest ??= particulier();
+    $in = now()->addDays($inDays)->toDateString();
+    $out = now()->addDays($inDays + $nights)->toDateString();
+    $quote = app(QuoteService::class)->create($unit, $guest, $in, $out, 2);
+
+    return app(BookingService::class)->request($quote, $guest, $key ?? Str::random(16));
+}
+
+function hostOf(Unit $unit): User
+{
+    return User::findOrFail($unit->owner_user_id);
 }

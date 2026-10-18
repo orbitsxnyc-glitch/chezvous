@@ -61,6 +61,12 @@ return [
         'favorite.unavailable' => ['category' => 'favorite', 'label' => 'Favori indisponible', 'vars' => ['listing'], 'defaults' => $push, 'mandatory' => false, 'audience' => 'all'],
         'search.alert' => ['category' => 'favorite', 'label' => 'Alerte de recherche', 'vars' => ['name', 'count'], 'defaults' => $on, 'mandatory' => false, 'audience' => 'all'],
 
+        'booking.requested' => ['category' => 'booking', 'label' => 'Nouvelle demande de séjour', 'vars' => ['unit'], 'defaults' => $on, 'mandatory' => false, 'audience' => 'all'],
+        'booking.accepted' => ['category' => 'booking', 'label' => 'Demande de séjour acceptée', 'vars' => ['unit'], 'defaults' => $on, 'mandatory' => false, 'audience' => 'all'],
+        'booking.declined' => ['category' => 'booking', 'label' => 'Demande de séjour refusée', 'vars' => ['unit'], 'defaults' => $on, 'mandatory' => false, 'audience' => 'all'],
+        'booking.expired' => ['category' => 'booking', 'label' => 'Demande de séjour expirée', 'vars' => ['unit'], 'defaults' => $on, 'mandatory' => false, 'audience' => 'all'],
+        'booking.cancelled' => ['category' => 'booking', 'label' => 'Séjour annulé', 'vars' => ['unit'], 'defaults' => $on, 'mandatory' => false, 'audience' => 'all'],
+        'booking.confirmed' => ['category' => 'booking', 'label' => 'Séjour confirmé', 'vars' => ['unit'], 'defaults' => $on, 'mandatory' => false, 'audience' => 'all'],
         'subscription.requested' => ['category' => 'commercial', 'label' => 'Demande de formule (équipe)', 'vars' => [], 'defaults' => $mail, 'mandatory' => false, 'audience' => 'admin'],
         'subscription.activated' => ['category' => 'commercial', 'label' => 'Formule activée', 'vars' => ['plan', 'ends_at'], 'defaults' => $on, 'mandatory' => false, 'audience' => 'all'],
         'subscription.suspended' => ['category' => 'commercial', 'label' => 'Formule suspendue', 'vars' => [], 'defaults' => $on, 'mandatory' => false, 'audience' => 'all'],

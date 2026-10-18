@@ -31,9 +31,11 @@ use App\Http\Controllers\Api\V1\Engagement\NotificationPreferenceController;
 use App\Http\Controllers\Api\V1\Engagement\PushDeviceController;
 use App\Http\Controllers\Api\V1\Engagement\SavedSearchController;
 use App\Http\Controllers\Api\V1\Engagement\VisitController;
+use App\Http\Controllers\Api\V1\Host\BookingController as HostBookingController;
 use App\Http\Controllers\Api\V1\Host\UnitController;
 use App\Http\Controllers\Api\V1\ListingReportController;
 use App\Http\Controllers\Api\V1\MeController;
+use App\Http\Controllers\Api\V1\My\BookingController as MyBookingController;
 use App\Http\Controllers\Api\V1\My\ListingAvailabilityController;
 use App\Http\Controllers\Api\V1\My\ListingController;
 use App\Http\Controllers\Api\V1\My\ListingImageController;
@@ -157,6 +159,19 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('{listing}/images/{image}/cover', [ListingImageController::class, 'cover']);
         Route::delete('{listing}/images/{image}', [ListingImageController::class, 'destroy']);
     });
+
+    // Séjours du voyageur (phase 17) : la demande part d'un devis ; {booking} se résout par ULID, la Policy répond 404 aux tiers.
+    Route::post('booking-requests', [MyBookingController::class, 'store'])->middleware('throttle:inquiries');
+    Route::get('my/bookings', [MyBookingController::class, 'index']);
+    Route::get('my/bookings/{booking}', [MyBookingController::class, 'show']);
+    Route::post('my/bookings/{booking}/cancel', [MyBookingController::class, 'cancel']);
+
+    // Demandes et séjours côté hôte.
+    Route::get('host/bookings', [HostBookingController::class, 'index']);
+    Route::get('host/bookings/{booking}', [HostBookingController::class, 'show']);
+    Route::post('host/bookings/{booking}/accept', [HostBookingController::class, 'accept']);
+    Route::post('host/bookings/{booking}/decline', [HostBookingController::class, 'decline']);
+    Route::post('host/bookings/{booking}/cancel', [HostBookingController::class, 'cancel']);
 
     // Espace hôte (phase 17) : unités réservables, tarifs, calendrier. La Policy renvoie 404 pour l'unité d'autrui.
     Route::prefix('host/units')->group(function () {

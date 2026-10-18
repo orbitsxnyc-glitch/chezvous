@@ -51,6 +51,12 @@ class StaySearch
                 ->whereColumn('calendar_blocks.unit_id', 'units.id')
                 ->where('calendar_blocks.starts_on', '<', $dates->checkOut->toDateString())
                 ->where('calendar_blocks.ends_on', '>', $dates->checkIn->toDateString()));
+            $q->whereNotExists(fn ($e) => $e->select(DB::raw(1))->from('unit_occupancies')
+                ->whereColumn('unit_occupancies.unit_id', 'units.id')
+                ->whereIn('unit_occupancies.status', ['held', 'confirmed', 'checked_in'])
+                ->where(fn ($x) => $x->whereNull('unit_occupancies.expires_at')->orWhere('unit_occupancies.expires_at', '>', now()))
+                ->where('unit_occupancies.check_in', '<', $dates->checkOut->toDateString())
+                ->where('unit_occupancies.check_out', '>', $dates->checkIn->toDateString()));
             // Durées autorisées par le tarif de base (les exceptions de durée sont revalidées au devis).
             $nights = $dates->nights();
             $q->whereExists(fn ($e) => $e->select(DB::raw(1))->from('rate_plans')->whereColumn('rate_plans.unit_id', 'units.id')

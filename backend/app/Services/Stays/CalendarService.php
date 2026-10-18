@@ -6,6 +6,7 @@ use App\Enums\CalendarBlockKind;
 use App\Exceptions\StayRuleException;
 use App\Models\CalendarBlock;
 use App\Models\Unit;
+use App\Models\UnitOccupancy;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
 use Illuminate\Support\Collection;
@@ -59,8 +60,24 @@ class CalendarService
             ->get();
     }
 
+    /**
+     * Séjours qui occupent déjà les dates : verrous non expirés et séjours confirmés.
+     * Un verrou expiré mais pas encore nettoyé par la tâche planifiée ne bloque pas (contrôle sur `expires_at`).
+     *
+     * @return Collection<int, UnitOccupancy>
+     */
+    public function occupancyConflicts(Unit $unit, StayDates $dates): Collection
+    {
+        return UnitOccupancy::where('unit_id', $unit->id)
+            ->whereIn('status', ['held', 'confirmed', 'checked_in'])
+            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->where('check_in', '<', $dates->checkOut->toDateString())
+            ->where('check_out', '>', $dates->checkIn->toDateString())
+            ->get();
+    }
+
     public function isAvailable(Unit $unit, StayDates $dates): bool
     {
-        return $this->conflicts($unit, $dates)->isEmpty();
+        return $this->conflicts($unit, $dates)->isEmpty() && $this->occupancyConflicts($unit, $dates)->isEmpty();
     }
 }
