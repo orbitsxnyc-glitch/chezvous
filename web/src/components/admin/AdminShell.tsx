@@ -15,6 +15,7 @@ import { ApiError } from "@/lib/api";
 const NAV = [
   ["/admin", "Tableau de bord"],
   ["/admin/annonces", "Annonces à modérer"],
+  ["/admin/sejours", "Séjours et règlements"],
   ["/admin/passeports", "Passeports"],
   ["/admin/abonnements", "Abonnements"],
   ["/admin/catalogue", "Offres et tarifs"],

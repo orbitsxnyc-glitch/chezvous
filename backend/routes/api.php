@@ -193,6 +193,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('{unit}/calendar-blocks', [UnitController::class, 'block']);
         Route::delete('{unit}/calendar-blocks/{block}', [UnitController::class, 'unblock']);
         Route::get('{unit}/preview', [UnitController::class, 'preview']);
+        Route::post('{unit}/images', [UnitController::class, 'addImages'])->middleware('throttle:uploads');
+        Route::patch('{unit}/images/{image}/cover', [UnitController::class, 'coverImage']);
+        Route::delete('{unit}/images/{image}', [UnitController::class, 'removeImage']);
     });
 
     // Espace agence (AGC-01 à AGC-07). L'appartenance est relue à chaque requête : une suspension coupe l'accès immédiatement.

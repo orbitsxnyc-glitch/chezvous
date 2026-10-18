@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Api\V1\Host;
 use App\Enums\CalendarBlockKind;
 use App\Enums\UnitStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Stays\UploadUnitImagesRequest;
 use App\Http\Resources\UnitResource;
 use App\Models\CalendarBlock;
 use App\Models\Property;
 use App\Models\Unit;
+use App\Services\Listings\ImageService;
 use App\Services\Listings\PropertyReferenceService;
 use App\Services\Stays\CalendarService;
 use App\Services\Stays\PricingService;
@@ -130,6 +132,33 @@ class UnitController extends Controller
         Gate::authorize('manage', $unit);
         abort_unless($block->unit_id === $unit->id, 404);
         $this->calendar->unblock($block, $request->user());
+
+        return response()->json(null, 204);
+    }
+
+    /** Photos du logement (stockées sur le bien) : mêmes contrôles et traitements que pour une annonce. */
+    public function addImages(UploadUnitImagesRequest $request, Unit $unit, ImageService $images): UnitResource
+    {
+        Gate::authorize('manage', $unit);
+        foreach ($request->file('images') as $file) {
+            $images->add($unit->property, $file);
+        }
+
+        return new UnitResource($unit->load(['property.locality', 'property.images', 'ratePlan']));
+    }
+
+    public function coverImage(Unit $unit, string $image, ImageService $images): UnitResource
+    {
+        Gate::authorize('manage', $unit);
+        $images->setCover($unit->property, $unit->property->images()->where('ulid', $image)->firstOrFail());
+
+        return new UnitResource($unit->load(['property.locality', 'property.images', 'ratePlan']));
+    }
+
+    public function removeImage(Unit $unit, string $image, ImageService $images): JsonResponse
+    {
+        Gate::authorize('manage', $unit);
+        $images->remove($unit->property, $unit->property->images()->where('ulid', $image)->firstOrFail());
 
         return response()->json(null, 204);
     }

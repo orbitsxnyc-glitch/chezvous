@@ -24,6 +24,9 @@ class UnitResource extends JsonResource
                 'reference' => $this->property->reference,
                 'locality' => $this->property->locality?->name,
             ]),
+            'photos' => $this->whenLoaded('property', fn () => $this->property->relationLoaded('images') ? $this->property->images->map(fn ($i) => ['id' => $i->ulid, 'is_cover' => $i->is_cover, 'status' => $i->status->value])->values() : null),
+            'approved' => $this->approved_at !== null,
+            'cancellation_policy' => $this->cancellation_policy,
             'rate_plan' => $this->whenLoaded('ratePlan', fn () => $this->ratePlan ? [
                 'currency' => $this->ratePlan->currency,
                 'base_nightly_xof' => $this->ratePlan->base_nightly_xof,

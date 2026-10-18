@@ -21,9 +21,12 @@ const pages = [
   ["connexion", "/connexion"],
   ["inscription", "/inscription"],
   ["offres", "/offres"],
+  ["sejours", "/sejours"],
+  ["mes-sejours", "/mes-sejours"],
+  ["espace-hote", "/hote"],
   ["mes-annonces", "/mes-annonces"],
   ["admin", "/admin"],
-  ...extra.map((ref) => [`fiche-${ref}`, `/annonces/${ref}`]),
+  ...extra.map((ref) => (ref.startsWith("sejour:") ? [`sejour-${ref.slice(7)}`, `/sejours/${ref.slice(7)}`] : [`fiche-${ref}`, `/annonces/${ref}`])),
 ];
 const viewports = { bureau: { width: 1280, height: 800 }, mobile: { width: 390, height: 844 } };
 

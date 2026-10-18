@@ -37,6 +37,14 @@ Branche `phase-17-sejours`. Plan et écarts : `docs/phase-17-plan-sejours.md`. D
 - **Webhooks** : route `POST /api/v1/webhooks/payments/{provider}` présente mais refusée (404) tant qu'aucun adaptateur ne la prend en charge.
 - **Tests** : 21 nouveaux.
 
+## Lot 5 — Écrans (web livré ; mobile à suivre)
+- **Voyageur** : `/sejours` (recherche par dates, voyageurs, quartier, budget ; prix total par logement), `/sejours/[id]` (fiche, calendrier de dates, prix détaillé calculé par le serveur, demande sans débit), `/mes-sejours` et `/mes-sejours/[id]` (état en toutes lettres, prix, politique d'annulation, règlement : référence et consignes, « J'ai payé » qui ne confirme rien, historique, annulation).
+- **Hôte** : `/hote` (logements, création), `/hote/unites/[id]` (publication, photos, tarif de base, tarifs exceptionnels, dates fermées), `/hote/demandes` (accepter, refuser, annuler avec motif, échéances affichées).
+- **Administration** : `/admin/sejours` (logements à valider, règlements à vérifier avec confirmation du montant réellement reçu, remboursements à effectuer).
+- **API** : ajout, couverture et suppression de photos d'un logement (sans photo prête, aucune validation possible).
+- **Qualité** : audit axe-core sur 26 pages (dont séjours et fiche d'unité) : 0 violation ; contraste du texte « Pas de photo » corrigé. Vitest 79.
+- Le mobile (Flutter) reprend ensuite ces écrans.
+
 ## À venir
 5. Écrans voyageur / hôte (web puis mobile).
 6. Contrôles par catégorie, administration, rapprochement.

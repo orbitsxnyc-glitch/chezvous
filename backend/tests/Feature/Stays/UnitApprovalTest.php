@@ -5,6 +5,8 @@ use App\Models\AuditLog;
 use App\Models\Locality;
 use App\Models\PropertyImage;
 use Database\Seeders\ReferenceDataSeeder;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 
 beforeEach(fn () => $this->seed(ReferenceDataSeeder::class));
@@ -71,4 +73,30 @@ it('l\'approbation ne s\'obtient pas par assignation de masse', function () {
     $unit->fill(['approved_at' => now()]);
 
     expect($unit->approved_at)->toBeNull();
+});
+
+it('l\'hôte ajoute des photos à son logement, qui devient validable', function () {
+    Storage::fake('public');
+    Storage::fake('local');
+    $host = particulier();
+    $unit = stayUnit($host);
+    $unit->property->forceFill(['locality_id' => Locality::where('level', 'neighborhood')->first()->id])->save();
+    $unit->property->images()->delete();
+    $unit->forceFill(['status' => 'active'])->save();
+    Sanctum::actingAs($host);
+
+    $res = $this->post("/api/v1/host/units/{$unit->ulid}/images", ['images' => [UploadedFile::fake()->image('salon.jpg', 1600, 1000)]], ['Accept' => 'application/json'])->assertOk();
+    expect($res->json('data.photos.0.is_cover'))->toBeTrue();
+
+    Sanctum::actingAs(moderator());
+    $this->postJson("/api/v1/admin/units/{$unit->ulid}/approve")->assertOk();
+});
+
+it('un autre hôte ne peut ni ajouter ni retirer de photo (404)', function () {
+    Storage::fake('public');
+    $unit = stayUnit();
+    Sanctum::actingAs(particulier());
+
+    $this->post("/api/v1/host/units/{$unit->ulid}/images", ['images' => [UploadedFile::fake()->image('a.jpg')]], ['Accept' => 'application/json'])->assertNotFound();
+    $this->deleteJson("/api/v1/host/units/{$unit->ulid}/images/xxx")->assertNotFound();
 });
