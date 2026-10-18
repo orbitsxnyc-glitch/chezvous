@@ -110,6 +110,10 @@ return [
         'max_stay_nights' => (int) env('CHEZVOUS_STAY_MAX_NIGHTS', 90),
         'max_advance_days' => (int) env('CHEZVOUS_STAY_MAX_ADVANCE_DAYS', 548),
         'max_block_days' => (int) env('CHEZVOUS_STAY_MAX_BLOCK_DAYS', 366),
+        'quote_ttl_minutes' => (int) env('CHEZVOUS_STAY_QUOTE_TTL_MINUTES', 30),
+        'max_guests_per_search' => 60,
+        // Frais et taxes : valeurs de repli ; les réglages en base (clé `stay_fees`) priment. Points de base : 100 = 1 %.
+        'service_fee_bps' => (int) env('CHEZVOUS_STAY_SERVICE_FEE_BPS', 0),
     ],
 
     'counters' => [

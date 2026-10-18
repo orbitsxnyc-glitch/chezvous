@@ -10,17 +10,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 /**
  * Capacité réservable d'un bien. L'état ne change que par UnitService.
  *
  * @property UnitStatus $status
+ * @property Carbon|null $approved_at
  */
 class Unit extends Model
 {
     use HasUlids, SoftDeletes;
 
-    protected $guarded = ['status'];
+    protected $guarded = ['status', 'approved_at', 'approved_by'];
 
     /** @var array<string, mixed> */
     protected $attributes = ['status' => 'draft'];
@@ -38,7 +40,7 @@ class Unit extends Model
 
     protected function casts(): array
     {
-        return ['status' => UnitStatus::class];
+        return ['status' => UnitStatus::class, 'approved_at' => 'datetime'];
     }
 
     /** Unités visibles par l'utilisateur : les siennes, ou celles de son agence (toutes pour le gérant, attribuées pour un agent). */

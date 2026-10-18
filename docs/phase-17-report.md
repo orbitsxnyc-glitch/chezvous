@@ -10,8 +10,14 @@ Branche `phase-17-sejours`. Plan et écarts : `docs/phase-17-plan-sejours.md`. D
 - **Configuration** : durées maximales dans `config/chezvous.php` (`stays.*`), aucune valeur en dur.
 - **Tests** : 19 (calcul de prix, chevauchements aux bornes, limites configurables, transitions, droits inter-comptes, agence).
 
+## Lot 2 — Recherche, fiche publique, devis figé (livré)
+- **Publication** : une unité n'est publique que `active` ET validée par la modération (`approved_at`) ; la validation exige tarif, quartier et au moins une photo prête ; file et décisions dans `/api/v1/admin/units/*`, tracées dans `audit_logs`. Ni le statut ni l'approbation ne se modifient par assignation de masse.
+- **API publique** : `GET /api/v1/stays` (dates, voyageurs, quartier, budget ; exclut les unités fermées ou hors durées) et `GET /api/v1/stays/{id}` (disponibilité, détail du prix ou raison du refus). Aucune adresse exacte, aucun propriétaire, téléphone ni e-mail.
+- **Devis** : `POST /api/v1/quotes` (compte requis) revalide côté serveur (publication, capacité, fenêtre de réservation, disponibilité, durées), puis fige les lignes : hébergement, ménage, frais de service, taxes. Montants entiers en XOF (arrondi au XOF le plus proche), total = somme exacte des lignes, expiration configurable, snapshot des règles. Lisible seulement par son voyageur.
+- **Frais et taxes** : réglage en base `stay_fees` (`service_fee_bps`, taxes en % ou par nuit) ; repli sur la configuration (0 par défaut). Les taux légaux restent à valider par un conseil juridique avant activation.
+- **Tests** : 18 nouveaux (recherche, fuite de données, devis figé, arrondis, expiration, 409 sur dates fermées, droits, validation).
+
 ## À venir
-2. Recherche par dates et invités, fiche d'unité, devis figé (frais plateforme et taxes depuis les réglages).
 3. Demande de réservation → acceptation → verrou temporaire → confirmation (contrainte d'exclusion GiST sur les occupations), outbox.
 4. `PaymentGateway`, adaptateur manuel, journal d'événements idempotent, remboursements.
 5. Écrans voyageur / hôte (web puis mobile).

@@ -251,3 +251,16 @@ function stayUnit(?User $owner = null, array $over = [], ?int $nightly = 40000):
 
     return $unit->load('ratePlan');
 }
+
+/** Unité de séjour publique : active, validée, tarifée, localisée et illustrée. */
+function publicStayUnit(array $over = [], int $nightly = 40000, ?User $owner = null): Unit
+{
+    $owner ??= particulier();
+    $unit = stayUnit($owner, $over, $nightly);
+    $property = $unit->property;
+    $property->forceFill(['locality_id' => $property->locality_id ?? Locality::where('level', 'neighborhood')->firstOrFail()->id])->save();
+    PropertyImage::create(['property_id' => $property->id, 'path' => 'x.webp', 'sizes' => ['thumb' => 'x.webp'], 'is_cover' => true, 'status' => 'ready']);
+    $unit->forceFill(['status' => 'active', 'approved_at' => now()])->save();
+
+    return $unit->fresh(['ratePlan', 'property']);
+}

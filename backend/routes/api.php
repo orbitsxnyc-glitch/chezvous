@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\Admin\NotificationAdminController;
 use App\Http\Controllers\Api\V1\Admin\PassportCheckController;
 use App\Http\Controllers\Api\V1\Admin\ReferentialController;
 use App\Http\Controllers\Api\V1\Admin\ReportAdminController;
+use App\Http\Controllers\Api\V1\Admin\UnitAdminController;
 use App\Http\Controllers\Api\V1\Admin\UserAdminController;
 use App\Http\Controllers\Api\V1\Admin\VerificationController;
 use App\Http\Controllers\Api\V1\AgencyController;
@@ -39,6 +40,8 @@ use App\Http\Controllers\Api\V1\My\ListingImageController;
 use App\Http\Controllers\Api\V1\PassportController;
 use App\Http\Controllers\Api\V1\PublicAgencyController;
 use App\Http\Controllers\Api\V1\PublicListingController;
+use App\Http\Controllers\Api\V1\PublicStayController;
+use App\Http\Controllers\Api\V1\QuoteController;
 use App\Http\Controllers\Api\V1\ReferenceController;
 use App\Http\Controllers\Api\V1\SitemapController;
 use Illuminate\Support\Facades\Route;
@@ -79,6 +82,8 @@ Route::middleware('throttle:search')->group(function () {
     Route::get('listings/map', [PublicListingController::class, 'map']);
     Route::get('listings/{identifier}', [PublicListingController::class, 'show'])->where('identifier', '[A-Za-z0-9-]+');
     Route::get('listings/{identifier}/similar', [PublicListingController::class, 'similar'])->where('identifier', '[A-Za-z0-9-]+');
+    Route::get('stays', [PublicStayController::class, 'index']);
+    Route::get('stays/{unit}', [PublicStayController::class, 'show'])->where('unit', '[A-Za-z0-9]+');
     Route::get('seo/sitemap', SitemapController::class);
     Route::get('plans', [CatalogController::class, 'plans']);
     Route::get('premium-products', [CatalogController::class, 'products']);
@@ -88,6 +93,8 @@ Route::middleware('throttle:search')->group(function () {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('quotes', [QuoteController::class, 'store'])->middleware('throttle:inquiries');
+    Route::get('quotes/{quote}', [QuoteController::class, 'show']);
     Route::post('listings/{listing}/reports', [ListingReportController::class, 'store'])->middleware('throttle:reports');
 
     // Demandes, messagerie, visites (DEM-01 à DEM-06). {inquiry} et {visit} se résolvent par ULID ; la Policy répond 404 aux tiers.
@@ -190,6 +197,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Modération (ADM-01) : réservée aux rôles admin et super_admin.
     Route::prefix('admin')->middleware('two-factor')->group(function () {
+        Route::get('units/pending', [UnitAdminController::class, 'pending']);
+        Route::post('units/{unit}/approve', [UnitAdminController::class, 'approve']);
+        Route::post('units/{unit}/revoke', [UnitAdminController::class, 'revoke']);
         Route::get('moderation', [ModerationController::class, 'index']);
         Route::get('moderation/reasons', [ModerationController::class, 'reasons']);
         Route::get('dashboard', DashboardController::class);
