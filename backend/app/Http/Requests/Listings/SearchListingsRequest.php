@@ -32,6 +32,7 @@ class SearchListingsRequest extends FormRequest
             'furnished' => ['sometimes', 'boolean'],
             'sort' => ['sometimes', Rule::in(['relevance', 'newest', 'price_asc', 'price_desc'])],
             'bbox' => ['sometimes', 'string'],
+            'zoom' => ['sometimes', 'integer', 'between:0,20'],
         ];
     }
 

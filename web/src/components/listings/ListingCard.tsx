@@ -8,12 +8,17 @@ import { AvailabilityBadge } from "./AvailabilityBadge";
 export function ListingCard({ listing, sponsored = false, layout = "column", headingLevel = 3 }: { listing: ListingSummary; sponsored?: boolean; layout?: "column" | "row"; headingLevel?: 2 | 3 }) {
   const Heading = headingLevel === 2 ? "h2" : "h3";
   const image = listing.cover?.medium ?? listing.cover?.thumb;
-  const facts = [listing.property_type_label ?? listing.property_type, listing.surface_m2 ? `${listing.surface_m2} m²` : null, listing.bedrooms ? `${listing.bedrooms} ch.` : null].filter(Boolean).join(" · ");
+  const facts = [listing.property_type_label ?? listing.property_type, listing.surface_m2 ? `${listing.surface_m2} m²` : null, listing.bedrooms ? `${listing.bedrooms} ch.` : null, listing.bathrooms ? `${listing.bathrooms} sdb` : null].filter(Boolean).join(" · ");
   return (
     <article className="overflow-hidden rounded-xl border border-line bg-white shadow-card transition hover:-translate-y-0.5 hover:border-[#e5b999] hover:shadow-panel">
       <Link href={`/annonces/${listing.reference}`} className={layout === "row" ? "grid grid-cols-[8.5rem_1fr] sm:grid-cols-[16rem_1fr]" : "flex flex-col"}>
         <div className={`relative overflow-hidden bg-sand-deep ${layout === "row" ? "min-h-40 sm:min-h-44" : "aspect-[4/3]"}`}>
           <SafeImage src={image ?? ""} alt={listing.title ?? "Photo du bien"} className="size-full object-cover" fallbackLabel="Pas de photo" />
+          {(listing.photos_count ?? 0) > 0 && (
+            <span className="absolute bottom-2.5 right-2.5 rounded-md bg-black/65 px-2 py-1 text-[0.7rem] font-semibold text-white">
+              {listing.photos_count} photo{(listing.photos_count ?? 0) > 1 ? "s" : ""}
+            </span>
+          )}
           {sponsored && (
             <span className="absolute bottom-2.5 left-2.5 rounded-md bg-ink/85 px-2.5 py-1.5 text-[0.65rem] font-bold text-white">Mise en avant par son annonceur</span>
           )}

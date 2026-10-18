@@ -1,9 +1,10 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { cacheLife } from "next/cache";
 import { connection } from "next/server";
 import { ListingCard } from "@/components/listings/ListingCard";
-import { getNeighborhoods, type ListingSummary } from "@/lib/listings";
+import { getNeighborhoods, getPopularNeighborhoods, type ListingSummary } from "@/lib/listings";
 import { publicGet } from "@/lib/server-api";
 import { SEO_ROUTES, seoPath } from "@/lib/seo";
 
@@ -95,18 +96,30 @@ async function Featured() {
   );
 }
 
+const TILES = [
+  "from-primary to-[#8a2d00] text-white",
+  "from-brand-amber to-brand-orange text-ink",
+  "from-brand-orange to-brand-amber text-ink",
+] as const;
+
 async function Districts() {
   await connection();
-  const neighborhoods = await getNeighborhoods().catch(() => []);
+  const neighborhoods = await getPopularNeighborhoods().catch(() => []);
   if (neighborhoods.length === 0) return null;
   return (
     <section aria-labelledby="quartiers" className="mx-auto w-full max-w-6xl px-5 pt-16">
-      <h2 id="quartiers" className="text-3xl font-extrabold">Quartiers de Dakar</h2>
-      <ul className="mt-6 flex flex-wrap gap-3">
-        {neighborhoods.map((n) => (
+      <h2 id="quartiers" className="text-3xl font-extrabold">Quartiers populaires</h2>
+      <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        {neighborhoods.slice(0, 8).map((n, i) => (
           <li key={n.slug}>
-            <Link href={`/annonces?transaction=rent_long&locality=${n.slug}`} className="flex min-h-11 items-center rounded-lg border border-line bg-white px-4 text-sm font-semibold hover:border-primary hover:text-primary">
-              {n.name}
+            <Link
+              href={`/annonces?transaction=rent_long&locality=${n.slug}`}
+              className={`flex min-h-28 flex-col justify-end rounded-xl bg-gradient-to-br p-4 shadow-card hover:brightness-95 ${TILES[i % TILES.length]}`}
+            >
+              <span className="text-lg font-extrabold">{n.name}</span>
+              {typeof n.listings_count === "number" && (
+                <span className="text-xs">{n.listings_count} bien{n.listings_count > 1 ? "s" : ""}</span>
+              )}
             </Link>
           </li>
         ))}
@@ -124,14 +137,16 @@ const TRUST = [
 export default function Home() {
   return (
     <main>
-      <section className="relative overflow-hidden border-b border-sand-deep bg-sand">
-        <div className="mx-auto flex w-full max-w-4xl flex-col items-center px-5 pt-14 pb-16 text-center sm:pt-[70px]">
-          <p className="text-xs font-extrabold tracking-[0.13em] text-primary uppercase">Location résidentielle à Dakar</p>
-          <h1 className="mt-4 max-w-3xl text-4xl leading-[1.05] font-extrabold sm:text-6xl">
-            Trouvez un logement <span className="text-primary">réellement disponible</span>
+      <section className="relative isolate overflow-hidden bg-[#0e1726]">
+        <Image src="/images/dakar-crepuscule.jpg" alt="" fill priority sizes="100vw" className="-z-20 object-cover object-[60%_center]" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black/75 via-black/45 to-black/25" aria-hidden />
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-start px-5 pt-16 pb-14 sm:pt-24">
+          <p className="text-xs font-extrabold tracking-[0.2em] text-brand-amber uppercase">Location résidentielle à Dakar</p>
+          <h1 className="mt-4 max-w-3xl text-4xl leading-[1.05] font-black tracking-tight text-white sm:text-6xl">
+            Trouvez le bien <span className="text-brand-orange">qui vous ressemble</span>
           </h1>
-          <p className="mt-5 max-w-xl text-base leading-7 text-muted sm:text-lg">
-            Trouvez. Vérifiez. Visitez. Des biens dont la disponibilité est datée, avec leur Passeport.
+          <p className="mt-5 max-w-xl text-base leading-7 text-white/90 sm:text-lg">
+            Trouvez. Vivez. Avancez. Des biens dont la disponibilité est datée, avec leur Passeport.
           </p>
           <div className="mt-9 w-full">
             <Suspense fallback={<div className="h-44 w-full rounded-2xl bg-white shadow-panel" aria-hidden />}>

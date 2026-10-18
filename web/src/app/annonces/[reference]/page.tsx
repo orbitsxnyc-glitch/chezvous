@@ -3,7 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
+import { ReportListing } from "@/components/listings/ReportListing";
 import { ContactPanel } from "@/components/listings/ContactPanel";
+import { ZoneMapLoader } from "@/components/map/ZoneMapLoader";
 import { SafeImage } from "@/components/SafeImage";
 import { AvailabilityBadge } from "@/components/listings/AvailabilityBadge";
 import { EntryCosts } from "@/components/listings/EntryCosts";
@@ -135,16 +137,13 @@ async function Detail({ params }: { params: Props["params"] }) {
           <PassportPanel passport={l.passport} />
 
           {p.location && (
-            <p className="text-sm">
-              <a
-                className="font-bold text-primary underline"
-                href={`https://www.openstreetmap.org/?mlat=${p.location.lat}&mlon=${p.location.lon}#map=16/${p.location.lat}/${p.location.lon}`}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                Voir la zone sur la carte{p.location.precision === "exact" ? "" : " (position approximative)"}
-              </a>
-            </p>
+            <section aria-labelledby="localisation" className="flex flex-col gap-3">
+              <h2 id="localisation" className="text-xl font-extrabold">Localisation</h2>
+              <ZoneMapLoader lat={p.location.lat} lon={p.location.lon} exact={p.location.precision === "exact"} />
+              <p className="text-xs text-muted">
+                {p.location.precision === "exact" ? "Position indiquée par l'annonceur." : "Zone approximative : l'adresse exacte est communiquée par l'annonceur lors de votre échange."}
+              </p>
+            </section>
           )}
         </div>
 
@@ -169,6 +168,7 @@ async function Detail({ params }: { params: Props["params"] }) {
             </div>
           </section>
           <ContactPanel listingId={l.id} reference={l.reference} />
+          <ReportListing listingId={l.id} />
         </div>
       </div>
 

@@ -4,9 +4,11 @@ import '../core/format.dart';
 import '../inquiries/inquiries_repository.dart';
 import '../ui/theme.dart';
 import '../ui/widgets.dart';
+import 'filters_screen.dart';
 import 'listing_detail_screen.dart';
 import 'listing_widgets.dart';
 import 'listings_repository.dart';
+import 'map_view.dart';
 import 'models.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -37,6 +39,9 @@ class _SearchScreenState extends State<SearchScreen> {
   bool _loading = true;
   String? _error;
   int _generation = 0;
+  bool _showMap = false;
+  late final _q = TextEditingController(text: widget.initialFilters.q);
+  int? _total;
 
   @override
   void initState() {
@@ -50,6 +55,12 @@ class _SearchScreenState extends State<SearchScreen> {
         .catchError((_) {
           // Les quartiers sont un confort : la recherche fonctionne sans eux.
         });
+  }
+
+  @override
+  void dispose() {
+    _q.dispose();
+    super.dispose();
   }
 
   Future<void> _load({bool more = false}) async {
@@ -72,6 +83,7 @@ class _SearchScreenState extends State<SearchScreen> {
       setState(() {
         _items.addAll(page.items);
         _cursor = page.nextCursor;
+        if (!more) _total = page.total;
       });
     } catch (e) {
       if (mounted && generation == _generation) {
@@ -84,6 +96,56 @@ class _SearchScreenState extends State<SearchScreen> {
   void _apply(SearchFilters f) {
     _filters = f;
     _load();
+  }
+
+  Future<void> _openFilters() async {
+    final result = await Navigator.of(context).push<SearchFilters>(
+      MaterialPageRoute(
+        builder: (_) =>
+            FiltersScreen(repository: widget.repository, initial: _filters),
+      ),
+    );
+    if (result != null) _apply(result);
+  }
+
+  static const _sorts = [
+    ('relevance', 'Pertinence'),
+    ('newest', 'Plus récentes'),
+    ('price_asc', 'Prix croissant'),
+    ('price_desc', 'Prix décroissant'),
+  ];
+
+  Future<void> _openSort() async {
+    final chosen = await showModalBottomSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'Trier par',
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
+              ),
+            ),
+            for (final (code, label) in _sorts)
+              ListTile(
+                title: Text(label),
+                trailing: (_filters.sort ?? 'relevance') == code
+                    ? const Icon(Icons.check, color: AppColors.primary)
+                    : null,
+                onTap: () => Navigator.pop(ctx, code),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (chosen != null) {
+      _apply(
+        _filters.copyWith(sort: () => chosen == 'relevance' ? null : chosen),
+      );
+    }
   }
 
   Future<void> _saveSearch() async {
@@ -139,25 +201,159 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('ChezVous'),
-      actions: [
-        IconButton(
-          tooltip: 'Créer une alerte',
-          icon: const Icon(Icons.notifications_none),
-          onPressed: _saveSearch,
-        ),
-      ],
+    body: SafeArea(
+      bottom: false,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 8, 0),
+            child: Row(
+              children: [
+                const BrandLogo(size: 15),
+                const Spacer(),
+                IconButton(
+                  tooltip: 'Créer une alerte',
+                  icon: const Icon(Icons.notifications_none),
+                  onPressed: _saveSearch,
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _showMap ? 'Carte des annonces' : 'Explorer les annonces',
+                  style: Theme.of(context).textTheme.headlineSmall
+                      ?.copyWith(fontSize: 26),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Des logements à Dakar, avec leur disponibilité datée.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _q,
+                  textInputAction: TextInputAction.search,
+                  onSubmitted: (_) => _submitQuery(),
+                  decoration: InputDecoration(
+                    hintText: 'Rechercher un quartier, une ville, un bien…',
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: Padding(
+                      padding: const EdgeInsets.all(6),
+                      child: IconButton.filled(
+                        style: IconButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                        ),
+                        tooltip: 'Rechercher',
+                        onPressed: _submitQuery,
+                        icon: const Icon(Icons.search),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          _FilterBar(
+            filters: _filters,
+            localities: _localities,
+            onChanged: _apply,
+            onMore: _openFilters,
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 12, 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _showMap
+                      ? const SizedBox.shrink()
+                      : Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: _loading && _items.isEmpty
+                                    ? '…'
+                                    : '${_total ?? _items.length}',
+                                style: const TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              TextSpan(
+                                text:
+                                    ' annonce${(_total ?? _items.length) > 1 ? 's' : ''} trouvée${(_total ?? _items.length) > 1 ? 's' : ''}',
+                                style: const TextStyle(color: AppColors.muted),
+                              ),
+                            ],
+                          ),
+                        ),
+                ),
+                if (!_showMap)
+                  TextButton.icon(
+                    onPressed: _openSort,
+                    icon: const Icon(Icons.swap_vert, size: 20),
+                    label: const Text('Trier'),
+                  ),
+                IconButton.filled(
+                  tooltip: 'Afficher la liste',
+                  isSelected: !_showMap,
+                  style: IconButton.styleFrom(
+                    backgroundColor: _showMap
+                        ? Colors.white
+                        : AppColors.primary,
+                    foregroundColor: _showMap ? AppColors.muted : Colors.white,
+                  ),
+                  onPressed: () => setState(() => _showMap = false),
+                  icon: const Icon(Icons.view_list_outlined),
+                ),
+                IconButton.filled(
+                  tooltip: 'Afficher la carte',
+                  style: IconButton.styleFrom(
+                    backgroundColor: _showMap
+                        ? AppColors.primary
+                        : Colors.white,
+                    foregroundColor: _showMap ? Colors.white : AppColors.muted,
+                  ),
+                  onPressed: () => setState(() => _showMap = true),
+                  icon: const Icon(Icons.map_outlined),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: _showMap
+                ? ListingsMapView(
+                    repository: widget.repository,
+                    filters: _filters,
+                    onOpen: _openFromMap,
+                  )
+                : _results(),
+          ),
+        ],
+      ),
     ),
-    body: Column(
-      children: [
-        _FilterBar(
-          filters: _filters,
-          localities: _localities,
-          onChanged: _apply,
-        ),
-        Expanded(child: _results()),
-      ],
+  );
+
+  void _submitQuery() {
+    final q = _q.text.trim();
+    _apply(_filters.copyWith(q: () => q.isEmpty ? null : q));
+  }
+
+  void _openFromMap(MapPoint p) => Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (_) => ListingDetailScreen(
+        repository: widget.repository,
+        reference: p.reference,
+        signedIn: widget.signedIn,
+        inquiries: widget.inquiries,
+      ),
     ),
   );
 
@@ -165,12 +361,7 @@ class _SearchScreenState extends State<SearchScreen> {
     if (_items.isEmpty) {
       if (_loading) return const Center(child: CircularProgressIndicator());
       if (_error != null) {
-        return Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text(_error!),
-          ),
-        );
+        return ErrorRetry(message: _error!, onRetry: _load);
       }
       return const Center(
         child: Padding(
@@ -186,7 +377,15 @@ class _SearchScreenState extends State<SearchScreen> {
       itemCount: _items.length + 1,
       itemBuilder: (context, i) {
         if (i == _items.length) {
-          if (_error != null) return Text(_error!);
+          if (_error != null) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: ErrorRetry(
+                message: _error!,
+                onRetry: () => _load(more: true),
+              ),
+            );
+          }
           if (_loading) {
             return const Padding(
               padding: EdgeInsets.all(16),
@@ -203,6 +402,8 @@ class _SearchScreenState extends State<SearchScreen> {
         final l = _items[i];
         return ListingCard(
           listing: l,
+          repository: widget.repository,
+          signedIn: widget.signedIn,
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(
               builder: (_) => ListingDetailScreen(
@@ -224,11 +425,13 @@ class _FilterBar extends StatelessWidget {
     required this.filters,
     required this.localities,
     required this.onChanged,
+    required this.onMore,
   });
 
   final SearchFilters filters;
   final List<Locality> localities;
   final ValueChanged<SearchFilters> onChanged;
+  final VoidCallback onMore;
 
   static const _prices = [100000, 200000, 300000, 500000, 1000000];
 
@@ -256,7 +459,7 @@ class _FilterBar extends StatelessWidget {
           onChanged: onChanged,
           borderRadius: BorderRadius.circular(AppRadius.md),
           style: TextStyle(
-            fontFamily: 'Manrope',
+            fontFamily: 'Inter',
             fontSize: 13,
             fontWeight: FontWeight.w700,
             color: active ? AppColors.primary : AppColors.ink,
@@ -329,6 +532,16 @@ class _FilterBar extends StatelessWidget {
               ),
           ],
           onChanged: (v) => onChanged(filters.copyWith(priceMax: () => v)),
+        ),
+        const SizedBox(width: 8),
+        ActionChip(
+          avatar: const Icon(Icons.tune, size: 18, color: AppColors.primary),
+          label: Text(
+            filters.activeCount > 0
+                ? 'Filtres (${filters.activeCount})'
+                : 'Filtres',
+          ),
+          onPressed: onMore,
         ),
       ],
     ),

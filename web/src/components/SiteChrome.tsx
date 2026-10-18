@@ -17,13 +17,17 @@ const MEMBER_LINKS = [
   ["/favoris", "Favoris"],
 ] as const;
 
-export function Logo() {
+/** Pictogramme de la marque (fichier fourni par le porteur du projet, fond transparent). */
+export function BrandMark({ className = "h-9 w-auto" }: { className?: string }) {
+  return <Image src="/brand/mark.png" alt="" width={900} height={805} className={className} />;
+}
+
+/** Logo (pictogramme + « ChezVous »). `light` : variante pour fonds sombres. */
+export function Logo({ light = false, tagline = false, className = "h-11 w-auto" }: { light?: boolean; tagline?: boolean; className?: string }) {
+  const file = `${tagline ? "logo-full" : "logo-wordmark"}${light ? "-light" : ""}`;
   return (
-    <Link href="/" className="flex min-h-11 items-center gap-2" aria-label="ChezVous, accueil">
-      <Image src="/brand/mark.png" alt="" width={44} height={36} priority />
-      <span className="text-xl font-extrabold tracking-tight">
-        Chez<span className="text-brand-red">Vous</span>
-      </span>
+    <Link href="/" className="flex min-h-11 items-center" aria-label="ChezVous, accueil">
+      <Image src={`/brand/${file}.png`} alt="ChezVous" width={900} height={224} priority className={className} />
     </Link>
   );
 }

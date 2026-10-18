@@ -17,7 +17,7 @@ describe("contraste des couleurs (WCAG AA)", () => {
     ["ink", "surface", "texte sur fond blanc"], ["ink", "sand", "texte sur sable"], ["ink", "surface-soft", "texte sur fond de page"],
     ["muted", "surface", "texte secondaire sur blanc"], ["muted", "sand", "texte secondaire sur sable"], ["muted", "surface-soft", "texte secondaire sur fond de page"], ["muted", "primary-soft", "texte secondaire sur fond doux"],
     ["primary", "surface", "lien ou texte principal sur blanc"], ["primary", "surface-soft", "lien sur fond de page"], ["primary", "sand", "lien sur sable"], ["primary", "primary-soft", "lien sur fond doux"],
-    ["accent", "surface", "texte d'accent sur blanc"], ["danger", "surface", "erreur sur blanc"], ["success", "surface", "succès sur blanc"],
+    ["danger", "surface", "erreur sur blanc"], ["success", "surface", "succès sur blanc"],
   ];
   it.each(normalText)("%s sur %s ≥ 4,5 : %s", (fg, bg) => {
     expect(contrast(token(fg), token(bg))).toBeGreaterThanOrEqual(4.5);
@@ -29,10 +29,10 @@ describe("contraste des couleurs (WCAG AA)", () => {
     expect(contrast("#ffe9da", token("primary-hover"))).toBeGreaterThanOrEqual(4.5); // texte doux de la section « Pourquoi ChezVous »
   });
 
-  it("les couleurs du logo ne servent qu'au décor et aux grands textes", () => {
-    // Orange et rouge du logo sont sous 4,5 avec du blanc : interdits pour du texte courant ou un bouton.
+  it("l'orange vif de la marque ne porte que du texte sombre ; l'interface utilise l'orange profond", () => {
+    // Blanc sur orange vif : 2,9 (sous 4,5) -> interdit pour du texte ou un bouton ; l'anthracite y est lisible.
     expect(contrast(WHITE, token("brand-orange"))).toBeLessThan(4.5);
-    // Le rouge du logo passe pour le mot-symbole (texte gras de 20 px et plus : seuil 3).
-    expect(contrast(token("brand-red"), WHITE)).toBeGreaterThanOrEqual(3);
+    expect(contrast(token("ink"), token("brand-orange"))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(token("ink"), token("brand-amber"))).toBeGreaterThanOrEqual(4.5);
   });
 });

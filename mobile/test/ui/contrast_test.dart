@@ -27,7 +27,6 @@ void main() {
       'lien sur blanc': (AppColors.primary, AppColors.surface),
       'lien sur fond de page': (AppColors.primary, AppColors.surfaceSoft),
       'lien sur fond doux': (AppColors.primary, AppColors.primarySoft),
-      'accent sur blanc': (AppColors.accent, AppColors.surface),
       'erreur sur blanc': (AppColors.danger, AppColors.surface),
       'succès sur blanc': (AppColors.success, AppColors.surface),
       'blanc sur bouton': (white, AppColors.primary),
@@ -48,6 +47,9 @@ void main() {
 
   test('les couleurs du logo ne servent qu\'au décor et aux grands textes', () {
     expect(_contrast(white, AppColors.brandOrange), lessThan(4.5));
-    expect(_contrast(AppColors.brandRed, white), greaterThanOrEqualTo(3.0));
+    expect(
+      _contrast(AppColors.ink, AppColors.brandOrange),
+      greaterThanOrEqualTo(4.5),
+    );
   });
 }

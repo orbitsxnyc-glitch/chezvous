@@ -35,7 +35,7 @@ class CatalogController extends Controller
     /** « À la une » : plafonnées et en rotation équitable. */
     public function featured(Request $request, PremiumService $premium): JsonResponse
     {
-        $listings = $premium->featured()->load(['property.type', 'property.locality', 'property.coverImage', 'agency']);
+        $listings = $premium->featured()->load(['property.type', 'property.locality', 'property.coverImage', 'property.images', 'agency']);
 
         return response()->json(['data' => $listings->map(fn ($l) => (new PublicListingSummaryResource($l))->toArray($request))]);
     }

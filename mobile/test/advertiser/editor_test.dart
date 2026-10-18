@@ -109,11 +109,10 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.textContaining('Il manque'),
-      400,
-      scrollable: find.byType(Scrollable).first,
-    );
+    // Assistant par étapes : l'étape « Aperçu » indique ce qui manque.
+    await tester.tap(find.text('Aperçu'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Il manque'), findsOneWidget);
     expect(
       find.textContaining('le titre, une photo de couverture'),
       findsOneWidget,

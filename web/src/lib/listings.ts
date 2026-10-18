@@ -18,6 +18,8 @@ export type ListingSummary = {
   locality: { name: string; slug: string } | null;
   surface_m2: number | null;
   bedrooms: number | null;
+  bathrooms?: number | null;
+  photos_count?: number | null;
   furnished: boolean;
   agency: { name: string; slug: string; verified: boolean } | null;
   cover: Images | null;
@@ -67,13 +69,13 @@ export type ListingDetail = {
   expires_at: string | null;
 };
 
-export type SearchResult = { items: ListingSummary[]; nextCursor: string | null };
+export type SearchResult = { items: ListingSummary[]; nextCursor: string | null; total: number | null };
 
 export async function searchListings(params: SearchParams): Promise<SearchResult | null> {
   "use cache";
   cacheLife("minutes");
-  const res = await publicGet<{ data: ListingSummary[]; meta: { next_cursor: string | null } }>("/listings", params);
-  return res ? { items: res.data, nextCursor: res.meta?.next_cursor ?? null } : null;
+  const res = await publicGet<{ data: ListingSummary[]; meta: { next_cursor: string | null; total?: number } }>("/listings", params);
+  return res ? { items: res.data, nextCursor: res.meta?.next_cursor ?? null, total: res.meta?.total ?? null } : null;
 }
 
 export async function getListing(reference: string): Promise<ListingDetail | null> {
@@ -90,13 +92,21 @@ export async function getSimilar(reference: string): Promise<ListingSummary[]> {
   return res?.data ?? [];
 }
 
-export type Locality = { id: number; parent_id: number | null; level: string; name: string; slug: string };
+export type Locality = { id: number; parent_id: number | null; level: string; name: string; slug: string; listings_count?: number };
 
 export async function getNeighborhoods(): Promise<Locality[]> {
   "use cache";
   cacheLife("hours");
   const res = await publicGet<{ data: Locality[] }>("/localities", { level: "neighborhood" });
   return res?.data ?? [];
+}
+
+/** Quartiers avec leur nombre d'annonces visibles, les plus fournis d'abord. */
+export async function getPopularNeighborhoods(): Promise<Locality[]> {
+  "use cache";
+  cacheLife("minutes");
+  const res = await publicGet<{ data: Locality[] }>("/localities", { level: "neighborhood", with_counts: "1" });
+  return [...(res?.data ?? [])].sort((a, b) => (b.listings_count ?? 0) - (a.listings_count ?? 0));
 }
 
 export async function getSitemapListings(): Promise<{ reference: string; updated_at: string }[]> {

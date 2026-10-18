@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:chezvous/core/api_client.dart';
@@ -7,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 void main() {
+  _robustness();
   test('envoie le jeton en Bearer et lit la réponse JSON', () async {
     late http.BaseRequest seen;
     final api = ApiClient(
@@ -126,4 +128,143 @@ class _BrokenStore implements TokenStore {
 
   @override
   Future<void> clear() async {}
+}
+
+void _robustness() {
+  group('robustesse réseau', () {
+    ApiClient client(MockClientHandler h) => ApiClient(
+      tokens: MemoryTokenStore('t'),
+      baseUrl: 'http://api.test',
+      client: MockClient(h),
+      retryDelay: Duration.zero,
+    );
+
+    test(
+      'une lecture est rejouée une fois après une coupure passagère',
+      () async {
+        var calls = 0;
+        final api = client((_) async {
+          calls++;
+          if (calls == 1) throw Exception('coupure');
+          return http.Response('{"data":[1]}', 200);
+        });
+        final res = await api.get('/listings');
+        expect(res['data'], [1]);
+        expect(calls, 2);
+      },
+    );
+
+    test(
+      'une lecture qui échoue deux fois renvoie une erreur réseau claire',
+      () async {
+        var calls = 0;
+        final api = client((_) async {
+          calls++;
+          throw Exception('hors ligne');
+        });
+        await expectLater(
+          api.get('/listings'),
+          throwsA(
+            isA<ApiException>().having((e) => e.code, 'code', 'network_error'),
+          ),
+        );
+        expect(calls, 2);
+      },
+    );
+
+    test(
+      'un envoi (POST) n\'est jamais rejoué : il pourrait partir en double',
+      () async {
+        var calls = 0;
+        final api = client((_) async {
+          calls++;
+          throw Exception('coupure');
+        });
+        await expectLater(
+          api.post('/my/favorites', {'listing': 'x'}),
+          throwsA(isA<ApiException>()),
+        );
+        expect(calls, 1);
+      },
+    );
+
+    test('un 503 passager est rejoué, un 404 ne l\'est pas', () async {
+      var calls = 0;
+      final flaky = client((_) async {
+        calls++;
+        return calls == 1
+            ? http.Response('', 503)
+            : http.Response('{"data":[]}', 200);
+      });
+      expect((await flaky.get('/listings'))['data'], isEmpty);
+      expect(calls, 2);
+
+      calls = 0;
+      final missing = client((_) async {
+        calls++;
+        return http.Response(
+          '{"code":"not_found","message":"Ressource introuvable."}',
+          404,
+        );
+      });
+      await expectLater(
+        missing.get('/listings/x'),
+        throwsA(isA<ApiException>().having((e) => e.status, 'status', 404)),
+      );
+      expect(calls, 1);
+    });
+
+    test('une lenteur devient une erreur « timeout » distincte de la coupure, rejouée une fois pour une lecture', () async {
+      var calls = 0;
+      final api = ApiClient(
+        tokens: MemoryTokenStore('t'),
+        baseUrl: 'http://api.test',
+        retryDelay: Duration.zero,
+        requestTimeout: const Duration(milliseconds: 20),
+        client: MockClient((_) {
+          calls++;
+          return Completer<http.Response>().future; // ne répond jamais
+        }),
+      );
+      await expectLater(
+        api.get('/listings'),
+        throwsA(
+          isA<ApiException>()
+              .having((e) => e.code, 'code', 'timeout')
+              .having((e) => e.message, 'message', contains('trop de temps')),
+        ),
+      );
+      expect(calls, 2);
+    });
+
+    test(
+      '429 et 500 donnent des messages lisibles, sans détail technique',
+      () async {
+        final busy = client(
+          (_) async => http.Response('{"message":"Too Many Attempts."}', 429),
+        );
+        await expectLater(
+          busy.get('/listings'),
+          throwsA(
+            isA<ApiException>()
+                .having((e) => e.code, 'code', 'throttled')
+                .having((e) => e.message, 'message', contains('Patientez')),
+          ),
+        );
+        final broken = client(
+          (_) async => http.Response('<html>Whoops</html>', 500),
+        );
+        await expectLater(
+          broken.post('/x', {}),
+          throwsA(
+            isA<ApiException>().having(
+              (e) => e.message,
+              'message',
+              contains('rencontre un problème'),
+            ),
+          ),
+        );
+      },
+    );
+  });
 }

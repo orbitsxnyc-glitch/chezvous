@@ -135,6 +135,37 @@ void main() {
     },
   );
 
+  test('la suppression du compte envoie le mot de passe, efface le jeton et déconnecte', () async {
+    final tokens = MemoryTokenStore('t');
+    http.Request? seen;
+    final c = _controller((r) async {
+      seen = r;
+      return http.Response('', 204);
+    }, tokens);
+    await c.deleteAccount('motdepasse');
+    expect(seen?.method, 'DELETE');
+    expect(seen?.url.path, '/api/v1/me');
+    expect(jsonDecode(seen!.body), {'password': 'motdepasse'});
+    expect(await tokens.read(), isNull);
+    expect(c.status, AuthStatus.signedOut);
+  });
+
+  test(
+    'un mot de passe incorrect ne supprime rien et garde la session',
+    () async {
+      final tokens = MemoryTokenStore('t');
+      final c = _controller(
+        (_) async => http.Response(
+          '{"code":"invalid_credentials","message":"Mot de passe incorrect."}',
+          403,
+        ),
+        tokens,
+      );
+      await expectLater(c.deleteAccount('faux'), throwsA(isA<ApiException>()));
+      expect(await tokens.read(), 't');
+    },
+  );
+
   test('un trousseau illisible ne bloque pas le démarrage', () async {
     final c = _controller(
       (_) async => http.Response('{}', 200),

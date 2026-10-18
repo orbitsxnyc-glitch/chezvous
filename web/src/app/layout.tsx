@@ -6,7 +6,7 @@ import { Logo, SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import "./globals.css";
 
 // Police embarquée (licence OFL) : aucun téléchargement à la compilation ni à l'exécution.
-const manrope = localFont({ src: "./fonts/Manrope.ttf", variable: "--font-manrope", weight: "200 800", display: "swap" });
+const inter = localFont({ src: "./fonts/Inter.ttf", variable: "--font-inter", weight: "100 900", display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="fr" className={`${manrope.variable} h-full antialiased`}>
+    <html lang="fr" className={`${inter.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <AuthProvider>
           {/* L'en-tête lit l'URL : il doit être sous Suspense ; le repli montre au moins le logo. */}

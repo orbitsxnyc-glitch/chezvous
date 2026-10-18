@@ -343,3 +343,18 @@ it('ne met jamais de coordonnées personnelles dans les notifications', function
 
     expect($all)->not->toContain('772220000')->not->toContain('771110000')->not->toContain('owner@secret.sn')->not->toContain('Fatou');
 });
+
+it("la liste des conversations donne le dernier message, l'interlocuteur et le nombre de non lus", function () {
+    Sanctum::actingAs($this->seeker);
+    postInquiry($this, $this->listing, ['message' => 'Bonjour, est-il disponible ?'])->assertCreated();
+
+    $row = $this->getJson('/api/v1/my/inquiries')->assertOk()->json('data.0');
+    expect($row['last_message']['body'])->toBe('Bonjour, est-il disponible ?')->and($row['last_message']['mine'])->toBeTrue()
+        ->and($row['counterpart'])->toBe('Annonceur');
+
+    // Côté annonceur : l'interlocuteur est le demandeur, le message est non lu et n'est pas le sien.
+    app('auth')->forgetGuards();
+    Sanctum::actingAs($this->owner);
+    $owner = $this->getJson('/api/v1/inbox')->assertOk()->json('data.0');
+    expect($owner['counterpart'])->toBe('Fatou Seck')->and($owner['last_message']['mine'])->toBeFalse()->and($owner['unread'])->toBe(1);
+});

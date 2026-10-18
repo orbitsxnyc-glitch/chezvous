@@ -2,7 +2,7 @@ import '../core/api_client.dart';
 import 'models.dart';
 
 class ListingsRepository {
-  const ListingsRepository(this.api);
+  ListingsRepository(this.api);
 
   final ApiClient api;
 
@@ -18,8 +18,49 @@ class ListingsRepository {
     return SearchPage(
       _list(res['data']).map(ListingSummary.fromJson).toList(),
       meta is Map ? meta['next_cursor'] as String? : null,
+      meta is Map ? (meta['total'] as num?)?.toInt() : null,
     );
   }
+
+  /// Points de la zone visible (« ouest,sud,est,nord ») avec les mêmes filtres que la liste.
+  Future<MapResult> mapPoints(
+    String bbox,
+    SearchFilters filters, {
+    int? zoom,
+  }) async {
+    final res = await api.get(
+      '/listings/map',
+      query: {
+        ...filters.toParams(),
+        'bbox': bbox,
+        if (zoom != null) 'zoom': '$zoom',
+      },
+    );
+    final meta = res['meta'];
+    final rows = _list(res['data']);
+    // Zoom faible : l'API renvoie des groupes ; zoom élevé : des annonces une à une.
+    return MapResult(
+      rows.where((r) => r['cluster'] != true).map(MapPoint.fromJson).toList(),
+      rows.where((r) => r['cluster'] == true).map(MapCluster.fromJson).toList(),
+      meta is Map && meta['truncated'] == true,
+    );
+  }
+
+  /// Motifs de signalement (publics).
+  Future<List<({String code, String label})>> reportReasons() async =>
+      _list((await api.get('/report-reasons'))['data'])
+          .map((r) => (code: '${r['code']}', label: '${r['label']}'))
+          .toList();
+
+  /// Signale une annonce publiée (compte connecté requis) ; traité par la modération.
+  Future<void> reportListing(
+    String listingId,
+    String reasonCode, {
+    String? comment,
+  }) => api.post('/listings/${Uri.encodeComponent(listingId)}/reports', {
+    'reason_code': reasonCode,
+    if (comment != null && comment.trim().isNotEmpty) 'comment': comment.trim(),
+  });
 
   Future<ListingDetail> detail(String reference) async {
     final res = await api.get('/listings/${Uri.encodeComponent(reference)}');
@@ -32,10 +73,32 @@ class ListingsRepository {
     return _list(res['data']).map(ListingSummary.fromJson).toList();
   }
 
-  Future<List<Locality>> neighborhoods() async {
-    final res = await api.get('/localities', query: {'level': 'neighborhood'});
+  Future<List<Locality>> neighborhoods({bool withCounts = false}) async {
+    final res = await api.get(
+      '/localities',
+      query: {'level': 'neighborhood', if (withCounts) 'with_counts': '1'},
+    );
     return _list(res['data'])
-        .map((l) => Locality('${l['slug']}', '${l['name']}'))
+        .map(
+          (l) => Locality(
+            '${l['slug']}',
+            '${l['name']}',
+            (l['listings_count'] as num?)?.toInt(),
+          ),
+        )
+        .toList();
+  }
+
+  Future<List<PropertyKind>> propertyTypes() async {
+    final res = await api.get('/property-types');
+    return _list(res['data'])
+        .map(
+          (t) => PropertyKind(
+            (t['id'] as num).toInt(),
+            '${t['code']}',
+            '${t['label']}',
+          ),
+        )
         .toList();
   }
 
@@ -49,11 +112,33 @@ class ListingsRepository {
         .toList();
   }
 
-  Future<void> addFavorite(String listingId) =>
-      api.post('/my/favorites', {'listing': listingId});
+  /// Identifiants des annonces favorites du compte courant (cache de session, pour les cœurs des listes).
+  final Set<String> favoriteIds = {};
+  bool _favoritesLoaded = false;
 
-  Future<void> removeFavorite(String listingId) =>
-      api.delete('/my/favorites/${Uri.encodeComponent(listingId)}');
+  Future<void> ensureFavoriteIds() async {
+    if (_favoritesLoaded) return;
+    final list = await favorites();
+    favoriteIds
+      ..clear()
+      ..addAll(list.map((l) => l.id));
+    _favoritesLoaded = true;
+  }
+
+  void forgetFavorites() {
+    favoriteIds.clear();
+    _favoritesLoaded = false;
+  }
+
+  Future<void> addFavorite(String listingId) async {
+    await api.post('/my/favorites', {'listing': listingId});
+    favoriteIds.add(listingId);
+  }
+
+  Future<void> removeFavorite(String listingId) async {
+    await api.delete('/my/favorites/${Uri.encodeComponent(listingId)}');
+    favoriteIds.remove(listingId);
+  }
 
   Future<List<SavedSearch>> savedSearches() async {
     final res = await api.get('/my/saved-searches');

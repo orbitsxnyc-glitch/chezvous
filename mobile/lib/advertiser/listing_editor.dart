@@ -17,7 +17,7 @@ class NewListingScreen extends StatefulWidget {
 }
 
 class _NewListingScreenState extends State<NewListingScreen> {
-  late final Future<List<Option>> _types = widget.repository.propertyTypes();
+  late Future<List<Option>> _types = widget.repository.propertyTypes();
   String _transaction = 'rent_long';
   int? _type;
   bool _pending = false;
@@ -48,66 +48,223 @@ class _NewListingScreenState extends State<NewListingScreen> {
     if (mounted) setState(() => _pending = false);
   }
 
+  static IconData _icon(String label) {
+    final l = label.toLowerCase();
+    if (l.contains('appart')) return Icons.apartment_outlined;
+    if (l.contains('maison') || l.contains('villa')) return Icons.home_outlined;
+    if (l.contains('studio')) return Icons.single_bed_outlined;
+    if (l.contains('chambre')) return Icons.bed_outlined;
+    if (l.contains('terrain')) return Icons.landscape_outlined;
+    if (l.contains('bureau')) return Icons.business_center_outlined;
+    if (l.contains('local')) return Icons.storefront_outlined;
+    if (l.contains('entrep')) return Icons.warehouse_outlined;
+    return Icons.domain_outlined;
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Nouvelle annonce')),
-    body: FutureBuilder<List<Option>>(
-      future: _types,
-      builder: (context, snap) {
-        if (snap.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snap.hasError) {
-          return Center(child: Text(errorText(snap.error!)));
-        }
-        return ListView(
-          padding: const EdgeInsets.all(24),
-          children: [
-            DropdownButtonFormField<String>(
-              initialValue: _transaction,
-              decoration: const InputDecoration(
-                labelText: 'Je propose',
-                border: OutlineInputBorder(),
-              ),
-              items: const [
-                DropdownMenuItem(
-                  value: 'rent_long',
-                  child: Text('Une location'),
+    body: SafeArea(
+      child: FutureBuilder<List<Option>>(
+        future: _types,
+        builder: (context, snap) {
+          if (snap.connectionState != ConnectionState.done) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snap.hasError) {
+            return ErrorRetry(
+              message: errorText(snap.error!),
+              onRetry: () => setState(() {
+                _types = widget.repository.propertyTypes();
+              }),
+            );
+          }
+          return Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                  children: [
+                    Row(
+                      children: [
+                        IconButton.outlined(
+                          tooltip: 'Retour',
+                          onPressed: () => Navigator.of(context).maybePop(),
+                          icon: const Icon(Icons.arrow_back),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'Publier une annonce',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 18,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        for (final (i, label) in const [
+                          'Infos',
+                          'Détails',
+                          'Photos',
+                          'Aperçu',
+                        ].indexed)
+                          Expanded(
+                            child: Column(
+                              children: [
+                                CircleAvatar(
+                                  radius: 16,
+                                  backgroundColor: i == 0
+                                      ? AppColors.primary
+                                      : const Color(0xFFEDE8E3),
+                                  child: Text(
+                                    '${i + 1}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 13,
+                                      color: i == 0
+                                          ? Colors.white
+                                          : AppColors.muted,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  label,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.muted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 22),
+                    const Eyebrow('Commençons par l\'essentiel'),
+                    const SizedBox(height: 6),
+                    const AccentHeadline(
+                      'Quel bien souhaitez-vous ',
+                      'publier ?',
+                      size: 30,
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Type d\'opération',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 8),
+                    SegmentedButton<String>(
+                      showSelectedIcon: false,
+                      segments: const [
+                        ButtonSegment(
+                          value: 'rent_long',
+                          label: Text('Location'),
+                        ),
+                        ButtonSegment(value: 'sale', label: Text('Vente')),
+                      ],
+                      selected: {_transaction},
+                      onSelectionChanged: (v) =>
+                          setState(() => _transaction = v.first),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Type de bien',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 8),
+                    GridView.count(
+                      crossAxisCount: 3,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 10,
+                      childAspectRatio: 1.05,
+                      children: [
+                        for (final t in snap.data!)
+                          InkWell(
+                            borderRadius: BorderRadius.circular(AppRadius.md),
+                            onTap: () => setState(() => _type = t.id),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: _type == t.id
+                                    ? AppColors.primarySoft
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(
+                                  AppRadius.md,
+                                ),
+                                border: Border.all(
+                                  color: _type == t.id
+                                      ? AppColors.primary
+                                      : AppColors.line,
+                                  width: _type == t.id ? 2 : 1,
+                                ),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    _icon(t.label),
+                                    size: 30,
+                                    color: _type == t.id
+                                        ? AppColors.primary
+                                        : AppColors.ink,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                    child: Text(
+                                      t.label,
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: _type == t.id
+                                            ? FontWeight.w800
+                                            : FontWeight.w500,
+                                        color: _type == t.id
+                                            ? AppColors.primary
+                                            : AppColors.ink,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    if (_error != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Text(
+                          _error!,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-                DropdownMenuItem(value: 'sale', child: Text('Une vente')),
-              ],
-              onChanged: (v) => setState(() => _transaction = v ?? 'rent_long'),
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<int>(
-              initialValue: _type,
-              decoration: const InputDecoration(
-                labelText: 'Type de bien',
-                border: OutlineInputBorder(),
               ),
-              items: [
-                for (final t in snap.data!)
-                  DropdownMenuItem(value: t.id, child: Text(t.label)),
-              ],
-              onChanged: (v) => setState(() => _type = v),
-            ),
-            if (_error != null)
               Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Text(
-                  _error!,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                child: PrimaryButton(
+                  label: 'Continuer vers les détails',
+                  pending: _pending,
+                  arrow: true,
+                  onPressed: _create,
                 ),
               ),
-            const SizedBox(height: 24),
-            PrimaryButton(
-              label: 'Créer le brouillon',
-              pending: _pending,
-              onPressed: _create,
-            ),
-          ],
-        );
-      },
+            ],
+          );
+        },
+      ),
     ),
   );
 }
@@ -334,6 +491,8 @@ class _ListingEditorScreenState extends State<ListingEditorScreen> {
     );
   }
 
+  int _step = 0;
+
   @override
   Widget build(BuildContext context) {
     final l = _listing;
@@ -348,7 +507,11 @@ class _ListingEditorScreenState extends State<ListingEditorScreen> {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                _Stepper(listing: l),
+                _Stepper(
+                  listing: l,
+                  current: _step,
+                  onSelect: (i) => setState(() => _step = i),
+                ),
                 if (l.status == 'rejected')
                   Text(
                     'Refusée${l.rejectionComment != null ? ' : ${l.rejectionComment}' : ''}. Corrigez puis soumettez à nouveau.',
@@ -364,210 +527,247 @@ class _ListingEditorScreenState extends State<ListingEditorScreen> {
                     ),
                   ),
                 if (_notice != null) Text(_notice!),
-                _section('1. L\'annonce', [
-                  AppField(controller: _title, label: 'Titre'),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _description,
-                    minLines: 3,
-                    maxLines: 8,
-                    decoration: const InputDecoration(
-                      labelText: 'Description',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  AppField(
-                    controller: _price,
-                    label: l.rental ? 'Loyer mensuel (FCFA)' : 'Prix (FCFA)',
-                    keyboard: TextInputType.number,
-                  ),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Prix négociable'),
-                    value: _negotiable,
-                    onChanged: (v) => setState(() => _negotiable = v),
-                  ),
-                  if (l.rental) ...[
-                    AppField(
-                      controller: _deposit,
-                      label: 'Caution (mois de loyer)',
-                      keyboard: TextInputType.number,
+                if (_step == 0)
+                  _section('1. L\'annonce', [
+                    AppField(controller: _title, label: 'Titre'),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _description,
+                      minLines: 3,
+                      maxLines: 8,
+                      decoration: const InputDecoration(
+                        labelText: 'Description',
+                        border: OutlineInputBorder(),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     AppField(
-                      controller: _advance,
-                      label: 'Avance (mois de loyer)',
+                      controller: _price,
+                      label: l.rental ? 'Loyer mensuel (FCFA)' : 'Prix (FCFA)',
                       keyboard: TextInputType.number,
                     ),
-                    const SizedBox(height: 12),
-                    AppField(
-                      controller: _agencyFee,
-                      label: "Frais d'agence (FCFA)",
-                      keyboard: TextInputType.number,
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Prix négociable'),
+                      value: _negotiable,
+                      onChanged: (v) => setState(() => _negotiable = v),
                     ),
-                    const SizedBox(height: 12),
-                    AppField(
-                      controller: _otherFees,
-                      label: 'Autres frais (FCFA)',
-                      keyboard: TextInputType.number,
-                    ),
-                    const Text(
-                      'Montants affichés tels que saisis, sans total calculé.',
-                      style: TextStyle(fontSize: 12),
-                    ),
-                  ],
-                  PrimaryButton(
-                    label: 'Enregistrer',
-                    pending: _busy,
-                    onPressed: () => _saveInfo(l),
-                  ),
-                ]),
-                _section('2. Le bien', [
-                  DropdownButtonFormField<int>(
-                    initialValue: _neighborhoods.any((n) => n.id == _locality)
-                        ? _locality
-                        : null,
-                    decoration: const InputDecoration(
-                      labelText: 'Quartier',
-                      border: OutlineInputBorder(),
-                    ),
-                    items: [
-                      for (final n in _neighborhoods)
-                        DropdownMenuItem(value: n.id, child: Text(n.label)),
+                    if (l.rental) ...[
+                      AppField(
+                        controller: _deposit,
+                        label: 'Caution (mois de loyer)',
+                        keyboard: TextInputType.number,
+                      ),
+                      const SizedBox(height: 12),
+                      AppField(
+                        controller: _advance,
+                        label: 'Avance (mois de loyer)',
+                        keyboard: TextInputType.number,
+                      ),
+                      const SizedBox(height: 12),
+                      AppField(
+                        controller: _agencyFee,
+                        label: "Frais d'agence (FCFA)",
+                        keyboard: TextInputType.number,
+                      ),
+                      const SizedBox(height: 12),
+                      AppField(
+                        controller: _otherFees,
+                        label: 'Autres frais (FCFA)',
+                        keyboard: TextInputType.number,
+                      ),
+                      const Text(
+                        'Montants affichés tels que saisis, sans total calculé.',
+                        style: TextStyle(fontSize: 12),
+                      ),
                     ],
-                    onChanged: (v) => setState(() => _locality = v),
+                    PrimaryButton(
+                      label: 'Enregistrer',
+                      pending: _busy,
+                      onPressed: () => _saveInfo(l),
+                    ),
+                  ]),
+                if (_step == 1)
+                  _section('2. Le bien', [
+                    DropdownButtonFormField<int>(
+                      initialValue: _neighborhoods.any((n) => n.id == _locality)
+                          ? _locality
+                          : null,
+                      decoration: const InputDecoration(
+                        labelText: 'Quartier',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: [
+                        for (final n in _neighborhoods)
+                          DropdownMenuItem(value: n.id, child: Text(n.label)),
+                      ],
+                      onChanged: (v) => setState(() => _locality = v),
+                    ),
+                    const SizedBox(height: 12),
+                    AppField(
+                      controller: _address,
+                      label: 'Adresse (jamais affichée publiquement)',
+                    ),
+                    const SizedBox(height: 12),
+                    AppField(
+                      controller: _surface,
+                      label: 'Surface (m²)',
+                      keyboard: TextInputType.number,
+                    ),
+                    const SizedBox(height: 12),
+                    AppField(
+                      controller: _rooms,
+                      label: 'Pièces',
+                      keyboard: TextInputType.number,
+                    ),
+                    const SizedBox(height: 12),
+                    AppField(
+                      controller: _bedrooms,
+                      label: 'Chambres',
+                      keyboard: TextInputType.number,
+                    ),
+                    const SizedBox(height: 12),
+                    AppField(
+                      controller: _bathrooms,
+                      label: 'Salles de bain',
+                      keyboard: TextInputType.number,
+                    ),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Meublé'),
+                      value: _furnished,
+                      onChanged: (v) => setState(() => _furnished = v),
+                    ),
+                    Wrap(
+                      spacing: 8,
+                      children: [
+                        for (final a in _amenities)
+                          FilterChip(
+                            label: Text(a.label),
+                            selected: _amenityIds.contains(a.id),
+                            onSelected: (on) => setState(
+                              () => on
+                                  ? _amenityIds.add(a.id)
+                                  : _amenityIds.remove(a.id),
+                            ),
+                          ),
+                      ],
+                    ),
+                    PrimaryButton(
+                      label: 'Enregistrer',
+                      pending: _busy,
+                      onPressed: () => _saveProperty(l),
+                    ),
+                  ]),
+                if (_step == 2)
+                  _section('3. Photos', [
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.add_a_photo_outlined),
+                      label: const Text('Ajouter des photos'),
+                      onPressed: _busy ? null : () => _pickPhotos(l),
+                    ),
+                    if (l.processing)
+                      const Text('Traitement des photos en cours…'),
+                    for (final img in l.images)
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: SizedBox(
+                          width: 64,
+                          child: img.status == 'ready' && img.thumbUrl != null
+                              ? Image.network(
+                                  img.thumbUrl!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, _, _) =>
+                                      const Icon(Icons.image_outlined),
+                                )
+                              : const Icon(Icons.hourglass_empty),
+                        ),
+                        title: Text(
+                          img.isCover
+                              ? 'Couverture'
+                              : (img.status == 'failed'
+                                    ? 'Échec du traitement'
+                                    : (img.status == 'processing'
+                                          ? 'Traitement…'
+                                          : 'Photo')),
+                        ),
+                        subtitle: !img.isCover && img.status == 'ready'
+                            ? TextButton(
+                                onPressed: () => _photoAction(
+                                  l,
+                                  () =>
+                                      widget.repository.setCover(l.id, img.id),
+                                  'Couverture modifiée.',
+                                ),
+                                child: const Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text('Définir comme couverture'),
+                                ),
+                              )
+                            : null,
+                        trailing: IconButton(
+                          tooltip: 'Supprimer',
+                          icon: const Icon(Icons.delete_outline),
+                          onPressed: () => _photoAction(
+                            l,
+                            () => widget.repository.deleteImage(l.id, img.id),
+                            'Photo supprimée.',
+                          ),
+                        ),
+                      ),
+                  ]),
+                if (_step == 3)
+                  _section(
+                    '4. Publier',
+                    l.canSubmit
+                        ? [
+                            Text(
+                              l.missingFields.isEmpty
+                                  ? 'Votre annonce est complète. Elle sera relue par notre équipe avant publication.'
+                                  : 'Il manque : ${l.missingFields.map((f) => missingLabels[f] ?? f).join(', ')}.',
+                            ),
+                            PrimaryButton(
+                              label: 'Soumettre à la modération',
+                              pending: _busy,
+                              onPressed: l.missingFields.isEmpty
+                                  ? () => _run(
+                                      () => widget.repository.submit(l.id),
+                                      'Annonce envoyée en modération.',
+                                      fillForms: false,
+                                    )
+                                  : null,
+                            ),
+                          ]
+                        : [
+                            Text(
+                              l.missingFields.isEmpty
+                                  ? 'Enregistrez les étapes précédentes pour pouvoir soumettre.'
+                                  : 'Il manque : ${l.missingFields.map((f) => missingLabels[f] ?? f).join(', ')}.',
+                            ),
+                          ],
                   ),
-                  const SizedBox(height: 12),
-                  AppField(
-                    controller: _address,
-                    label: 'Adresse (jamais affichée publiquement)',
-                  ),
-                  const SizedBox(height: 12),
-                  AppField(
-                    controller: _surface,
-                    label: 'Surface (m²)',
-                    keyboard: TextInputType.number,
-                  ),
-                  const SizedBox(height: 12),
-                  AppField(
-                    controller: _rooms,
-                    label: 'Pièces',
-                    keyboard: TextInputType.number,
-                  ),
-                  const SizedBox(height: 12),
-                  AppField(
-                    controller: _bedrooms,
-                    label: 'Chambres',
-                    keyboard: TextInputType.number,
-                  ),
-                  const SizedBox(height: 12),
-                  AppField(
-                    controller: _bathrooms,
-                    label: 'Salles de bain',
-                    keyboard: TextInputType.number,
-                  ),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Meublé'),
-                    value: _furnished,
-                    onChanged: (v) => setState(() => _furnished = v),
-                  ),
-                  Wrap(
-                    spacing: 8,
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Row(
                     children: [
-                      for (final a in _amenities)
-                        FilterChip(
-                          label: Text(a.label),
-                          selected: _amenityIds.contains(a.id),
-                          onSelected: (on) => setState(
-                            () => on
-                                ? _amenityIds.add(a.id)
-                                : _amenityIds.remove(a.id),
+                      if (_step > 0)
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => setState(() => _step--),
+                            child: const Text('Précédent'),
+                          ),
+                        ),
+                      if (_step > 0 && _step < 3) const SizedBox(width: 12),
+                      if (_step < 3)
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: () => setState(() => _step++),
+                            child: const Text('Suivant'),
                           ),
                         ),
                     ],
                   ),
-                  PrimaryButton(
-                    label: 'Enregistrer',
-                    pending: _busy,
-                    onPressed: () => _saveProperty(l),
-                  ),
-                ]),
-                _section('3. Photos', [
-                  OutlinedButton.icon(
-                    icon: const Icon(Icons.add_a_photo_outlined),
-                    label: const Text('Ajouter des photos'),
-                    onPressed: _busy ? null : () => _pickPhotos(l),
-                  ),
-                  if (l.processing)
-                    const Text('Traitement des photos en cours…'),
-                  for (final img in l.images)
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: SizedBox(
-                        width: 64,
-                        child: img.status == 'ready' && img.thumbUrl != null
-                            ? Image.network(
-                                img.thumbUrl!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, _, _) =>
-                                    const Icon(Icons.image_outlined),
-                              )
-                            : const Icon(Icons.hourglass_empty),
-                      ),
-                      title: Text(
-                        img.isCover
-                            ? 'Couverture'
-                            : (img.status == 'failed'
-                                  ? 'Échec du traitement'
-                                  : (img.status == 'processing'
-                                        ? 'Traitement…'
-                                        : 'Photo')),
-                      ),
-                      subtitle: !img.isCover && img.status == 'ready'
-                          ? TextButton(
-                              onPressed: () => _photoAction(
-                                l,
-                                () => widget.repository.setCover(l.id, img.id),
-                                'Couverture modifiée.',
-                              ),
-                              child: const Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text('Définir comme couverture'),
-                              ),
-                            )
-                          : null,
-                      trailing: IconButton(
-                        tooltip: 'Supprimer',
-                        icon: const Icon(Icons.delete_outline),
-                        onPressed: () => _photoAction(
-                          l,
-                          () => widget.repository.deleteImage(l.id, img.id),
-                          'Photo supprimée.',
-                        ),
-                      ),
-                    ),
-                ]),
-                if (l.canSubmit)
-                  _section('4. Publier', [
-                    Text(
-                      l.missingFields.isEmpty
-                          ? 'Votre annonce est complète. Elle sera relue par notre équipe avant publication.'
-                          : 'Il manque : ${l.missingFields.map((f) => missingLabels[f] ?? f).join(', ')}.',
-                    ),
-                    PrimaryButton(
-                      label: 'Soumettre à la modération',
-                      pending: _busy,
-                      onPressed: l.missingFields.isEmpty
-                          ? () => _run(
-                              () => widget.repository.submit(l.id),
-                              'Annonce envoyée en modération.',
-                              fillForms: false,
-                            )
-                          : null,
-                    ),
-                  ]),
+                ),
               ],
             ),
     );
@@ -591,9 +791,15 @@ class _ListingEditorScreenState extends State<ListingEditorScreen> {
 
 /// Progression en 4 étapes (design) : chaque étape est « faite » selon les champs réellement renseignés.
 class _Stepper extends StatelessWidget {
-  const _Stepper({required this.listing});
+  const _Stepper({
+    required this.listing,
+    required this.current,
+    required this.onSelect,
+  });
 
   final EditableListing listing;
+  final int current;
+  final ValueChanged<int> onSelect;
 
   @override
   Widget build(BuildContext context) {
@@ -607,37 +813,44 @@ class _Stepper extends StatelessWidget {
       !missing.contains('cover_image'),
       !l.canSubmit,
     ];
-    const labels = ['Annonce', 'Bien', 'Photos', 'Publier'];
+    const labels = ['Infos', 'Détails', 'Photos', 'Aperçu'];
     return Row(
       children: [
         for (var i = 0; i < 4; i++)
           Expanded(
-            child: Column(
-              children: [
-                CircleAvatar(
-                  radius: 15,
-                  backgroundColor: done[i] ? AppColors.primary : Colors.white,
-                  child: done[i]
-                      ? const Icon(Icons.check, size: 16, color: Colors.white)
-                      : Text(
-                          '${i + 1}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.muted,
+            child: InkWell(
+              onTap: () => onSelect(i),
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 15,
+                    backgroundColor: done[i] ? AppColors.primary : Colors.white,
+                    child: done[i]
+                        ? const Icon(Icons.check, size: 16, color: Colors.white)
+                        : Text(
+                            '${i + 1}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.muted,
+                            ),
                           ),
-                        ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  labels[i],
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: done[i] ? AppColors.primary : AppColors.muted,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  Text(
+                    labels[i],
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: done[i] || i == current
+                          ? AppColors.primary
+                          : AppColors.muted,
+                      fontWeight: i == current
+                          ? FontWeight.w900
+                          : FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
       ],
